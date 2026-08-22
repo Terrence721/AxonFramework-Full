@@ -1,5 +1,11 @@
-# Gradle build artifacts can be ignored
-build/
+# Gradle build artifacts can be ignored. Unlike Maven's target/, "build" is ALSO a real,
+# tracked top-level directory name in this repo (build/checkstyle.xml, build/parent,
+# build/coverage-report mirror the Maven source layout) - so this must not be a blanket
+# `build/` pattern, or it would swallow that real content too. **/build/ + the negation below
+# ignores every module's own Gradle output dir (including nested ones like build/parent/build/)
+# while keeping the top-level build/ directory itself tracked.
+**/build/
+!/build/
 .gradle/
 # ...but keep the wrapper jar and properties
 !gradle/wrapper/gradle-wrapper.jar

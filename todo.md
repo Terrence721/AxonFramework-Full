@@ -56,7 +56,7 @@ now would misplace them.
 
 No central `gradle/libs.versions.toml` version catalog — dependency versions are declared inline, per module, in
 each module's own `build.gradle.kts`, matching the style already used in `saga-full`. A catalog was built once
-(mechanically ported from `build/parent/pom.xml`'s ~50-entry `dependencyManagement` block) and then deliberately
+(mechanically added from `build/parent/pom.xml`'s ~50-entry `dependencyManagement` block) and then deliberately
 removed in favor of this approach.
 
 **Known, accepted tradeoff:** `build/parent/pom.xml`'s `dependencyManagement` exists specifically to keep dependency
