@@ -40,9 +40,11 @@ Its content split across two files, matching Gradle's own idioms rather than try
   `-Dexamples`/`-Dcoverage` property activation replicated as `providers.gradleProperty(...).isPresent` conditional
   `include(...)` calls), and the Central Portal Snapshots repository (both for dependency resolution now and as the
   Phase 5 SNAPSHOT publish target later)
-- `gradle.properties` — `group=org.axonframework` and `version=5.4.0-SNAPSHOT` (replaces the Maven
+- `gradle.properties` — `group=org.axonframework` and `version=1.0.0-SNAPSHOT` (replaces the Maven
   `${revision}`/flatten-maven-plugin CI-friendly-version mechanism, which has no Gradle equivalent — `maven-publish`
-  always writes the resolved version)
+  always writes the resolved version). Version is independent of upstream's `5.4.0-SNAPSHOT` — this fork versions on
+  its own scheme, starting at `1.0.0-SNAPSHOT`, so there's no implication of drop-in compatibility with a specific
+  upstream Axon release
 
 Deliberately **not yet converted**: the root POM's developer/license/SCM metadata, the Java-21/Maven-3.9+ enforcer
 check, GPG signing, and Central-publishing plugin config. These belong in the build-logic convention plugins
