@@ -22,8 +22,9 @@ for live status.
 **Still to do:** the entire rest of the Maven reactor — `build/parent`, `axon-framework-bom`, `common`, `conversion`,
 `extensions` (its own sub-reactor: `kotlin`, `metrics`, `reactor`, `spring`), `eventsourcing`, `messaging`,
 `migration`, `modelling`, `test`, `test-logging`, `update`, `integrationtests`, `docs/_samples` — converted bottom-up
-by dependency direction, plus the build-logic convention plugins and the `gradle/libs.versions.toml` version catalog
-that most of the above depend on. See "Still to do" below.
+by dependency direction, plus the build-logic convention plugins. Dependency versions are declared inline per module
+(no central `gradle/libs.versions.toml` catalog — see "Versioning approach" below), matching the style already used in
+`saga-full`. See "Still to do" below.
 
 ## ✅ Done
 
@@ -50,6 +51,18 @@ Deliberately **not yet converted**: the root POM's developer/license/SCM metadat
 check, GPG signing, and Central-publishing plugin config. These belong in the build-logic convention plugins
 (Gradle's answer to `axon-parent`), which don't exist yet — bolting them onto `settings.gradle.kts`/`gradle.properties`
 now would misplace them.
+
+### Versioning approach
+
+No central `gradle/libs.versions.toml` version catalog — dependency versions are declared inline, per module, in
+each module's own `build.gradle.kts`, matching the style already used in `saga-full`. A catalog was built once
+(mechanically ported from `build/parent/pom.xml`'s ~50-entry `dependencyManagement` block) and then deliberately
+removed in favor of this approach.
+
+**Known, accepted tradeoff:** `build/parent/pom.xml`'s `dependencyManagement` exists specifically to keep dependency
+versions in sync across all 14 reactor modules from one place. Inline-per-module drops that guarantee — nothing
+prevents two modules drifting to different versions of the same dependency by typo, the way a shared Maven parent
+would catch. Accepted deliberately, not overlooked.
 
 ### Known open issue
 
