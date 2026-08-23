@@ -22,6 +22,9 @@ for live status.
 | Build-logic convention plugins | All three exist: `axonframework.java-conventions` (compiler, checkstyle, test deps, jar manifest — everything `axon-parent` applies to every module), `axonframework.published-conventions` (`maven-publish`, sources/javadoc jars, POM metadata, env-var-gated GPG signing), `axonframework.internal-conventions` (explicit non-published marker, applied to `docs/_samples` and, as a deliberate addition beyond upstream, `integrationtests`) |
 | Central Portal publishing | Wired via `com.gradleup.nmcp`'s settings plugin — Sonatype has no official Gradle plugin for this. `USER_MANAGED` release type: nothing reaches Maven Central without a manual release step |
 | `test-logging` module | First real subproject. Published (`org.axonframework:axon-test-logging`). Fixed a real circular-dependency trap along the way — the shared `testImplementation(project(":test-logging"))` line would otherwise make this module depend on itself |
+| Documentation & presentation | `README.md`, this file, a [wiki](https://github.com/Terrence721/AxonFramework-Full/wiki) (7 short pointer pages), and [`docs/diagrams/`](docs/diagrams) (4 self-contained HTML pages) — cross-linked, none duplicating another. Every link points at this fork, never upstream's `AxonFramework/AxonFramework` repo |
+| GitHub Pages | Enabled, source `main` branch `/docs` — same config as this user's other portfolio forks, makes the diagrams viewable live at [terrence721.github.io/AxonFramework-Full](https://terrence721.github.io/AxonFramework-Full/) |
+| Project board layout | Fixed to board (Kanban column) layout grouped by Status — was silently defaulting to table/row layout even though the Status column options already matched the reference board |
 
 **Still to do:** the rest of the Maven reactor — `build/parent`, `axon-framework-bom`, `common`, `conversion`,
 `extensions` (its own sub-reactor: `kotlin`, `metrics`, `reactor`, `spring`), `eventsourcing`, `messaging`,
@@ -96,6 +99,10 @@ Bottom-up by dependency direction, per the source migration plan:
    publications — last, once every publishable module's coordinates are final
 7. **Gradle wrapper bootstrap** — generate in an isolated location and copy the files in, now that the
    module-directory blocker above is resolved
+8. **CI workflows** — scoped minimal for now: a build-verification workflow (`gradle build` on push/PR) via
+   `gradle/actions/setup-gradle`, since there's no wrapper yet to rely on `./gradlew` in CI. Deliberately not
+   doing a full quality/CodeQL/badge suite yet (unlike this user's other portfolio forks) — there's barely any
+   actual code for those to analyze until later phases land
 
 Each phase gets a `./gradlew build` + `publishToMavenLocal` + scratch-consumer-project check, and a dependency-tree
 diff against the equivalent Maven output, before moving to the next.
