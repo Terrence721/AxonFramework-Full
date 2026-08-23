@@ -1,310 +1,489 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AxonFramework-Full — portfolio</title>
-<meta name="description" content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — early stage, in progress, every claim linked to something checkable.">
+<title>Terrence Daniels — Full-Stack Java/Gradle Engineer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta
+  name="description"
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Five real build-system gaps found and fixed so far, disclosed rather than smoothed over."
+/>
+<link rel="canonical" href="https://terrence721.github.io/AxonFramework-Full/portfolio.html" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Terrence Daniels — Portfolio" />
+<meta property="og:url" content="https://terrence721.github.io/AxonFramework-Full/portfolio.html" />
+<meta property="og:title" content="AxonFramework-Full — a Maven→Gradle build migration, by Terrence Daniels" />
+<meta
+  property="og:description"
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — five real build-system gaps found and fixed, disclosed not smoothed over."
+/>
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="AxonFramework-Full — a Maven→Gradle build migration, by Terrence Daniels" />
+<meta
+  name="twitter:description"
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — verified rather than assumed."
+/>
 <style>
   :root {
-    --bg: #ffffff;
-    --bg-subtle: #f6f7f9;
-    --ink: #14181f;
-    --ink-soft: #4b5563;
-    --border: #e2e5ea;
-    --card-bg: #ffffff;
-    --accent: #3457d5;
-
-    --done-bg: #e8f5ec;
-    --done-border: #a9d9ba;
-    --done-ink: #1d6b3a;
-
-    --gap-bg: #fff4e0;
-    --gap-border: #f0c987;
-    --gap-ink: #8a5a00;
-
-    --open-bg: #f3f4f6;
-    --open-border: #d9dce1;
-    --open-ink: #6b7280;
+    --paper: #ede9df;
+    --paper-2: #e2ddd0;
+    --ink: #1c2333;
+    --ink-soft: #4b5567;
+    --rule: #c7c0ac;
+    --accent: #a13d2b;
+    --accent-ink: #fff7ef;
+    --accent-2: #2e5266;
+    --font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
   }
 
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #12151a;
-      --bg-subtle: #1a1e25;
-      --ink: #eef1f6;
-      --ink-soft: #a4acb8;
-      --border: #2a2f38;
-      --card-bg: #171b22;
-      --accent: #7c94ff;
-
-      --done-bg: #17301f;
-      --done-border: #2d6b41;
-      --done-ink: #7fd99a;
-
-      --gap-bg: #352505;
-      --gap-border: #8a6a0e;
-      --gap-ink: #f0c25c;
-
-      --open-bg: #1c2027;
-      --open-border: #333944;
-      --open-ink: #8b93a1;
+    :root {
+      --paper: #14181f;
+      --paper-2: #1b212b;
+      --ink: #e8e4d9;
+      --ink-soft: #a3aabb;
+      --rule: #303748;
+      --accent: #dd7a4a;
+      --accent-ink: #1c1006;
+      --accent-2: #7fb2cc;
     }
   }
-
-  :root[data-theme="dark"] {
-    --bg: #12151a;
-    --bg-subtle: #1a1e25;
-    --ink: #eef1f6;
-    --ink-soft: #a4acb8;
-    --border: #2a2f38;
-    --card-bg: #171b22;
-    --accent: #7c94ff;
-
-    --done-bg: #17301f;
-    --done-border: #2d6b41;
-    --done-ink: #7fd99a;
-
-    --gap-bg: #352505;
-    --gap-border: #8a6a0e;
-    --gap-ink: #f0c25c;
-
-    --open-bg: #1c2027;
-    --open-border: #333944;
-    --open-ink: #8b93a1;
+  :root[data-theme='dark'] {
+    --paper: #14181f;
+    --paper-2: #1b212b;
+    --ink: #e8e4d9;
+    --ink-soft: #a3aabb;
+    --rule: #303748;
+    --accent: #dd7a4a;
+    --accent-ink: #1c1006;
+    --accent-2: #7fb2cc;
+  }
+  :root[data-theme='light'] {
+    --paper: #ede9df;
+    --paper-2: #e2ddd0;
+    --ink: #1c2333;
+    --ink-soft: #4b5567;
+    --rule: #c7c0ac;
+    --accent: #a13d2b;
+    --accent-ink: #fff7ef;
+    --accent-2: #2e5266;
   }
 
   * { box-sizing: border-box; }
-
+  html { color-scheme: light dark; }
   body {
     margin: 0;
-    background: var(--bg);
+    background: var(--paper);
     color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
-    line-height: 1.6;
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
   }
+  a { color: var(--accent-2); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { color: var(--accent); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-  .wrap { max-width: 780px; margin: 0 auto; padding: 3.5rem 1.5rem 4.5rem; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 28px; }
 
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative;
+    padding: 72px 0 44px;
+    background-image: repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--ink) 4%, transparent) 0 2px,
+      transparent 2px 26px
+    );
+    border-bottom: 1px solid var(--rule);
+  }
   .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--accent);
-    margin: 0 0 0.7rem;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
   }
-
-  h1 { margin: 0 0 0.4rem; font-size: clamp(2rem, 5vw, 2.7rem); letter-spacing: -0.01em; }
-
+  .eyebrow::before { content: '◆ '; color: var(--accent); }
+  h1.name {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(2.6rem, 6vw, 4.2rem);
+    letter-spacing: -0.01em;
+    line-height: 1.02;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
   .role {
-    font-size: 1.05rem;
-    color: var(--ink-soft);
-    margin: 0 0 2rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.4vw, 1.4rem);
+    color: var(--accent-2);
+    margin: 0 0 22px;
   }
-
-  .lede { font-size: 1.08rem; max-width: 66ch; margin: 0 0 2.2rem; }
-
-  .metrics {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 1.4rem 0;
-    margin: 0 0 2.6rem;
+  .thesis { max-width: 62ch; font-size: 1.05rem; color: var(--ink-soft); margin: 0 0 34px; }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.03em;
+    padding: 10px 16px;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    text-decoration: none;
+    background: transparent;
   }
-  @media (max-width: 560px) { .metrics { grid-template-columns: 1fr 1fr; } }
+  .btn:hover { background: var(--ink); color: var(--paper); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.primary:hover { background: var(--accent-2); border-color: var(--accent-2); color: var(--accent-ink); }
 
-  .metric .v {
-    display: block;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--accent);
-    font-variant-numeric: tabular-nums;
+  /* stamp badge */
+  .stamp {
+    position: absolute;
+    top: 58px;
+    right: 28px;
+    width: 128px;
+    height: 128px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-9deg);
+    opacity: 0.92;
   }
-  .metric .k { display: block; font-size: 0.78rem; color: var(--ink-soft); margin-top: 0.2rem; }
-
-  h2 {
-    font-size: 1.3rem;
-    margin: 2.6rem 0 0.9rem;
-    padding-top: 1.8rem;
-    border-top: 1px solid var(--border);
+  .stamp::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px dashed var(--accent);
+    border-radius: 50%;
   }
-  h2:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+  .stamp-inner { text-align: center; font-family: var(--font-mono); color: var(--accent); }
+  .stamp-inner .n { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+  .stamp-inner .l { display: block; font-size: 0.55rem; letter-spacing: 0.12em; margin-top: 4px; }
+  @media (max-width: 620px) { .stamp { display: none; } }
 
-  p { margin: 0 0 1rem; max-width: 68ch; }
+  /* ---------- manifest stat strip ---------- */
+  .manifest { background: var(--paper-2); border-bottom: 1px solid var(--rule); overflow-x: auto; }
+  .manifest-row { display: flex; min-width: max-content; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .manifest-cell { padding: 16px 24px; border-right: 1px solid var(--rule); white-space: nowrap; }
+  .manifest-cell:last-child { border-right: none; }
+  .manifest-cell .v { font-size: 1.15rem; color: var(--accent); font-weight: 700; }
+  .manifest-cell .k { display: block; font-size: 0.68rem; letter-spacing: 0.08em; color: var(--ink-soft); text-transform: uppercase; margin-top: 2px; }
 
-  .finding {
-    border: 1px solid var(--border);
-    background: var(--card-bg);
-    border-radius: 10px;
-    padding: 1rem 1.3rem;
-    margin: 0 0 0.9rem;
-  }
-
-  .finding h3 { margin: 0 0 0.35rem; font-size: 0.98rem; }
-  .finding p { margin: 0; font-size: 0.9rem; color: var(--ink-soft); max-width: none; }
-  .finding code { font-size: 0.85em; }
-
-  .tag {
-    display: inline-block;
-    font-size: 0.68rem;
-    font-weight: 700;
+  /* ---------- sections ---------- */
+  section { padding: 52px 0; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.7rem; margin: 0 0 6px; text-wrap: balance; }
+  .h2-sub {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.1rem 0.5rem;
-    border-radius: 999px;
-    margin-bottom: 0.5rem;
+    color: var(--ink-soft);
+    margin: 0 0 22px;
   }
-  .tag.bug { background: var(--gap-bg); color: var(--gap-ink); border: 1px solid var(--gap-border); }
-  .tag.correction { background: var(--done-bg); color: var(--done-ink); border: 1px solid var(--done-border); }
+  p { max-width: 68ch; }
+  .lede { font-size: 1.02rem; color: var(--ink-soft); max-width: 66ch; }
 
-  .gap-list { list-style: none; padding: 0; margin: 0 0 1rem; }
-  .gap-list li {
-    padding: 0.5rem 0.8rem;
-    border-left: 3px solid var(--open-border);
-    background: var(--open-bg);
-    color: var(--open-ink);
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+  .chip { font-family: var(--font-mono); font-size: 0.75rem; padding: 4px 10px; border: 1px solid var(--rule); color: var(--ink-soft); }
+
+  /* ledger line items */
+  .ledger { border-top: 1px solid var(--rule); margin-top: 24px; }
+  .item { display: grid; grid-template-columns: 40px 1fr; gap: 4px 18px; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+  .item .no { font-family: var(--font-mono); color: var(--accent); font-size: 0.9rem; padding-top: 2px; }
+  .item .file { font-family: var(--font-mono); font-size: 0.88rem; color: var(--ink); }
+  .item .desc { color: var(--ink-soft); font-size: 0.95rem; margin: 4px 0 8px; }
+  .item .meta { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); }
+  .item .meta .tag { color: var(--accent-2); }
+  .item .meta a { margin-left: 8px; }
+
+  .note {
+    border-left: 2px solid var(--accent-2);
+    padding: 4px 0 4px 16px;
+    color: var(--ink-soft);
     font-size: 0.92rem;
-    margin-bottom: 0.5rem;
-    border-radius: 0 6px 6px 0;
+    margin: 22px 0 0;
+    max-width: 62ch;
   }
-  .gap-list code { font-size: 0.9em; }
+  .note strong { color: var(--ink); }
 
-  .callout {
-    margin: 1.2rem 0;
-    padding: 1rem 1.3rem;
-    border-left: 3px solid var(--accent);
-    background: var(--bg-subtle);
-    border-radius: 0 8px 8px 0;
-    font-size: 0.94rem;
-    color: var(--ink-soft);
-  }
-  .callout p { max-width: none; margin: 0; }
+  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 20px; }
+  @media (max-width: 640px) { .twocol { grid-template-columns: 1fr; } }
+  .card { border: 1px solid var(--rule); padding: 18px 20px; }
+  .card h3 { font-family: var(--font-body); font-size: 0.95rem; font-weight: 700; margin: 0 0 8px; }
+  .card p { font-size: 0.9rem; color: var(--ink-soft); margin: 0; }
 
-  footer {
-    margin-top: 3rem;
-    padding-top: 1.6rem;
-    border-top: 1px solid var(--border);
-    font-size: 0.85rem;
-    color: var(--ink-soft);
-  }
-  footer .links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.2rem; margin-bottom: 1rem; }
-  footer a { color: var(--accent); }
-  footer .fine { max-width: 62ch; font-size: 0.82rem; }
+  footer { padding: 44px 0 72px; font-family: var(--font-mono); font-size: 0.85rem; }
+  footer .links { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-bottom: 22px; }
+  footer .fine { color: var(--ink-soft); font-size: 0.78rem; max-width: 62ch; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
-</head>
-<body>
-<div class="wrap">
-  <p class="eyebrow">Portfolio piece · Java + Gradle</p>
-  <h1>AxonFramework-Full</h1>
-  <p class="role">A deliberate Maven→Gradle build migration — early stage, honestly reported</p>
 
-  <p class="lede">
-    This isn't a finished modernization with metrics to brag about — it's six days into a build-system migration
-    of Axon Framework 5, converted one file at a time rather than run through an automated tool. What's below is
-    exactly where that stands: what's real, what isn't yet, and the handful of genuine mistakes and corrections
-    along the way — not smoothed over.
-  </p>
-
-  <div class="metrics">
-    <div class="metric"><span class="v">16</span><span class="k">commits, 2 days</span></div>
-    <div class="metric"><span class="v">1 / 14</span><span class="k">reactor modules converted</span></div>
-    <div class="metric"><span class="v">5</span><span class="k">real build gaps found &amp; fixed</span></div>
-  </div>
-
-  <h2>Why file-by-file, not a converter</h2>
-  <p>
-    Pointing a Maven→Gradle conversion tool at this reactor and committing whatever comes out would be faster.
-    It would also miss everything interesting: Gradle has no equivalent of Maven's parent-POM inheritance, so a
-    shared dependency that's harmless in <code>axon-parent</code> becomes a literal circular dependency the
-    moment a tool mechanically applies it to the one module that dependency points at. A checkstyle rule copied
-    byte-for-byte looks complete right up until you read the comment sitting three lines above it. Every module
-    in this reactor gets read, not just copied — and that reading is where the actual engineering happens.
-  </p>
-
-  <h2>Real findings, not asserted ones</h2>
-
-  <div class="finding">
-    <span class="tag bug">Real bug</span>
-    <h3>A circular dependency Gradle would happily let you create</h3>
-    <p>The shared <code>testImplementation(project(":test-logging"))</code> line in the base convention plugin
-      would make <code>test-logging</code> depend on itself the moment it applied that same plugin — upstream's
-      Maven POM dodges this with a parent-inheritance trick Gradle doesn't have an equivalent of. Guarded with a
-      one-line <code>if (project.name != "test-logging")</code> and verified with a real
-      <code>gradle :test-logging:dependencies</code> run showing no self-reference, not just reasoned about.</p>
-  </div>
-
-  <div class="finding">
-    <span class="tag bug">Real bug</span>
-    <h3>An undocumented Gradle 9.2 / nmcp interaction bug</h3>
-    <p>Central Portal publishing config using <code>providers.environmentVariable(...)</code> for credentials
-      crashes Gradle's configuration cache with a serialization error — reproduced directly, nothing about it
-      findable publicly at the time. Fixed with a plain <code>System.getenv(...)</code> read instead.</p>
-  </div>
-
-  <div class="finding">
-    <span class="tag bug">Real bug</span>
-    <h3>A directory that was both real content and Gradle's own output folder</h3>
-    <p>The root <code>build/</code> directory does double duty — a real, intentionally-tracked module directory
-      <em>and</em> Gradle's default build-output location for the root project. A blanket <code>.gitignore</code>
-      exception meant to protect the former was quietly leaking the latter's Gradle-generated reports as
-      trackable files. Replaced with an explicit allow-list of just the real paths.</p>
-  </div>
-
-  <div class="finding">
-    <span class="tag bug">Real bug</span>
-    <h3>Gradle refusing to configure the entire build over one missing folder</h3>
-    <p>Every <code>include(...)</code> in <code>settings.gradle.kts</code> pointed at a module directory that
-      didn't exist yet, which made Gradle refuse to evaluate the build at all — not just skip the missing
-      module. Fixed by commenting each include out individually, brought back one at a time as each module is
-      actually converted.</p>
-  </div>
-
-  <div class="finding">
-    <span class="tag bug">Real bug</span>
-    <h3>Dead references in upstream's own Maven config</h3>
-    <p>Root <code>pom.xml</code>'s Javadoc-skip list names four modules — <code>axon-todo</code>,
-      <code>axon-legacy</code>, <code>axon-legacy-aggregate</code>, <code>axon-legacy-saga</code> — that don't
-      exist anywhere in this reactor. Looks like uncleaned drift from an Axon 4-era POM. Not carried forward.</p>
-  </div>
-
-  <h2>Getting it wrong once, and what that's worth reporting</h2>
-  <div class="callout">
-    <p>
-      <span class="tag correction">Self-correction</span><br>
-      First pass on <code>build/checkstyle.xml</code>: flagged its nullness-annotation ban list as inconsistent
-      because Spring's <code>@Nullable</code> wasn't banned alongside <code>@NonNull</code>. Wrong — a comment
-      three lines above the rule already explained the omission was deliberate, deferred until the project is
-      "SpringBoot 4 native." Caught on a second read before the change was made, corrected, and the reasoning
-      kept — including the fact that the correction happened, not just the fixed version.
+<div class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Portfolio Manifest — Prepared 2026-08-23</p>
+    <h1 class="name">Terrence&nbsp;Daniels</h1>
+    <p class="role">Full-Stack Java/Gradle Engineer</p>
+    <p class="thesis">
+      A deliberate migration of <strong>Axon Framework 5</strong>'s build system from Maven to Gradle — converted
+      <strong>one file at a time</strong>, each one individually inspected against the Maven source rather than run
+      through an automated converter. Six days in: build-logic conventions are done, the first real module is
+      published, and every gap found along the way — five so far — is disclosed in this repo's own build log, not
+      smoothed over. Genuinely early — 13 of 14 reactor modules are still Maven-only, and no framework source has
+      converted yet.
     </p>
+    <div class="hero-actions">
+      <a class="btn primary" href="https://github.com/Terrence721/AxonFramework-Full">View the repository →</a>
+      <a class="btn" href="https://github.com/Terrence721/AxonFramework-Full/blob/main/todo.md">Build log</a>
+      <a class="btn" href="https://terrence721.github.io/AxonFramework-Full/diagrams/migration-pipeline.html">
+        Migration pipeline
+      </a>
+    </div>
   </div>
+  <div class="stamp" aria-hidden="true">
+    <div class="stamp-inner">
+      <span class="n">5</span>
+      <span class="l">REAL GAPS<br />FOUND &amp; FIXED</span>
+    </div>
+  </div>
+</div>
 
-  <h2>What hasn't started yet</h2>
-  <p>No padding here — this is a build-system migration with almost the whole reactor still ahead of it:</p>
-  <ul class="gap-list">
-    <li>13 of 14 reactor modules are still Maven-only — no Axon Framework Java/Kotlin source has been converted</li>
-    <li>No tests exist in this repo yet — nothing to report a pass rate on</li>
-    <li>No CI workflow yet (tracked, scoped minimal, not started)</li>
-    <li>No Gradle wrapper generated yet — building requires a system-installed Gradle</li>
-    <li>Nothing has ever been published to Maven Central — the pipeline is wired, unexercised</li>
-  </ul>
+<div class="manifest">
+  <div class="wrap">
+    <div class="manifest-row">
+      <div class="manifest-cell"><span class="v">1 of 14</span><span class="k">reactor modules converted</span></div>
+      <div class="manifest-cell"><span class="v">16</span><span class="k">commits, 2 days</span></div>
+      <div class="manifest-cell"><span class="v">3</span><span class="k">build-logic convention plugins done</span></div>
+      <div class="manifest-cell"><span class="v">5</span><span class="k">real gaps found &amp; fixed</span></div>
+      <div class="manifest-cell"><span class="v">0</span><span class="k">framework files migrated yet</span></div>
+      <div class="manifest-cell"><span class="v">6</span><span class="k">public surfaces kept in sync</span></div>
+    </div>
+  </div>
+</div>
 
-  <footer>
+<div class="wrap">
+  <section>
+    <h2>Why this project</h2>
+    <p class="h2-sub">A real Maven→Gradle migration, verified rather than trusted</p>
+    <p class="lede">
+      Pointing a conversion tool at a Maven reactor and committing whatever comes out would be faster. It would
+      also miss everything interesting: Gradle has no equivalent of Maven's parent-POM inheritance, so a shared
+      dependency block that's harmless in <code>axon-parent</code> becomes a literal circular dependency the
+      moment it's mechanically applied to the one module that dependency points at. A checkstyle rule copied
+      byte-for-byte looks complete right up until a second read catches the comment three lines above it
+      explaining why one entry is deliberately missing — caught before landing, not after, but wrong on the
+      first pass all the same.
+    </p>
+    <div class="chips">
+      <span class="chip">Gradle 9.2</span>
+      <span class="chip">Java 25 toolchain</span>
+      <span class="chip">Kotlin DSL</span>
+      <span class="chip">JUnit 6</span>
+      <span class="chip">Mockito</span>
+      <span class="chip">Checkstyle</span>
+      <span class="chip">com.gradleup.nmcp</span>
+      <span class="chip">Central Portal</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Build system first, real source still ahead</h2>
+    <p class="h2-sub">
+      Build-logic conventions done · test-logging published · 13 of 14 modules still Maven-only
+    </p>
+    <p class="lede">
+      Migration order is deliberate and bottom-up: the shared Gradle conventions every module will apply — Java
+      toolchain, checkstyle, publishing, signing — had to exist before any real module could be converted onto
+      them. <code>test-logging</code> is the first module through that pipeline, published for real
+      (<code>org.axonframework:axon-test-logging</code>) with its own genuine circular-dependency problem solved
+      along the way. The rest of the reactor — <code>common</code>, <code>conversion</code>,
+      <code>messaging</code>, <code>eventsourcing</code>, <code>modelling</code>, and eight more — hasn't started
+      converting; see
+      <a href="https://github.com/Terrence721/AxonFramework-Full/blob/main/todo.md">todo.md</a>
+      for the honest current state rather than assuming more is done.
+    </p>
+    <div class="twocol">
+      <div class="card">
+        <h3>Verification over assumption</h3>
+        <p>
+          Every structural change gets a real <code>gradle build</code> or <code>gradle :projects</code> run
+          before being called done — including re-running it live when a fix's correctness was itself in
+          question, not just reasoning about what the fix should do.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Gaps disclosed, not hidden</h3>
+        <p>
+          No <code>gradle/libs.versions.toml</code> version catalog (dependency-drift risk accepted, not
+          overlooked) and <code>integrationtests</code> deliberately not publishing to Maven Central, diverging
+          from upstream's own current behavior — both written down in
+          <code>todo.md</code>, not silently absorbed.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Five real gaps, found and fixed</h2>
+    <p class="h2-sub">
+      Found by running a real build or reading a live API doc, not by assuming the first pass was right
+    </p>
+    <p class="lede">
+      Two turned up in this fork's own Gradle translation of Maven's inheritance model. One turned up in a
+      third-party plugin's live interaction with a specific Gradle version, undocumented anywhere public at the
+      time. One turned up in this fork's own <code>.gitignore</code>. One turned up in upstream Axon's own Maven
+      config — real drift in a widely-used project, not a typo.
+    </p>
+    <div class="ledger">
+      <div class="item">
+        <div class="no">01</div>
+        <div>
+          <div class="file">testImplementation(project(":test-logging")) — a circular dependency Gradle would build without complaint</div>
+          <div class="desc">
+            Maven's <code>axon-parent</code> unconditionally adds <code>axon-test-logging</code> as a test
+            dependency to every inheriting module — upstream's own <code>pom.xml</code> dodges the resulting
+            self-reference by parenting that one module on the root aggregator instead. Gradle's convention-plugin
+            model has no equivalent "skip one level of inheritance" lever, and the shared
+            <code>java-conventions</code> plugin already had that dependency line, so applying it to
+            <code>test-logging</code> itself would create a literal self-dependency. Guarded with a one-line
+            <code>if (project.name != "test-logging")</code>, verified with a real
+            <code>gradle :test-logging:dependencies</code> run showing no self-reference in the resolved graph.
+          </div>
+          <div class="meta"><span class="tag">high · build-breaking</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">02</div>
+        <div>
+          <div class="file">nmcp 1.6.1 — configuration cache crashes on providers.environmentVariable()</div>
+          <div class="desc">
+            <code>nmcpSettings { centralPortal { username = providers.environmentVariable(...) } }</code>
+            fails Gradle 9.2's configuration cache with <code>cannot serialize object of type ...
+            ValueSourceProvider</code>. Reproduced directly by running the build, not inferred from a stack trace
+            read in isolation — searched publicly first and found nothing documented about it. Fixed with a
+            plain <code>System.getenv(...)</code> read instead of the lazy provider.
+          </div>
+          <div class="meta"><span class="tag">high · undocumented plugin interaction</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">03</div>
+        <div>
+          <div class="file">build/ — simultaneously real content and Gradle's own output directory</div>
+          <div class="desc">
+            The root <code>build/</code> directory does double duty: a real, intentionally-tracked module
+            directory (mirroring Maven's <code>build/parent</code>, <code>build/checkstyle.xml</code>) and
+            Gradle's default build-output location for the root project — the same path, two purposes. A blanket
+            <code>.gitignore</code> exception meant to protect the former was quietly letting Gradle's own
+            generated reports through as trackable files. Replaced with an explicit allow-list of just the real
+            paths, verified with <code>git check-ignore -v</code> against both cases before trusting it.
+          </div>
+          <div class="meta"><span class="tag">medium · gitignore drift</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">04</div>
+        <div>
+          <div class="file">One missing module directory blocked the entire build's configuration, not just itself</div>
+          <div class="desc">
+            Every <code>include(...)</code> in <code>settings.gradle.kts</code> pointed at a module directory
+            that didn't exist yet, and Gradle refuses to configure a build at all under that condition — not just
+            skip the missing module. Confirmed with a real failing <code>gradle</code> run before deciding on a
+            fix. Fixed by commenting each include out individually, brought back one at a time as that module is
+            actually converted.
+          </div>
+          <div class="meta"><span class="tag">high · build-breaking</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">05</div>
+        <div>
+          <div class="file">Root pom.xml's Javadoc-skip list names four modules that don't exist in this reactor</div>
+          <div class="desc">
+            <code>axon-todo</code>, <code>axon-legacy</code>, <code>axon-legacy-aggregate</code>, and
+            <code>axon-legacy-saga</code> appear in upstream's <code>maven-javadoc-plugin</code> configuration but
+            match nothing in this Axon 5 reactor's actual module list — uncleaned drift from an Axon 4-era POM,
+            confirmed by cross-checking every real module name. Not carried forward.
+          </div>
+          <div class="meta"><span class="tag">low · upstream config drift</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <strong>Honest gap, tracked not solved:</strong> the Gradle wrapper still isn't generated in this repo —
+      building requires a system-installed Gradle rather than <code>./gradlew</code>. Blocked until now by gap
+      #04 above; tracked openly in <code>todo.md</code> as its own still-open item, not assumed fixed just
+      because the bigger blocker is gone.
+    </div>
+  </section>
+
+  <section>
+    <h2>Keeping the record honest across six surfaces</h2>
+    <p class="h2-sub">todo.md, README, the wiki, the diagrams, this page, and the project board — checked, not assumed in sync</p>
+    <p class="lede">
+      A direct review caught something a self-driven sweep hadn't: "Axon Framework 5" was hyperlinked to this
+      fork's own repository in three separate places — <code>README.md</code>, <code>todo.md</code>, and the
+      wiki's home page — which read as a project linking to itself under someone else's name. Fixed consistently
+      across all three the same session it was flagged, not left for the next person to notice.
+    </p>
+    <div class="twocol">
+      <div class="card">
+        <h3>Per-checkpoint discipline</h3>
+        <p>
+          <code>todo.md</code> gets updated at each real phase boundary — a module converted, a plugin written, a
+          bug fixed — rather than batched at the end of a session where drift is easy to lose track of.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Caught by review, not hidden either way</h3>
+        <p>
+          Not every inconsistency gets self-caught before it ships. When one doesn't, the fix is disclosed the
+          same way the original gaps are — including the fact that it took a second pair of eyes, not just the
+          corrected result.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Judgment calls</h2>
+    <p class="h2-sub">Where the real trade-offs got made, and written down</p>
+    <p class="lede">
+      Not every decision has an obviously-correct answer, and pretending otherwise would just move the judgment
+      call somewhere less visible. This fork targets a Java 25 toolchain where upstream floors at 21 — a
+      deliberate choice that measurably raises the minimum JDK needed to consume this fork's published artifacts,
+      not a default left unexamined. Central Portal publishing (Sonatype's Maven Central replacement) has no
+      official Gradle plugin at all, so the community one used here (<code>com.gradleup.nmcp</code>) was verified
+      against its live documentation rather than assumed from training knowledge — which is exactly how gap #02
+      above got found in the first place. Both trade-offs are recorded in
+      <a href="https://github.com/Terrence721/AxonFramework-Full/blob/main/todo.md">todo.md</a>
+      as deliberate choices, not oversights discovered later.
+    </p>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
     <div class="links">
       <a href="https://github.com/Terrence721/AxonFramework-Full">Repository</a>
-      <a href="https://github.com/Terrence721/AxonFramework-Full/blob/main/todo.md">todo.md</a>
+      <a href="https://github.com/Terrence721/AxonFramework-Full/blob/main/todo.md">Build log</a>
       <a href="https://github.com/Terrence721/AxonFramework-Full/wiki">Wiki</a>
-      <a href="./diagrams/migration-pipeline.html">Diagrams</a>
       <a href="https://github.com/users/Terrence721/projects/8">Project board</a>
+      <a href="https://terrence721.github.io/">Portfolio hub</a>
     </div>
     <p class="fine">
-      Every number on this page is reproducible from this repo's own commit history — nothing here is asserted
-      without a link to check it against.
+      A deliberate Maven→Gradle build-system migration, not a bulk copy edited in place. Every number on this
+      page is reproducible from the repository's own <code>todo.md</code>, commit history, and live project
+      board — nothing here is asserted without a link to check it against. This one's genuinely early — 1 of 14
+      reactor modules converted, no framework source migrated yet — see <code>todo.md</code> for the honest
+      current state rather than assuming it's further along.
     </p>
-  </footer>
-</div>
-</body>
-</html>
+  </div>
+</footer>
