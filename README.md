@@ -66,3 +66,5 @@ page for every place this fork deliberately doesn't match the Maven source's beh
   Verification & QA → Done
 - [Wiki](https://github.com/Terrence721/AxonFramework-Full/wiki) — one page per subsystem, each a pointer to the
   authoritative source rather than a duplicate of it
+
+On AI-assisted development: Commits co-authored as Claude are AI-assisted implementations directed, reviewed, and merged by Terrence Daniels — same process as every other change, documented in docs/code-review.md.
