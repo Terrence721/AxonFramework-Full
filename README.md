@@ -64,6 +64,8 @@ page for every place this fork deliberately doesn't match the Maven source's beh
 - [`todo.md`](todo.md) — done/still-to-do at a glance, plus the reasoning behind every non-obvious call
 - [GitHub Project board](https://github.com/users/Terrence721/projects/8) — Backlog → Planned → In Progress →
   Verification & QA → Done
+- [Milestones](https://github.com/Terrence721/AxonFramework-Full/milestones) — completed phases, each closed once
+  everything in it landed
 - [Wiki](https://github.com/Terrence721/AxonFramework-Full/wiki) — one page per subsystem, each a pointer to the
   authoritative source rather than a duplicate of it
 
