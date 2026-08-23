@@ -74,7 +74,12 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.27.7")
     testImplementation("org.awaitility:awaitility:4.3.0")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.5.0")
-    testImplementation(project(":test-logging"))
+    // Guarded: test-logging/pom.xml is deliberately parented on the root aggregator rather than
+    // build/parent for exactly this reason - unconditionally adding this here would make
+    // test-logging depend on itself, since it applies this same convention plugin too.
+    if (project.name != "test-logging") {
+        testImplementation(project(":test-logging"))
+    }
 
     mockitoAgent("org.mockito:mockito-core:5.23.0")
 }

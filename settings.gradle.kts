@@ -83,7 +83,7 @@ dependencyResolutionManagement {
 // include("migration")
 // include("modelling")
 // include("test")
-// include("test-logging")
+include("test-logging")
 // include("update")
 
 // include("integrationtests")
