@@ -33,6 +33,14 @@ plugins {
     signing
 }
 
+// Every Axon module's real Maven artifactId is "axon-<name>" (axon-common, axon-test-logging, ...),
+// but Gradle's base.archivesName defaults to the project directory name ("common", "test-logging"),
+// with no automatic "axon-" prefix. Centralized here rather than repeated per module, since every
+// published module needs it and it's easy to silently forget on any one of them.
+base {
+    archivesName = "axon-${project.name}"
+}
+
 java {
     withSourcesJar()
     withJavadocJar()
@@ -42,6 +50,11 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
+            // base.archivesName above only renames the jar file itself - MavenPublication's
+            // artifactId still defaults to the raw project.name independently and needs setting
+            // here too, confirmed by inspecting the actually-generated POM, not assumed from the
+            // jar filename being right.
+            artifactId = "axon-${project.name}"
 
             pom {
                 url = "https://github.com/Terrence721/AxonFramework-Full"

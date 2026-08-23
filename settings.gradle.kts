@@ -75,7 +75,7 @@ dependencyResolutionManagement {
 // include("build:parent")
 // include("axon-framework-bom")
 
-// include("common")
+include("common")
 // include("conversion")
 // include("extensions")
 // include("eventsourcing")

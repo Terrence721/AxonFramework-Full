@@ -22,6 +22,8 @@ for live status.
 | Build-logic convention plugins | All three exist: `axonframework.java-conventions` (compiler, checkstyle, test deps, jar manifest — everything `axon-parent` applies to every module), `axonframework.published-conventions` (`maven-publish`, sources/javadoc jars, POM metadata, env-var-gated GPG signing), `axonframework.internal-conventions` (explicit non-published marker, applied to `docs/_samples` and, as a deliberate addition beyond upstream, `integrationtests`) |
 | Central Portal publishing | Wired via `com.gradleup.nmcp`'s settings plugin — Sonatype has no official Gradle plugin for this. `USER_MANAGED` release type: nothing reaches Maven Central without a manual release step |
 | `test-logging` module | First real subproject. Published (`org.axonframework:axon-test-logging`). Fixed a real circular-dependency trap along the way — the shared `testImplementation(project(":test-logging"))` line would otherwise make this module depend on itself |
+| `common` module skeleton | `build.gradle.kts` added, dependencies wired from the Maven source and verified with a real `gradle :common:build`. No Java source converted yet — 218 files under `src/main/java` alone, its own multi-session pass, deliberately scoped out of this session |
+| `axon-<name>` artifactId fix | Real bug found while setting up `common`: `base.archivesName` doesn't propagate to `MavenPublication.artifactId` — a second, separate default that also needed overriding. Fixed once in `axonframework.published-conventions.gradle.kts` for every module; retroactively fixes `test-logging`, which had been generating a POM with `<artifactId>test-logging</artifactId>` instead of `axon-test-logging` |
 | Documentation & presentation | `README.md`, this file, a [wiki](https://github.com/Terrence721/AxonFramework-Full/wiki) (7 short pointer pages), and [`docs/diagrams/`](docs/diagrams) (4 self-contained HTML pages) — cross-linked, none duplicating another. Every link points at this fork, never upstream's `AxonFramework/AxonFramework` repo |
 | GitHub Pages | Enabled, source `main` branch `/docs` — same config as this user's other portfolio forks, makes the diagrams viewable live at [terrence721.github.io/AxonFramework-Full](https://terrence721.github.io/AxonFramework-Full/) |
 | Project board layout | Fixed to board (Kanban column) layout grouped by Status — was silently defaulting to table/row layout even though the Status column options already matched the reference board |
@@ -89,7 +91,10 @@ Bottom-up by dependency direction, per the source migration plan:
 1. ~~**Build-logic convention plugins**~~ — done: `axonframework.java-conventions`, `axonframework.published-conventions`,
    `axonframework.internal-conventions`. (No version catalog — see "Versioning approach" above, that decision
    stands.)
-2. **Leaf modules** — `test-logging` done, `test` and `common` still to do
+2. **Leaf modules** — `test-logging` done, `common` skeleton done (no source yet). **`test` is not actually a
+   leaf** despite this grouping's name: `test/pom.xml` depends on `axon-eventsourcing` (Phase 3, not started)
+   and `axon-common` (test-jar) — converting it now would hit the same "Gradle won't configure the whole build"
+   problem the module-directory blocker already caused once. Don't start `test` until `eventsourcing` exists.
 3. **Core domain modules** — `conversion`, `messaging`, `eventsourcing`, `modelling`, `migration`, `update`
 4. **`extensions` sub-reactor** — `kotlin`, `metrics`, `reactor`, `spring`
 5. **Aggregation & verification** — `integrationtests`, `docs/_samples`, JaCoCo coverage aggregation
