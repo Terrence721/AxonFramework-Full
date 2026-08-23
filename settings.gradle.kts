@@ -39,23 +39,27 @@ dependencyResolutionManagement {
     }
 }
 
-include("build:parent")
-include("axon-framework-bom")
+// Commented out until each module directory actually exists - Gradle refuses to configure the
+// build at all (not just the missing module) if an include(...) target doesn't exist on disk,
+// which broke the wrapper task and the IDE's Gradle sync alike. Uncomment each line as that
+// module is converted, per the bottom-up migration order in todo.md's "Still to do" section.
+// include("build:parent")
+// include("axon-framework-bom")
 
-include("common")
-include("conversion")
-include("extensions")
-include("eventsourcing")
-include("messaging")
-include("migration")
-include("modelling")
-include("test")
-include("test-logging")
-include("update")
+// include("common")
+// include("conversion")
+// include("extensions")
+// include("eventsourcing")
+// include("messaging")
+// include("migration")
+// include("modelling")
+// include("test")
+// include("test-logging")
+// include("update")
 
-include("integrationtests")
+// include("integrationtests")
 
-include("docs:_samples")
+// include("docs:_samples")
 
 // Maven profile-gated modules (activated via -Dexamples / -Dcoverage property presence).
 // Gradle equivalent: only include when the matching -P property is passed on the command line.
