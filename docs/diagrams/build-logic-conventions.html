@@ -232,11 +232,17 @@
       <ul>
         <li><code>maven-publish</code> + sources/javadoc jars</li>
         <li>POM metadata — points at this fork's own repo and maintainer, not upstream's AxonIQ org/SCM/developers</li>
+        <li><code>axon-&lt;name&gt;</code> artifact prefix, set on both <code>base.archivesName</code> (jar
+          filename) and <code>MavenPublication.artifactId</code> (the actual coordinate) — two separate defaults
+          that both silently miss it otherwise, confirmed by a real generated POM once, not assumed from the fix</li>
+        <li>Doclint disabled on the javadoc task, matching upstream's own root <code>pom.xml</code>
+          (<code>&lt;doclint&gt;none&lt;/doclint&gt;</code>) — Axon's HTML uses self-closing <code>&lt;p/&gt;</code>
+          tags JDK 25's stricter javadoc rejects outright</li>
         <li>GPG signing, gated on <code>SIGNING_KEY</code>/<code>SIGNING_PASSWORD</code> being present</li>
         <li>Picked up automatically for Central Portal upload — see the
           <a href="./publishing-pipeline.html">publishing pipeline</a></li>
       </ul>
-      <div class="used-by">Used by <span class="chip">test-logging</span></div>
+      <div class="used-by">Used by <span class="chip">test-logging</span> <span class="chip">common</span></div>
     </div>
 
     <div class="branch-card int">

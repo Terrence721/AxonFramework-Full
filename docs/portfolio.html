@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta
   name="description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Five real build-system gaps found and fixed so far, disclosed rather than smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Eight real build-system gaps found and fixed so far, disclosed rather than smoothed over."
 />
 <link rel="canonical" href="https://terrence721.github.io/AxonFramework-Full/portfolio.html" />
 
@@ -12,7 +12,7 @@
 <meta property="og:title" content="AxonFramework-Full — a Maven→Gradle build migration, by Terrence Daniels" />
 <meta
   property="og:description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — five real build-system gaps found and fixed, disclosed not smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — eight real build-system gaps found and fixed, disclosed not smoothed over."
 />
 
 <meta name="twitter:card" content="summary" />
@@ -234,10 +234,10 @@
     <p class="thesis">
       A deliberate migration of <strong>Axon Framework 5</strong>'s build system from Maven to Gradle — converted
       <strong>one file at a time</strong>, each one individually inspected against the Maven source rather than run
-      through an automated converter. Six days in: build-logic conventions are done, the first real module is
-      published, and every gap found along the way — five so far — is disclosed in this repo's own build log, not
-      smoothed over. Genuinely early — 13 of 14 reactor modules are still Maven-only, and no framework source has
-      converted yet.
+      through an automated converter. Build-logic conventions are done, <code>test-logging</code> is published, and
+      <code>common</code>'s source conversion is underway (17 files in) — every gap found along the way, eight so
+      far, is disclosed in this repo's own build log, not smoothed over. Genuinely early — 13 of 14 reactor modules
+      haven't started converting at all.
     </p>
     <div class="hero-actions">
       <a class="btn primary" href="https://github.com/Terrence721/AxonFramework-Full">View the repository →</a>
@@ -249,7 +249,7 @@
   </div>
   <div class="stamp" aria-hidden="true">
     <div class="stamp-inner">
-      <span class="n">5</span>
+      <span class="n">8</span>
       <span class="l">REAL GAPS<br />FOUND &amp; FIXED</span>
     </div>
   </div>
@@ -258,11 +258,11 @@
 <div class="manifest">
   <div class="wrap">
     <div class="manifest-row">
-      <div class="manifest-cell"><span class="v">1 of 14</span><span class="k">reactor modules converted</span></div>
-      <div class="manifest-cell"><span class="v">16</span><span class="k">commits, 2 days</span></div>
+      <div class="manifest-cell"><span class="v">1 of 14</span><span class="k">reactor modules fully converted</span></div>
+      <div class="manifest-cell"><span class="v">34</span><span class="k">commits, 2 days</span></div>
       <div class="manifest-cell"><span class="v">3</span><span class="k">build-logic convention plugins done</span></div>
-      <div class="manifest-cell"><span class="v">5</span><span class="k">real gaps found &amp; fixed</span></div>
-      <div class="manifest-cell"><span class="v">0</span><span class="k">framework files migrated yet</span></div>
+      <div class="manifest-cell"><span class="v">8</span><span class="k">real gaps found &amp; fixed</span></div>
+      <div class="manifest-cell"><span class="v">17</span><span class="k">common source files converted</span></div>
       <div class="manifest-cell"><span class="v">6</span><span class="k">public surfaces kept in sync</span></div>
     </div>
   </div>
@@ -294,18 +294,19 @@
   </section>
 
   <section>
-    <h2>Build system first, real source still ahead</h2>
+    <h2>Build system first, real source now underway</h2>
     <p class="h2-sub">
-      Build-logic conventions done · test-logging published · 13 of 14 modules still Maven-only
+      Build-logic conventions done · test-logging published · common 17/218 files in · 12 modules not started
     </p>
     <p class="lede">
       Migration order is deliberate and bottom-up: the shared Gradle conventions every module will apply — Java
       toolchain, checkstyle, publishing, signing — had to exist before any real module could be converted onto
-      them. <code>test-logging</code> is the first module through that pipeline, published for real
+      them. <code>test-logging</code> was the first module through that pipeline, published for real
       (<code>org.axonframework:axon-test-logging</code>) with its own genuine circular-dependency problem solved
-      along the way. The rest of the reactor — <code>common</code>, <code>conversion</code>,
-      <code>messaging</code>, <code>eventsourcing</code>, <code>modelling</code>, and eight more — hasn't started
-      converting; see
+      along the way. <code>common</code> is next, converted file by file in dependency order (base exception
+      hierarchy first, then each utility class once whatever it references exists) — 17 of 218 files so far. The
+      rest of the reactor — <code>conversion</code>, <code>messaging</code>, <code>eventsourcing</code>,
+      <code>modelling</code>, and eight more — hasn't started; see
       <a href="https://github.com/Terrence721/AxonFramework-Full/blob/main/todo.md">todo.md</a>
       for the honest current state rather than assuming more is done.
     </p>
@@ -331,15 +332,16 @@
   </section>
 
   <section>
-    <h2>Five real gaps, found and fixed</h2>
+    <h2>Eight real gaps, found and fixed</h2>
     <p class="h2-sub">
       Found by running a real build or reading a live API doc, not by assuming the first pass was right
     </p>
     <p class="lede">
-      Two turned up in this fork's own Gradle translation of Maven's inheritance model. One turned up in a
-      third-party plugin's live interaction with a specific Gradle version, undocumented anywhere public at the
-      time. One turned up in this fork's own <code>.gitignore</code>. One turned up in upstream Axon's own Maven
-      config — real drift in a widely-used project, not a typo.
+      Three turned up in this fork's own Gradle translation of Maven's inheritance and publishing model. One
+      turned up in a third-party plugin's live interaction with a specific Gradle version, undocumented anywhere
+      public at the time. One turned up in this fork's own <code>.gitignore</code>. One turned up in upstream
+      Axon's own Maven config — real drift in a widely-used project, not a typo. One turned up in Axon's own HTML
+      hitting a stricter tool than upstream builds with. One turned up in the CI workflow's own first real run.
     </p>
     <div class="ledger">
       <div class="item">
@@ -415,6 +417,51 @@
           <div class="meta"><span class="tag">low · upstream config drift</span></div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">06</div>
+        <div>
+          <div class="file">Published artifacts were silently getting the wrong Maven coordinate</div>
+          <div class="desc">
+            Every Axon module's real artifactId is <code>axon-&lt;name&gt;</code>, but Gradle's
+            <code>base.archivesName</code> defaults to the bare project directory name — and, confirmed by
+            generating the actual POM rather than assuming the jar filename being right meant the coordinate was
+            too, <code>MavenPublication.artifactId</code> doesn't inherit from <code>archivesName</code> either; a
+            second, separate default needed overriding. <code>test-logging</code> had already been generating a
+            POM with <code>&lt;artifactId&gt;test-logging&lt;/artifactId&gt;</code> instead of
+            <code>axon-test-logging</code> since its own commit. Fixed once, centrally, for every module.
+          </div>
+          <div class="meta"><span class="tag">high · silent publish-coordinate bug</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">07</div>
+        <div>
+          <div class="file">Gradle's javadoc task rejected Axon's own HTML outright</div>
+          <div class="desc">
+            The moment <code>common</code> got its first real source file, <code>javadoc</code> failed with
+            <code>error: self-closing element not allowed</code> on a <code>&lt;p/&gt;</code> tag. Not a source
+            bug to hand-fix: upstream's own root <code>pom.xml</code> already disables doclint entirely
+            (<code>&lt;doclint&gt;none&lt;/doclint&gt;</code>) for exactly this reason — JDK 25's stricter
+            javadoc, not upstream's. Gradle's side had just never replicated that suppression. Fixed centrally,
+            confirmed with a clean <code>gradle :common:build</code> afterward.
+          </div>
+          <div class="meta"><span class="tag">high · build-breaking</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">08</div>
+        <div>
+          <div class="file">The CI workflow's own first run failed in 15 seconds</div>
+          <div class="desc">
+            <code>gradle-version: '9.2'</code> in the new build-verification workflow failed immediately with
+            <code>Error: Gradle version 9.2 does not exist</code> — <code>gradle/actions/setup-gradle</code> needs
+            the exact release string, not Gradle's own shorthand. Caught by watching the actual run, not assumed
+            green because the YAML looked right. Fixed to <code>'9.2.0'</code>, verified with a second real run
+            that took 1m53s instead of 15 seconds — the difference between failing at setup and actually building.
+          </div>
+          <div class="meta"><span class="tag">medium · CI misconfiguration</span></div>
+        </div>
+      </div>
     </div>
     <div class="note">
       <strong>Honest gap, tracked not solved:</strong> the Gradle wrapper still isn't generated in this repo —
@@ -482,8 +529,8 @@
       A deliberate Maven→Gradle build-system migration, not a bulk copy edited in place. Every number on this
       page is reproducible from the repository's own <code>todo.md</code>, commit history, and live project
       board — nothing here is asserted without a link to check it against. This one's genuinely early — 1 of 14
-      reactor modules converted, no framework source migrated yet — see <code>todo.md</code> for the honest
-      current state rather than assuming it's further along.
+      reactor modules fully converted, <code>common</code> 17 of 218 files in — see <code>todo.md</code> for the
+      honest current state rather than assuming it's further along.
     </p>
   </div>
 </footer>

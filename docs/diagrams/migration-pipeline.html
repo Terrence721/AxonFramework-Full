@@ -246,6 +246,12 @@
     background: var(--done-bg);
   }
 
+  .mod-chip.active {
+    border-color: var(--active-border);
+    color: var(--active-ink);
+    background: var(--active-bg);
+  }
+
   footer {
     margin-top: 3rem;
     padding-top: 1.5rem;
@@ -312,11 +318,13 @@
           <span class="phase-title">Leaf modules</span>
           <span class="phase-status">In progress</span>
         </div>
-        <p class="phase-detail">Modules nothing else in the reactor depends on — safe to convert first.</p>
+        <p class="phase-detail">Modules nothing else in the reactor depends on — safe to convert first.
+          <code>test</code> is grouped here by name only; it actually depends on <code>axon-eventsourcing</code>
+          (Phase 3) and can't safely start yet.</p>
         <div class="phase-modules">
           <span class="mod-chip done">test-logging</span>
+          <span class="mod-chip active">common — 17/218 files</span>
           <span class="mod-chip">test</span>
-          <span class="mod-chip">common</span>
         </div>
       </div>
     </div>
