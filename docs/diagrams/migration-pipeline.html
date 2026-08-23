@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AxonFramework-Full — migration pipeline</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-subtle: #f6f7f9;
+    --ink: #14181f;
+    --ink-soft: #4b5563;
+    --border: #e2e5ea;
+    --card-bg: #ffffff;
+    --accent: #3457d5;
+
+    --done-bg: #e8f5ec;
+    --done-border: #a9d9ba;
+    --done-ink: #1d6b3a;
+    --done-dot: #2f9e57;
+
+    --active-bg: #fff4e0;
+    --active-border: #f0c987;
+    --active-ink: #8a5a00;
+    --active-dot: #e0a108;
+
+    --todo-bg: #f3f4f6;
+    --todo-border: #d9dce1;
+    --todo-ink: #6b7280;
+    --todo-dot: #9aa1ab;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151a;
+      --bg-subtle: #1a1e25;
+      --ink: #eef1f6;
+      --ink-soft: #a4acb8;
+      --border: #2a2f38;
+      --card-bg: #171b22;
+      --accent: #7c94ff;
+
+      --done-bg: #17301f;
+      --done-border: #2d6b41;
+      --done-ink: #7fd99a;
+      --done-dot: #3fbf65;
+
+      --active-bg: #352505;
+      --active-border: #8a6a0e;
+      --active-ink: #f0c25c;
+      --active-dot: #e0a108;
+
+      --todo-bg: #1c2027;
+      --todo-border: #333944;
+      --todo-ink: #8b93a1;
+      --todo-dot: #565e6a;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #12151a;
+    --bg-subtle: #1a1e25;
+    --ink: #eef1f6;
+    --ink-soft: #a4acb8;
+    --border: #2a2f38;
+    --card-bg: #171b22;
+    --accent: #7c94ff;
+
+    --done-bg: #17301f;
+    --done-border: #2d6b41;
+    --done-ink: #7fd99a;
+    --done-dot: #3fbf65;
+
+    --active-bg: #352505;
+    --active-border: #8a6a0e;
+    --active-ink: #f0c25c;
+    --active-dot: #e0a108;
+
+    --todo-bg: #1c2027;
+    --todo-border: #333944;
+    --todo-ink: #8b93a1;
+    --todo-dot: #565e6a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    line-height: 1.55;
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+  }
+
+  h1 {
+    margin: 0 0 0.6rem;
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
+    letter-spacing: -0.01em;
+  }
+
+  .dek {
+    color: var(--ink-soft);
+    max-width: 68ch;
+    margin: 0 0 2.4rem;
+    font-size: 1.02rem;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.4rem;
+    margin: 0 0 2.2rem;
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 0.5rem; }
+  .dot { width: 0.65rem; height: 0.65rem; border-radius: 50%; flex: none; }
+  .dot.done { background: var(--done-dot); }
+  .dot.active { background: var(--active-dot); }
+  .dot.todo { background: var(--todo-dot); }
+
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .phase {
+    display: grid;
+    grid-template-columns: 2.6rem 1fr;
+    gap: 1rem;
+    position: relative;
+  }
+
+  .phase-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .phase-num {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.92rem;
+    border: 2px solid;
+    background: var(--card-bg);
+    flex: none;
+    z-index: 1;
+  }
+
+  .phase.done .phase-num { border-color: var(--done-dot); color: var(--done-ink); }
+  .phase.active .phase-num { border-color: var(--active-dot); color: var(--active-ink); }
+  .phase.todo .phase-num { border-color: var(--todo-dot); color: var(--todo-ink); }
+
+  .phase-line {
+    width: 2px;
+    flex: 1;
+    background: var(--border);
+    margin: 0.2rem 0;
+  }
+
+  .phase:last-child .phase-line { display: none; }
+
+  .phase-card {
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .phase.done .phase-card { background: var(--done-bg); border-color: var(--done-border); }
+  .phase.active .phase-card { background: var(--active-bg); border-color: var(--active-border); }
+
+  .phase-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .phase-title { font-weight: 700; font-size: 1.02rem; }
+
+  .phase-status {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .phase.done .phase-status { background: var(--done-dot); color: #06210f; }
+  .phase.active .phase-status { background: var(--active-dot); color: #2b1c00; }
+  .phase.todo .phase-status { background: var(--todo-dot); color: var(--bg); }
+
+  .phase-detail {
+    margin: 0.5rem 0 0;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+  }
+
+  .phase-modules {
+    margin: 0.6rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .mod-chip {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.78rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-subtle);
+    color: var(--ink-soft);
+  }
+
+  .mod-chip.done {
+    border-color: var(--done-border);
+    color: var(--done-ink);
+    background: var(--done-bg);
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">AxonFramework-Full — migration pipeline</p>
+  <h1>Bottom-up, one file at a time</h1>
+  <p class="dek">
+    The Maven reactor is converted in dependency order — each phase only starts once everything it depends on
+    is real. No phase is skipped ahead of the one before it, and nothing in a phase is bulk-copied; every file
+    gets its own inspect-and-decide pass.
+  </p>
+
+  <div class="legend">
+    <div class="legend-item"><span class="dot done"></span> Done</div>
+    <div class="legend-item"><span class="dot active"></span> In progress</div>
+    <div class="legend-item"><span class="dot todo"></span> Not started</div>
+  </div>
+
+  <div class="pipeline">
+    <div class="phase done">
+      <div class="phase-rail"><div class="phase-num">0</div><div class="phase-line"></div></div>
+      <div class="phase-card">
+        <div class="phase-title-row">
+          <span class="phase-title">Scaffolding</span>
+          <span class="phase-status">Done</span>
+        </div>
+        <p class="phase-detail">Repo bootstrap, license, root <code>pom.xml</code> conversion into
+          <code>settings.gradle.kts</code> + <code>gradle.properties</code>, versioning decided independently
+          of upstream.</p>
+      </div>
+    </div>
+
+    <div class="phase done">
+      <div class="phase-rail"><div class="phase-num">1</div><div class="phase-line"></div></div>
+      <div class="phase-card">
+        <div class="phase-title-row">
+          <span class="phase-title">Build-logic convention plugins</span>
+          <span class="phase-status">Done</span>
+        </div>
+        <p class="phase-detail">Gradle's answer to <code>axon-parent</code> inheritance: the shared conventions
+          every module will apply.</p>
+        <div class="phase-modules">
+          <span class="mod-chip done">java-conventions</span>
+          <span class="mod-chip done">published-conventions</span>
+          <span class="mod-chip done">internal-conventions</span>
+          <span class="mod-chip done">build/checkstyle.xml</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase active">
+      <div class="phase-rail"><div class="phase-num">2</div><div class="phase-line"></div></div>
+      <div class="phase-card">
+        <div class="phase-title-row">
+          <span class="phase-title">Leaf modules</span>
+          <span class="phase-status">In progress</span>
+        </div>
+        <p class="phase-detail">Modules nothing else in the reactor depends on — safe to convert first.</p>
+        <div class="phase-modules">
+          <span class="mod-chip done">test-logging</span>
+          <span class="mod-chip">test</span>
+          <span class="mod-chip">common</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase todo">
+      <div class="phase-rail"><div class="phase-num">3</div><div class="phase-line"></div></div>
+      <div class="phase-card">
+        <div class="phase-title-row">
+          <span class="phase-title">Core domain modules</span>
+          <span class="phase-status">Not started</span>
+        </div>
+        <p class="phase-detail">The framework's actual CQRS/event-sourcing machinery.</p>
+        <div class="phase-modules">
+          <span class="mod-chip">conversion</span>
+          <span class="mod-chip">messaging</span>
+          <span class="mod-chip">eventsourcing</span>
+          <span class="mod-chip">modelling</span>
+          <span class="mod-chip">migration</span>
+          <span class="mod-chip">update</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase todo">
+      <div class="phase-rail"><div class="phase-num">4</div><div class="phase-line"></div></div>
+      <div class="phase-card">
+        <div class="phase-title-row">
+          <span class="phase-title"><code>extensions</code> sub-reactor</span>
+          <span class="phase-status">Not started</span>
+        </div>
+        <p class="phase-detail">A nested reactor of its own, converted only once every core domain module it
+          depends on exists.</p>
+        <div class="phase-modules">
+          <span class="mod-chip">kotlin</span>
+          <span class="mod-chip">metrics</span>
+          <span class="mod-chip">reactor</span>
+          <span class="mod-chip">spring</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase todo">
+      <div class="phase-rail"><div class="phase-num">5</div><div class="phase-line"></div></div>
+      <div class="phase-card">
+        <div class="phase-title-row">
+          <span class="phase-title">Aggregation &amp; verification</span>
+          <span class="phase-status">Not started</span>
+        </div>
+        <p class="phase-detail">Cross-module checks that only make sense once everything they cross exists.</p>
+        <div class="phase-modules">
+          <span class="mod-chip">integrationtests</span>
+          <span class="mod-chip">docs/_samples</span>
+          <span class="mod-chip">build/coverage-report</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase todo">
+      <div class="phase-rail"><div class="phase-num">6</div></div>
+      <div class="phase-card">
+        <div class="phase-title-row">
+          <span class="phase-title">Publishing</span>
+          <span class="phase-status">Partly done</span>
+        </div>
+        <p class="phase-detail">Central Portal publishing and signing are already wired in the build-logic
+          conventions — what's left is the coordinates that only make sense once everything above them is real.</p>
+        <div class="phase-modules">
+          <span class="mod-chip done">Central Portal (nmcp)</span>
+          <span class="mod-chip done">signing</span>
+          <span class="mod-chip">axon-framework-bom</span>
+          <span class="mod-chip">root axon POM-only publish</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Status mirrors <a href="../../todo.md">todo.md</a> as of the last diagram update — that file is the
+    authoritative source if the two ever drift. Part of
+    <a href="https://github.com/Terrence721/AxonFramework-Full">AxonFramework-Full</a>.
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AxonFramework-Full — module dependency graph</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-subtle: #f6f7f9;
+    --ink: #14181f;
+    --ink-soft: #4b5563;
+    --border: #e2e5ea;
+    --card-bg: #ffffff;
+    --accent: #3457d5;
+
+    --done-bg: #e8f5ec;
+    --done-border: #a9d9ba;
+    --done-ink: #1d6b3a;
+
+    --todo-bg: #f3f4f6;
+    --todo-border: #d9dce1;
+    --todo-ink: #6b7280;
+
+    --layer-label: #8b93a1;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151a;
+      --bg-subtle: #1a1e25;
+      --ink: #eef1f6;
+      --ink-soft: #a4acb8;
+      --border: #2a2f38;
+      --card-bg: #171b22;
+      --accent: #7c94ff;
+
+      --done-bg: #17301f;
+      --done-border: #2d6b41;
+      --done-ink: #7fd99a;
+
+      --todo-bg: #1c2027;
+      --todo-border: #333944;
+      --todo-ink: #8b93a1;
+
+      --layer-label: #6b7280;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #12151a;
+    --bg-subtle: #1a1e25;
+    --ink: #eef1f6;
+    --ink-soft: #a4acb8;
+    --border: #2a2f38;
+    --card-bg: #171b22;
+    --accent: #7c94ff;
+
+    --done-bg: #17301f;
+    --done-border: #2d6b41;
+    --done-ink: #7fd99a;
+
+    --todo-bg: #1c2027;
+    --todo-border: #333944;
+    --todo-ink: #8b93a1;
+
+    --layer-label: #6b7280;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    line-height: 1.55;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+  }
+
+  h1 { margin: 0 0 0.6rem; font-size: clamp(1.6rem, 3vw, 2.1rem); letter-spacing: -0.01em; }
+
+  .dek { color: var(--ink-soft); max-width: 70ch; margin: 0 0 2.4rem; font-size: 1.02rem; }
+
+  .graph { display: flex; flex-direction: column; gap: 0; }
+
+  .layer-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--layer-label);
+    margin: 0 0 0.7rem;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-bottom: 1rem;
+  }
+
+  .node {
+    border: 1px solid var(--todo-border);
+    background: var(--todo-bg);
+    color: var(--todo-ink);
+    border-radius: 10px;
+    padding: 0.6rem 0.95rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .node.done { border-color: var(--done-border); background: var(--done-bg); color: var(--done-ink); }
+
+  .node.wide { flex-basis: 100%; }
+
+  .arrow-row {
+    text-align: center;
+    color: var(--layer-label);
+    font-size: 1.1rem;
+    margin: 0 0 1.1rem;
+    letter-spacing: 0.3em;
+  }
+
+  .arrow-row span { display: inline-block; }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 0.4rem 0 1.8rem;
+  }
+
+  .note {
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    margin: 0.3rem 0 1.6rem;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.4rem;
+    margin: 0.5rem 0 2.4rem;
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 0.5rem; }
+  .swatch { width: 0.9rem; height: 0.9rem; border-radius: 4px; border: 1px solid; flex: none; }
+  .swatch.done { background: var(--done-bg); border-color: var(--done-border); }
+  .swatch.todo { background: var(--todo-bg); border-color: var(--todo-border); }
+
+  footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">AxonFramework-Full — module dependency graph</p>
+  <h1>Who depends on whom, bottom to top</h1>
+  <p class="dek">
+    The Gradle reactor structurally mirrors the Maven one (see <code>settings.gradle.kts</code>) — dependencies
+    only flow upward on this page. A module is safe to convert once every layer below it is done, which is
+    exactly the order the <a href="./migration-pipeline.html">migration pipeline</a> follows.
+  </p>
+
+  <div class="legend">
+    <div class="legend-item"><span class="swatch done"></span> Converted</div>
+    <div class="legend-item"><span class="swatch todo"></span> Still Maven-only</div>
+  </div>
+
+  <div class="graph">
+    <p class="layer-label">Build-logic (not a reactor module — an included build every module applies)</p>
+    <div class="row">
+      <div class="node done">axonframework.java-conventions</div>
+      <div class="node done">axonframework.published-conventions</div>
+      <div class="node done">axonframework.internal-conventions</div>
+    </div>
+
+    <div class="arrow-row"><span>▲ applied by every module below ▲</span></div>
+    <hr class="divider">
+
+    <p class="layer-label">Layer 0 — leaf modules (nothing else in the reactor depends on them being absent)</p>
+    <div class="row">
+      <div class="node done">test-logging</div>
+      <div class="node">test</div>
+      <div class="node">common</div>
+    </div>
+
+    <div class="arrow-row"><span>▲</span></div>
+
+    <p class="layer-label">Layer 1 — core domain</p>
+    <div class="row">
+      <div class="node">conversion</div>
+      <div class="node">messaging</div>
+      <div class="node">eventsourcing</div>
+      <div class="node">modelling</div>
+      <div class="node">migration</div>
+      <div class="node">update</div>
+    </div>
+
+    <div class="arrow-row"><span>▲</span></div>
+
+    <p class="layer-label">Layer 2 — extensions sub-reactor (its own nested module set)</p>
+    <div class="row">
+      <div class="node">extensions:kotlin</div>
+      <div class="node">extensions:metrics</div>
+      <div class="node">extensions:reactor</div>
+      <div class="node">extensions:spring</div>
+    </div>
+
+    <div class="arrow-row"><span>▲</span></div>
+
+    <p class="layer-label">Layer 3 — aggregation &amp; verification (depends on everything below existing)</p>
+    <div class="row">
+      <div class="node">integrationtests</div>
+      <div class="node">docs/_samples</div>
+      <div class="node">build/coverage-report</div>
+    </div>
+
+    <div class="arrow-row"><span>▲</span></div>
+
+    <p class="layer-label">Layer 4 — publication (last, once every coordinate below is final)</p>
+    <div class="row">
+      <div class="node">axon-framework-bom</div>
+      <div class="node">build/parent (axon-parent, POM-only)</div>
+      <div class="node wide">root axon (POM-only)</div>
+    </div>
+  </div>
+
+  <p class="note">
+    <code>test-logging</code> is the one deliberate exception to "depends on the layer below": every module's
+    shared conventions add it as a test dependency, so it's excluded from depending on itself rather than moved
+    to a different layer — see the <a href="./build-logic-conventions.html">build-logic conventions</a> page.
+  </p>
+
+  <footer>
+    Status mirrors <a href="../../todo.md">todo.md</a> as of the last diagram update. Part of
+    <a href="https://github.com/Terrence721/AxonFramework-Full">AxonFramework-Full</a>.
+  </footer>
+</div>
+</body>
+</html>

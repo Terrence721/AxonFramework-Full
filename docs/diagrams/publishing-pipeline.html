@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AxonFramework-Full — publishing pipeline</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-subtle: #f6f7f9;
+    --ink: #14181f;
+    --ink-soft: #4b5563;
+    --border: #e2e5ea;
+    --card-bg: #ffffff;
+    --accent: #3457d5;
+
+    --step-bg: #ffffff;
+    --step-border: #e2e5ea;
+    --gate-bg: #fff4e0;
+    --gate-border: #f0c987;
+    --gate-ink: #8a5a00;
+    --done-dot: #2f9e57;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151a;
+      --bg-subtle: #1a1e25;
+      --ink: #eef1f6;
+      --ink-soft: #a4acb8;
+      --border: #2a2f38;
+      --card-bg: #171b22;
+      --accent: #7c94ff;
+
+      --step-bg: #171b22;
+      --step-border: #2a2f38;
+      --gate-bg: #352505;
+      --gate-border: #8a6a0e;
+      --gate-ink: #f0c25c;
+      --done-dot: #3fbf65;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #12151a;
+    --bg-subtle: #1a1e25;
+    --ink: #eef1f6;
+    --ink-soft: #a4acb8;
+    --border: #2a2f38;
+    --card-bg: #171b22;
+    --accent: #7c94ff;
+
+    --step-bg: #171b22;
+    --step-border: #2a2f38;
+    --gate-bg: #352505;
+    --gate-border: #8a6a0e;
+    --gate-ink: #f0c25c;
+    --done-dot: #3fbf65;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    line-height: 1.55;
+  }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+  }
+
+  h1 { margin: 0 0 0.6rem; font-size: clamp(1.6rem, 3vw, 2.1rem); letter-spacing: -0.01em; }
+
+  .dek { color: var(--ink-soft); max-width: 68ch; margin: 0 0 2.6rem; font-size: 1.02rem; }
+
+  .flow { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+
+  .step {
+    border: 1px solid var(--step-border);
+    background: var(--step-bg);
+    border-radius: 12px;
+    padding: 1rem 1.3rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex: none;
+  }
+
+  .step-body h3 { margin: 0 0 0.25rem; font-size: 0.95rem; }
+  .step-body p { margin: 0; font-size: 0.87rem; color: var(--ink-soft); }
+  .step-body code { font-size: 0.85em; }
+
+  .connector { text-align: center; color: var(--ink-soft); padding: 0.35rem 0; }
+
+  .gate {
+    border: 1px dashed var(--gate-border);
+    background: var(--gate-bg);
+    color: var(--gate-ink);
+    border-radius: 10px;
+    padding: 0.7rem 1.1rem;
+    font-size: 0.86rem;
+    text-align: center;
+    font-weight: 600;
+    margin: 0.4rem 0;
+  }
+
+  .callout {
+    margin-top: 2.4rem;
+    padding: 1.1rem 1.4rem;
+    border-left: 3px solid var(--accent);
+    background: var(--bg-subtle);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+
+  .callout h3 { margin: 0 0 0.4rem; font-size: 0.9rem; color: var(--ink); }
+  .callout code { font-size: 0.85em; }
+
+  footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">AxonFramework-Full — publishing pipeline</p>
+  <h1>From <code>./gradlew publish</code> to Maven Central</h1>
+  <p class="dek">
+    Sonatype has no official Gradle plugin for Central Portal publishing the way <code>central-publishing-maven-plugin</code>
+    covers Maven — this is wired through <a href="https://gradleup.com/nmcp/">nmcp</a>'s settings plugin instead,
+    layered on Gradle's own <code>maven-publish</code> and <code>signing</code>.
+  </p>
+
+  <div class="flow">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Each published module builds a <code>MavenPublication</code></h3>
+        <p>Any module applying <code>axonframework.published-conventions</code> gets a jar, a sources jar, a
+          javadoc jar, and POM metadata pointing at this fork's own repo and maintainer.</p>
+      </div>
+    </div>
+    <div class="connector">↓</div>
+
+    <div class="gate">Gate — only if SIGNING_KEY / SIGNING_PASSWORD are set</div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>GPG-sign the publication</h3>
+        <p>In-memory PGP keys via Gradle's <code>signing</code> plugin. Absent credentials don't fail the build —
+          they just mean nothing gets signed, matching upstream's own "sign" Maven profile only activating during
+          an actual release.</p>
+      </div>
+    </div>
+    <div class="connector">↓</div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3><code>com.gradleup.nmcp.settings</code> aggregates every subproject</h3>
+        <p>Applied once in <code>settings.gradle.kts</code>. Auto-applies <code>com.gradleup.nmcp</code> to every
+          subproject and <code>com.gradleup.nmcp.aggregation</code> to root — no per-module registration needed as
+          new modules come online.</p>
+      </div>
+    </div>
+    <div class="connector">↓</div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3><code>publishAggregationToCentralPortal</code></h3>
+        <p>Stages every publication locally, zips the bundle, uploads it to the Central Portal publisher API using
+          a Central Portal user token (<code>CENTRAL_PORTAL_USERNAME</code>/<code>CENTRAL_PORTAL_PASSWORD</code>).
+          Mirrors upstream's own "one publish execution per reactor build" behavior.</p>
+      </div>
+    </div>
+    <div class="connector">↓</div>
+
+    <div class="gate">Gate — USER_MANAGED: requires a manual release click in the Central Portal UI</div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3>Maven Central</h3>
+        <p>Nothing reaches Central automatically — matches the deliberate, inspected-release ethos of the whole
+          migration.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <h3>A real bug found building this, not a guess</h3>
+    <p><code>nmcpSettings { centralPortal { username = providers.environmentVariable(...) } }</code> crashes
+      Gradle 9.2's configuration cache — <code>cannot serialize object of type ... ValueSourceProvider</code>.
+      Reproduced directly; nothing documented about it publicly at the time. Fixed with plain
+      <code>System.getenv(...)</code> instead of the lazy provider.</p>
+  </div>
+
+  <footer>
+    Part of <a href="https://github.com/Terrence721/AxonFramework-Full">AxonFramework-Full</a>. See
+    <a href="../../todo.md">todo.md</a> for the full decision log.
+  </footer>
+</div>
+</body>
+</html>

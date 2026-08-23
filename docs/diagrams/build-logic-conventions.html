@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AxonFramework-Full — build-logic conventions</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-subtle: #f6f7f9;
+    --ink: #14181f;
+    --ink-soft: #4b5563;
+    --border: #e2e5ea;
+    --card-bg: #ffffff;
+    --accent: #3457d5;
+
+    --base-bg: #eef1fb;
+    --base-border: #c3cdf2;
+    --base-ink: #2c3a8f;
+
+    --pub-bg: #e8f5ec;
+    --pub-border: #a9d9ba;
+    --pub-ink: #1d6b3a;
+
+    --int-bg: #f3f4f6;
+    --int-border: #d9dce1;
+    --int-ink: #52586a;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151a;
+      --bg-subtle: #1a1e25;
+      --ink: #eef1f6;
+      --ink-soft: #a4acb8;
+      --border: #2a2f38;
+      --card-bg: #171b22;
+      --accent: #7c94ff;
+
+      --base-bg: #1c2140;
+      --base-border: #3b478f;
+      --base-ink: #aab6ff;
+
+      --pub-bg: #17301f;
+      --pub-border: #2d6b41;
+      --pub-ink: #7fd99a;
+
+      --int-bg: #1c2027;
+      --int-border: #333944;
+      --int-ink: #a4acb8;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #12151a;
+    --bg-subtle: #1a1e25;
+    --ink: #eef1f6;
+    --ink-soft: #a4acb8;
+    --border: #2a2f38;
+    --card-bg: #171b22;
+    --accent: #7c94ff;
+
+    --base-bg: #1c2140;
+    --base-border: #3b478f;
+    --base-ink: #aab6ff;
+
+    --pub-bg: #17301f;
+    --pub-border: #2d6b41;
+    --pub-ink: #7fd99a;
+
+    --int-bg: #1c2027;
+    --int-border: #333944;
+    --int-ink: #a4acb8;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    line-height: 1.55;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+  }
+
+  h1 { margin: 0 0 0.6rem; font-size: clamp(1.6rem, 3vw, 2.1rem); letter-spacing: -0.01em; }
+
+  .dek { color: var(--ink-soft); max-width: 70ch; margin: 0 0 2.6rem; font-size: 1.02rem; }
+
+  .base-card {
+    border: 1px solid var(--base-border);
+    background: var(--base-bg);
+    border-radius: 12px;
+    padding: 1.3rem 1.5rem;
+    max-width: 640px;
+    margin: 0 auto 0.5rem;
+  }
+
+  .base-card h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+    color: var(--base-ink);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  .base-card ul { margin: 0; padding-left: 1.2rem; font-size: 0.9rem; color: var(--ink-soft); }
+  .base-card li { margin: 0.25rem 0; }
+
+  .stem {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 1.3rem;
+    margin: 0.2rem 0;
+    letter-spacing: 0.1em;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 720px) {
+    .split { grid-template-columns: 1fr; }
+  }
+
+  .branch-card {
+    border-radius: 12px;
+    padding: 1.3rem 1.5rem;
+    border: 1px solid;
+  }
+
+  .branch-card.pub { background: var(--pub-bg); border-color: var(--pub-border); }
+  .branch-card.int { background: var(--int-bg); border-color: var(--int-border); }
+
+  .branch-card h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.02rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  .branch-card.pub h2 { color: var(--pub-ink); }
+  .branch-card.int h2 { color: var(--int-ink); }
+
+  .branch-card p.tagline { margin: 0 0 0.8rem; font-size: 0.88rem; color: var(--ink-soft); }
+
+  .branch-card ul { margin: 0 0 1rem; padding-left: 1.2rem; font-size: 0.88rem; }
+  .branch-card li { margin: 0.3rem 0; }
+
+  .used-by {
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    border-top: 1px dashed var(--border);
+    padding-top: 0.7rem;
+    margin-top: 0.7rem;
+  }
+
+  .used-by .chip {
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.1rem 0.45rem;
+    margin: 0.15rem 0.2rem 0 0;
+  }
+
+  .aside {
+    margin-top: 2rem;
+    padding: 1rem 1.3rem;
+    border-left: 3px solid var(--accent);
+    background: var(--bg-subtle);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+
+  .aside a { color: var(--accent); }
+
+  footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">AxonFramework-Full — build-logic conventions</p>
+  <h1>One base, two ways every module opts in</h1>
+  <p class="dek">
+    Gradle's answer to Maven's <code>axon-parent</code> inheritance — three precompiled script plugins in
+    <code>build-logic/</code>, applied by name from each module's own <code>build.gradle.kts</code> rather than
+    inherited implicitly.
+  </p>
+
+  <div class="base-card">
+    <h2>axonframework.java-conventions</h2>
+    <ul>
+      <li>Java 25 toolchain (deliberate divergence — upstream floors at 21)</li>
+      <li>Checkstyle: JSpecify-only nullness enforcement, incl. <code>org.springframework.lang.Nullable</code></li>
+      <li>UTF-8 encoding, deprecation warnings, <code>-parameters</code> retained for reflection</li>
+      <li>Standard test stack: JUnit 6, Mockito (as a Java agent), AssertJ, Awaitility, ArchUnit</li>
+      <li>Shared test dependency on <code>test-logging</code> — guarded against test-logging depending on itself</li>
+      <li><code>group</code>/<code>version</code> propagated from the root project</li>
+      <li>Jar manifest: Implementation-Title/Version/Vendor</li>
+    </ul>
+  </div>
+
+  <p class="stem">▼ every module applies exactly one of these two on top ▼</p>
+
+  <div class="split">
+    <div class="branch-card pub">
+      <h2>axonframework.published-conventions</h2>
+      <p class="tagline">For modules that ship to Maven Central</p>
+      <ul>
+        <li><code>maven-publish</code> + sources/javadoc jars</li>
+        <li>POM metadata — points at this fork's own repo and maintainer, not upstream's AxonIQ org/SCM/developers</li>
+        <li>GPG signing, gated on <code>SIGNING_KEY</code>/<code>SIGNING_PASSWORD</code> being present</li>
+        <li>Picked up automatically for Central Portal upload — see the
+          <a href="./publishing-pipeline.html">publishing pipeline</a></li>
+      </ul>
+      <div class="used-by">Used by <span class="chip">test-logging</span></div>
+    </div>
+
+    <div class="branch-card int">
+      <h2>axonframework.internal-conventions</h2>
+      <p class="tagline">For modules that never publish</p>
+      <ul>
+        <li>Nothing beyond java-conventions — the plugin itself <em>is</em> the marker</li>
+        <li>Matches upstream's <code>maven.deploy.skip</code>/<code>maven.javadoc.skip</code>/
+          <code>maven.source.skip</code> trio, currently only set on <code>docs/_samples</code></li>
+        <li>Deliberate addition beyond upstream: also planned for <code>integrationtests</code>, which upstream
+          doesn't skip-publish today</li>
+      </ul>
+      <div class="used-by">Planned for <span class="chip">docs/_samples</span> <span class="chip">integrationtests</span> (neither converted yet)</div>
+    </div>
+  </div>
+
+  <div class="aside">
+    Why a marker plugin with no extra config, instead of just not applying anything? Self-documentation — a
+    module's own build file states its non-published status explicitly and greppably, rather than leaving it as
+    an implicit fact inferred from the absence of the other plugin.
+  </div>
+
+  <footer>
+    Part of <a href="https://github.com/Terrence721/AxonFramework-Full">AxonFramework-Full</a>. See
+    <a href="../../todo.md">todo.md</a> for the full decision log.
+  </footer>
+</div>
+</body>
+</html>
