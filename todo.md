@@ -19,6 +19,8 @@ for live status.
 | License | Apache License 2.0, verbatim copy from the Maven source — required for redistribution under License §4(a) |
 | Editor tooling | Kotlin, Checkstyle, XML, and TOML VS Code extensions installed (Gradle/Java support was already present from prior projects) |
 | `build/checkstyle.xml` | Added from `build/parent`'s Maven source, keeping Axon's own copyright header (carried-over content, not new authorship). One deliberate change: also bans `org.springframework.lang.Nullable`, completing the `Nonnull`/`Nullable` pairing every other framework in the list already had |
+| `.gitignore` `build/` collision fix | Real bug: the root `build/` directory does double duty as both real tracked content (`build/checkstyle.xml`, `build/parent`) and Gradle's own default output directory for the root project — a blanket exception meant to protect the former was quietly letting Gradle's generated reports through as trackable files too. Replaced with an explicit allow-list of just the real paths, verified with `git check-ignore -v` |
+| Stale upstream config found | Root `pom.xml`'s `maven-javadoc-plugin` `skippedModules` list names `axon-todo`, `axon-legacy`, `axon-legacy-aggregate`, `axon-legacy-saga` — none exist anywhere in this Axon 5 reactor's actual module list. Uncleaned drift from an Axon 4-era POM, confirmed by cross-checking every real module name. Not carried forward |
 | Build-logic convention plugins | All three exist: `axonframework.java-conventions` (compiler, checkstyle, test deps, jar manifest — everything `axon-parent` applies to every module), `axonframework.published-conventions` (`maven-publish`, sources/javadoc jars, POM metadata, env-var-gated GPG signing), `axonframework.internal-conventions` (explicit non-published marker, applied to `docs/_samples` and, as a deliberate addition beyond upstream, `integrationtests`) |
 | Central Portal publishing | Wired via `com.gradleup.nmcp`'s settings plugin — Sonatype has no official Gradle plugin for this. `USER_MANAGED` release type: nothing reaches Maven Central without a manual release step |
 | `test-logging` module | First real subproject. Published (`org.axonframework:axon-test-logging`). Fixed a real circular-dependency trap along the way — the shared `testImplementation(project(":test-logging"))` line would otherwise make this module depend on itself |
@@ -94,10 +96,11 @@ Bottom-up by dependency direction, per the source migration plan:
 1. ~~**Build-logic convention plugins**~~ — done: `axonframework.java-conventions`, `axonframework.published-conventions`,
    `axonframework.internal-conventions`. (No version catalog — see "Versioning approach" above, that decision
    stands.)
-2. **Leaf modules** — `test-logging` done, `common` skeleton done (no source yet). **`test` is not actually a
-   leaf** despite this grouping's name: `test/pom.xml` depends on `axon-eventsourcing` (Phase 3, not started)
-   and `axon-common` (test-jar) — converting it now would hit the same "Gradle won't configure the whole build"
-   problem the module-directory blocker already caused once. Don't start `test` until `eventsourcing` exists.
+2. **Leaf modules** — `test-logging` done, `common` skeleton done and source conversion underway (17 of 218
+   files, one at a time in dependency order). **`test` is not actually a leaf** despite this grouping's name:
+   `test/pom.xml` depends on `axon-eventsourcing` (Phase 3, not started) and `axon-common` (test-jar) — converting
+   it now would hit the same "Gradle won't configure the whole build" problem the module-directory blocker
+   already caused once. Don't start `test` until `eventsourcing` exists.
 3. **Core domain modules** — `conversion`, `messaging`, `eventsourcing`, `modelling`, `migration`, `update`
 4. **`extensions` sub-reactor** — `kotlin`, `metrics`, `reactor`, `spring`
 5. **Aggregation & verification** — `integrationtests`, `docs/_samples`, JaCoCo coverage aggregation
