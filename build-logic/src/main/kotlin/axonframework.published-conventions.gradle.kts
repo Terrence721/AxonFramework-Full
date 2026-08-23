@@ -46,6 +46,16 @@ java {
     withJavadocJar()
 }
 
+// Matches root pom.xml's own "javadoc" profile (<doclint>none</doclint>) - Axon's real source uses
+// HTML the stricter doclint added since JDK 8 rejects outright (self-closing <p/> tags throughout,
+// confirmed by a real javadoc failure: "error: self-closing element not allowed" on JDK 25's
+// javadoc). Upstream already made this call for its own javadoc generation; this replicates it
+// rather than hand-editing Axon's own source files to satisfy a stricter tool than upstream itself
+// builds with.
+tasks.withType<Javadoc>().configureEach {
+    (options as StandardJavadocDocletOptions).addStringOption("Xdoclint:none", "-quiet")
+}
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
