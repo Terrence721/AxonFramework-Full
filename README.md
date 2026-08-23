@@ -2,7 +2,7 @@
 
 **Last Updated: August 23, 2026**
 
-A fork of [Axon Framework 5](https://github.com/Terrence721/AxonFramework-Full) whose entire purpose is migrating
+A fork of Axon Framework 5 whose entire purpose is migrating
 its build system from Maven to Gradle — **one file at a time**, each one individually inspected against the Maven
 source and given its own conversion decision, not run through an automated converter or bulk-copied and edited in
 place. Not affiliated with the Axon Framework team or AxonIQ — a technical portfolio artifact only.

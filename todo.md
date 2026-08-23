@@ -3,7 +3,7 @@
 **Last Updated: August 23, 2026**
 
 A living list of what's done and what's left on this build. This is a Maven-to-Gradle build-system migration of
-[Axon Framework 5](https://github.com/Terrence721/AxonFramework-Full) — the Maven reactor is being converted **one file
+Axon Framework 5 — the Maven reactor is being converted **one file
 at a time**, each file individually inspected against the Maven source and given its own migration decision, not a
 wholesale/automated conversion or a bulk copy of the source tree. See the [project board](https://github.com/users/Terrence721/projects/8)
 for live status.
