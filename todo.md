@@ -1,9 +1,9 @@
 # 📝 TODO
 
-**Last Updated: August 22, 2026**
+**Last Updated: August 23, 2026**
 
 A living list of what's done and what's left on this build. This is a Maven-to-Gradle build-system migration of
-[Axon Framework 5](https://github.com/AxonFramework/AxonFramework) — the Maven reactor is being converted **one file
+[Axon Framework 5](https://github.com/Terrence721/AxonFramework-Full) — the Maven reactor is being converted **one file
 at a time**, each file individually inspected against the Maven source and given its own migration decision, not a
 wholesale/automated conversion or a bulk copy of the source tree. See the [project board](https://github.com/users/Terrence721/projects/8)
 for live status.
@@ -18,11 +18,15 @@ for live status.
 | Root `pom.xml` conversion | `settings.gradle.kts` (module list, `examples`/`coverage` Maven-profile gating replicated as conditional Gradle-property includes, Central Portal snapshot repo carried over with its release/snapshot enable flags) and `gradle.properties` (`group`/`version`) — see "Root pom.xml conversion" below |
 | License | Apache License 2.0, verbatim copy from the Maven source — required for redistribution under License §4(a) |
 | Editor tooling | Kotlin, Checkstyle, XML, and TOML VS Code extensions installed (Gradle/Java support was already present from prior projects) |
+| `build/checkstyle.xml` | Added from `build/parent`'s Maven source, keeping Axon's own copyright header (carried-over content, not new authorship). One deliberate change: also bans `org.springframework.lang.Nullable`, completing the `Nonnull`/`Nullable` pairing every other framework in the list already had |
+| Build-logic convention plugins | All three exist: `axonframework.java-conventions` (compiler, checkstyle, test deps, jar manifest — everything `axon-parent` applies to every module), `axonframework.published-conventions` (`maven-publish`, sources/javadoc jars, POM metadata, env-var-gated GPG signing), `axonframework.internal-conventions` (explicit non-published marker, applied to `docs/_samples` and, as a deliberate addition beyond upstream, `integrationtests`) |
+| Central Portal publishing | Wired via `com.gradleup.nmcp`'s settings plugin — Sonatype has no official Gradle plugin for this. `USER_MANAGED` release type: nothing reaches Maven Central without a manual release step |
+| `test-logging` module | First real subproject. Published (`org.axonframework:axon-test-logging`). Fixed a real circular-dependency trap along the way — the shared `testImplementation(project(":test-logging"))` line would otherwise make this module depend on itself |
 
-**Still to do:** the entire rest of the Maven reactor — `build/parent`, `axon-framework-bom`, `common`, `conversion`,
+**Still to do:** the rest of the Maven reactor — `build/parent`, `axon-framework-bom`, `common`, `conversion`,
 `extensions` (its own sub-reactor: `kotlin`, `metrics`, `reactor`, `spring`), `eventsourcing`, `messaging`,
-`migration`, `modelling`, `test`, `test-logging`, `update`, `integrationtests`, `docs/_samples` — converted bottom-up
-by dependency direction, plus the build-logic convention plugins. Dependency versions are declared inline per module
+`migration`, `modelling`, `test`, `update`, `integrationtests`, `docs/_samples` — converted bottom-up
+by dependency direction. Dependency versions are declared inline per module
 (no central `gradle/libs.versions.toml` catalog — see "Versioning approach" below), matching the style already used in
 `saga-full`. See "Still to do" below.
 
@@ -64,28 +68,34 @@ versions in sync across all 14 reactor modules from one place. Inline-per-module
 prevents two modules drifting to different versions of the same dependency by typo, the way a shared Maven parent
 would catch. Accepted deliberately, not overlooked.
 
-### Known open issue
+### Resolved: the module-directory blocker
 
-Gradle wrapper generation is currently blocked: Gradle's `wrapper` task requires every module directory named in
-`settings.gradle.kts` to actually exist before it will evaluate the build at all (confirmed — attempting
-`./gradlew wrapper --project-dir` against this repo fails with "Configuring project ':build' without an existing
-directory is not allowed"). Since modules are being created one at a time as each is converted, this is expected, not
-a bug — but it means the project isn't buildable yet, and the wrapper still needs to be bootstrapped some other way
-(generated in an isolated location and its files copied in, most likely) before `./gradlew` works here.
+Previously, every `include(...)` in `settings.gradle.kts` pointed at a module directory that didn't exist yet,
+which made Gradle refuse to configure the build at all — not just the missing module, the whole build (confirmed:
+`./gradlew wrapper --project-dir` failed with "Configuring project ':build' without an existing directory is not
+allowed"). Fixed by commenting out each `include(...)` individually, uncommenting one at a time as that module is
+actually converted — `test-logging` is the first to come back on. The build is real and buildable today:
+`gradle build` and `gradle :projects` both succeed. The Gradle wrapper itself still isn't generated in this repo
+(bootstrapping it is a separate, still-open task), so building currently requires a system-installed Gradle rather
+than `./gradlew`.
 
 ## Still to do
 
 Bottom-up by dependency direction, per the source migration plan:
 
-1. **Build-logic convention plugins** — "published Java library" and "internal/test-only module" plugins, plus the
-   `gradle/libs.versions.toml` version catalog seeded from `build/parent/pom.xml`'s `<properties>` block
-2. **Leaf modules** — `test-logging`, `test`, `common`
+1. ~~**Build-logic convention plugins**~~ — done: `axonframework.java-conventions`, `axonframework.published-conventions`,
+   `axonframework.internal-conventions`. (No version catalog — see "Versioning approach" above, that decision
+   stands.)
+2. **Leaf modules** — `test-logging` done, `test` and `common` still to do
 3. **Core domain modules** — `conversion`, `messaging`, `eventsourcing`, `modelling`, `migration`, `update`
 4. **`extensions` sub-reactor** — `kotlin`, `metrics`, `reactor`, `spring`
 5. **Aggregation & verification** — `integrationtests`, `docs/_samples`, JaCoCo coverage aggregation
    (`build/coverage-report` equivalent)
-6. **Publishing** — `axon-framework-bom` (via Gradle's `java-platform` plugin), signing, Central Portal publishing,
-   source/javadoc jars — last, once every publishable module's coordinates are final
+6. **Publishing** — Central Portal publishing (`com.gradleup.nmcp`) and signing are wired; still open:
+   `axon-framework-bom` (via Gradle's `java-platform` plugin) and the root `axon` / `axon-parent` POM-only
+   publications — last, once every publishable module's coordinates are final
+7. **Gradle wrapper bootstrap** — generate in an isolated location and copy the files in, now that the
+   module-directory blocker above is resolved
 
 Each phase gets a `./gradlew build` + `publishToMavenLocal` + scratch-consumer-project check, and a dependency-tree
 diff against the equivalent Maven output, before moving to the next.
