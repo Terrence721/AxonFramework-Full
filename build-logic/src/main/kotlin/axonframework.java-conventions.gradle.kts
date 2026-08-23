@@ -24,6 +24,12 @@ plugins {
     checkstyle
 }
 
+// gradle.properties' group/version only apply to the root project by default - Gradle doesn't
+// propagate them to subprojects on its own, unlike Maven's parent-POM inheritance. Every module
+// applies this plugin, so this is the one place to close that gap for all of them at once.
+group = rootProject.group
+version = rootProject.version
+
 java {
     toolchain {
         // Diverges from upstream Axon's Java 21 baseline (maven.compiler.source/target=21,

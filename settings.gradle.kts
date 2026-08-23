@@ -20,6 +20,35 @@ pluginManagement {
     includeBuild("build-logic")
 }
 
+// Central Portal publishing (Gradle equivalent of central-publishing-maven-plugin - Sonatype
+// doesn't ship an official Gradle plugin for this the way they do for Maven). The settings
+// plugin auto-aggregates every subproject's maven-publish publications into one upload, matching
+// the Maven source's "one publish execution per reactor build" behavior (see root pom.xml's
+// central-publishing-maven-plugin comment) without needing each new module registered by hand.
+// Credentials are Central Portal user tokens (central.sonatype.com), read from env vars so
+// nothing secret is ever in this file - both are simply blank for ordinary local builds, which
+// only breaks the publish task itself, not the rest of the build.
+//
+// Plain System.getenv() rather than providers.environmentVariable(): the latter's
+// ValueSourceProvider fails to serialize under Gradle 9.2's configuration cache when stored in
+// nmcpSettings specifically ("cannot serialize object of type ... ValueSourceProvider") - a real
+// nmcp 1.6.1 / Gradle 9.2 interaction issue, confirmed by reproducing it, not a guess. Trades away
+// auto-invalidating the config cache on env var change, which doesn't matter much here since these
+// only ever change between machines/CI runs, not within one.
+plugins {
+    id("com.gradleup.nmcp.settings") version "1.6.1"
+}
+
+nmcpSettings {
+    centralPortal {
+        username = System.getenv("CENTRAL_PORTAL_USERNAME") ?: ""
+        password = System.getenv("CENTRAL_PORTAL_PASSWORD") ?: ""
+        // Matches the deliberate, inspected-release ethos of this whole migration: nothing
+        // reaches Maven Central without an explicit manual release step in the Central Portal UI.
+        publishingType = "USER_MANAGED"
+    }
+}
+
 // Mirrors the <modules> list of pom.xml (source: F:\AxonFramework-main\AxonFramework-main\pom.xml).
 // rootProject.name = "axon" matches the Maven root artifactId so the root project keeps
 // publishing at org.axonframework:axon without needing a base.archivesName override.
