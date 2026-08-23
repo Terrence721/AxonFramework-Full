@@ -2,6 +2,8 @@
 
 **Last Updated: August 23, 2026**
 
+**[📜 View the portfolio page →](https://terrence721.github.io/AxonFramework-Full/portfolio.html)**
+
 A fork of Axon Framework 5 whose entire purpose is migrating
 its build system from Maven to Gradle — **one file at a time**, each one individually inspected against the Maven
 source and given its own conversion decision, not run through an automated converter or bulk-copied and edited in
@@ -13,6 +15,9 @@ place. Not affiliated with the Axon Framework team or AxonIQ — a technical por
 - [GitHub Project board](https://github.com/users/Terrence721/projects/8) — the same status, as a board
 - [Wiki](https://github.com/Terrence721/AxonFramework-Full/wiki) — short pointer pages into the real detail below
 - [`docs/diagrams/`](docs/diagrams) — the migration pipeline, module graph, and build-logic architecture, visually
+- **[`portfolio.html`](https://terrence721.github.io/AxonFramework-Full/portfolio.html)** — this repo as a
+  portfolio piece: real gaps found, real corrections made, and why, for anyone scanning it rather than reading it
+  as documentation
 
 ## 🧭 Why This Project Matters
 
