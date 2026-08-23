@@ -17,10 +17,12 @@ jobs:
           java-version: '25'
 
       # No Gradle wrapper in this repo yet (todo.md item 7) - gradle-version installs Gradle
-      # directly instead of relying on ./gradlew. Pinned to 9.2, matching what's been used
-      # locally throughout this migration. Dependency caching is on by default.
+      # directly instead of relying on ./gradlew. Pinned to 9.2.0, matching what's been used
+      # locally throughout this migration. Needs the exact release string, not "9.2" - that
+      # shorthand fails with "Error: Gradle version 9.2 does not exist", confirmed by a real
+      # failed run. Dependency caching is on by default.
       - uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: '9.2'
+          gradle-version: '9.2.0'
 
       - run: gradle build
