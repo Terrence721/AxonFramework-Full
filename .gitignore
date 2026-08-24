@@ -14,6 +14,9 @@
 !/build/parent/
 !/build/coverage-report/
 .gradle/
+# Kotlin compiler's own build-cache dir (session state, error logs) - separate from Gradle's
+# own .gradle/ and build/ output, not covered by either pattern above.
+**/.kotlin/
 # ...but keep the wrapper jar and properties
 !gradle/wrapper/gradle-wrapper.jar
 !gradle/wrapper/gradle-wrapper.properties
