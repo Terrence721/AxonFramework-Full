@@ -1,6 +1,6 @@
 # 🚀 AxonFramework-Full — A Deliberate Maven→Gradle Migration
 
-**Last Updated: August 23, 2026**
+**Last Updated: August 24, 2026**
 
 **[📜 View the portfolio page →](https://terrence721.github.io/AxonFramework-Full/portfolio.html)**
 

@@ -219,7 +219,9 @@
       <li>Standard test stack: JUnit 6, Mockito (as a Java agent), AssertJ, Awaitility, ArchUnit</li>
       <li>Shared test dependency on <code>test-logging</code> — guarded against test-logging depending on itself</li>
       <li><code>group</code>/<code>version</code> propagated from the root project</li>
-      <li>Jar manifest: Implementation-Title/Version/Vendor</li>
+      <li>Jar manifest: Implementation-Title/Version/Vendor — Vendor caught pointing at upstream's AxonIQ B.V.
+        (carried over verbatim from root <code>pom.xml</code>'s <code>&lt;organization&gt;</code>) on a routine
+        re-read, fixed to this fork's own owner</li>
     </ul>
   </div>
 

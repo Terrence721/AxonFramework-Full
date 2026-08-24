@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated: August 23, 2026**
+**Last Updated: August 24, 2026**
 
 A living list of what's done and what's left on this build. This is a Maven-to-Gradle build-system migration of
 Axon Framework 5 — the Maven reactor is being converted **one file
@@ -24,14 +24,17 @@ for live status, or [Milestones](https://github.com/Terrence721/AxonFramework-Fu
 | Build-logic convention plugins | All three exist: `axonframework.java-conventions` (compiler, checkstyle, test deps, jar manifest — everything `axon-parent` applies to every module), `axonframework.published-conventions` (`maven-publish`, sources/javadoc jars, POM metadata, env-var-gated GPG signing), `axonframework.internal-conventions` (explicit non-published marker, applied to `docs/_samples` and, as a deliberate addition beyond upstream, `integrationtests`) |
 | Central Portal publishing | Wired via `com.gradleup.nmcp`'s settings plugin — Sonatype has no official Gradle plugin for this. `USER_MANAGED` release type: nothing reaches Maven Central without a manual release step |
 | `test-logging` module | First real subproject. Published (`org.axonframework:axon-test-logging`). Fixed a real circular-dependency trap along the way — the shared `testImplementation(project(":test-logging"))` line would otherwise make this module depend on itself |
-| `common` module | `build.gradle.kts` skeleton done. Source conversion in progress: 17 files done, byte-identical to the Maven source, converted in dependency order — the base exception hierarchy, `StringUtils`, `Assert`, `ClassUtils`, `ClockUtils`, `DirectExecutor`, `Priority`, `BuilderUtils`, `AxonThreadFactory`, `Registration`, `ObjectUtils`, `CollectionUtils`, `ExceptionUtils`, `ListUtils`. 201 files under `src/main/java` still to go, one at a time |
+| `common` module | `build.gradle.kts` skeleton done. Source conversion in progress: 61 files done, byte-identical to the Maven source, converted one at a time in dependency order. All 30 top-level files in `org.axonframework.common` are done, plus the `annotation`, `digest`, `function`, `io`, `tx`, `nullability`, and `util` subpackages in full, `lifecycle` (4 of 5 — `Phase.java` deferred until `configuration` exists), and `infra` (1 of 6, same `configuration`-dependency blocker for the rest). 83 files under `src/main/java` still to go (plus 1 of 2 resource files), one at a time |
 | `axon-<name>` artifactId fix | Real bug found while setting up `common`: `base.archivesName` doesn't propagate to `MavenPublication.artifactId` — a second, separate default that also needed overriding. Fixed once in `axonframework.published-conventions.gradle.kts` for every module; retroactively fixes `test-logging`, which had been generating a POM with `<artifactId>test-logging</artifactId>` instead of `axon-test-logging` |
 | Javadoc doclint gap | Real gap found converting `common`'s first real source: Gradle's javadoc task had no doclint suppression, unlike upstream's own root `pom.xml` (`<doclint>none</doclint>`). Axon's source uses self-closing `<p/>` tags throughout, which JDK 25's stricter javadoc rejects outright — confirmed by a real build failure. Fixed centrally in `axonframework.published-conventions.gradle.kts` |
-| CI workflow | `.github/workflows/build.yml` — JDK 25 (Temurin) + `gradle/actions/setup-gradle@v6` pinned to `9.2.0` (no wrapper yet, so `gradle-version` installs it directly), running `gradle build` on push to `main` and on pull requests. First real run caught a real bug: the shorthand `"9.2"` fails with `"Error: Gradle version 9.2 does not exist"` — needs the exact release string. Scoped minimal deliberately — no CodeQL/quality-badge suite yet. A persistent watch on this repo's CI runs is active for the rest of the session |
+| CI workflow | `.github/workflows/build.yml` — JDK 25 (Temurin) + `gradle/actions/setup-gradle@v6` pinned to `9.2.0` (no wrapper yet, so `gradle-version` installs it directly), running `gradle build` on push to `main` and on pull requests. First real run caught a real bug: the shorthand `"9.2"` fails with `"Error: Gradle version 9.2 does not exist"` — needs the exact release string. Scoped minimal deliberately — no CodeQL/quality-badge suite yet. Every push since is checked against a real `gh run list` result before being called done — see "Known open issue" below for why this matters more than usual on this machine |
 | Documentation & presentation | `README.md`, this file, a [wiki](https://github.com/Terrence721/AxonFramework-Full/wiki) (7 short pointer pages), and [`docs/diagrams/`](docs/diagrams) (4 self-contained HTML pages) — cross-linked, none duplicating another. Every link points at this fork, never upstream's `AxonFramework/AxonFramework` repo |
 | GitHub Pages | Enabled, source `main` branch `/docs` — same config as this user's other portfolio forks, makes the diagrams viewable live at [terrence721.github.io/AxonFramework-Full](https://terrence721.github.io/AxonFramework-Full/) |
 | Full drift sweep (2026-08-23) | Checked `portfolio.html`, the wiki, all four diagrams, the landing-page card, and the GitHub profile README against actual current state. Found and fixed real drift: `portfolio.html`'s stats were stale (framework source claimed unstarted after 17 files landed; gap count was 5 of the real 8), the landing-page card matched; `build-logic-conventions.html` didn't mention the `artifactId`/doclint fixes; `migration-pipeline.html`'s `common` chip showed no progress. **Most notably: the GitHub profile README (`Terrence721/Terrence721`) already had an AxonFramework-Full entry linking to upstream** (`github.com/AxonFramework/AxonFramework`) — predates this session, not something added here, but a real violation of the never-link-upstream rule caught only by checking every surface directly rather than assuming it was covered |
+| Full drift sweep (2026-08-24) | Checked this file, `README.md`, `portfolio.html`, all four diagrams, the wiki, the project board, the GitHub profile, and the landing page. **Biggest find: the "17 of 218 files" figure quoted everywhere since early in the session was wrong from the start** — the actual Maven source has 144 Java files (plus 2 resource files) under `common/src/main`, not 218; nobody had counted it directly until this sweep, every doc had just been propagating the original guess. Corrected everywhere to the real total (144, with 61 done as of this sweep). Also added an `active`/in-progress visual state to `module-dependency-graph.html` (it only had done/not-done before, so `common` rendered as unstarted), and noted the `Implementation-Vendor` fix on `build-logic-conventions.html`'s jar-manifest bullet |
 | Project board layout | Fixed to board (Kanban column) layout grouped by Status — was silently defaulting to table/row layout even though the Status column options already matched the reference board |
+| Jar manifest `Implementation-Vendor` fix | Real bug, caught on a routine re-read rather than a build failure: `axonframework.java-conventions.gradle.kts` hardcoded `"AxonIQ B.V."`, copied verbatim from what `maven-jar-plugin`'s `addDefaultImplementationEntries` derives from root `pom.xml`'s `<organization>` — every other piece of POM metadata already pointed at this fork's own ownership, this one slipped through. Fixed to `"Terrence Daniels"` |
+| UTF-8 idiom modernization (2 files) | `digest.Digester.md5Hex()` and `io.IOUtils.UTF8` both used the pre-Java-7 `getBytes("UTF-8")`/`Charset.forName("UTF-8")` pattern — `getBytes(String)` throws a checked `UnsupportedEncodingException` that can never actually fire (UTF-8 support is JLS-guaranteed), so upstream's own source carries a dead catch block. Modernized both to `StandardCharsets.UTF_8`, removing the unreachable catch in `Digester` entirely. No behavioral change |
 
 **Still to do:** the rest of the Maven reactor — `build/parent`, `axon-framework-bom`, `common`, `conversion`,
 `extensions` (its own sub-reactor: `kotlin`, `metrics`, `reactor`, `spring`), `eventsourcing`, `messaging`,
@@ -117,6 +120,12 @@ file. If it starts affecting real work (not just verification double-checks), wo
 health check/reset, disabling Windows Defender real-time scanning for this repo's directory, or filing it
 upstream against `kotlin-dsl`/Gradle if a minimal repro can be isolated.
 
+**Local build workaround, found 2026-08-24:** this machine has no `gradlew`/`gradlew.bat` committed (see the
+wrapper-bootstrap item below) and no `gradle` on `PATH` either. A Gradle 9.2.0 distribution is already extracted
+at `C:\Users\Terre\.gradle\wrapper\dists\gradle-9.2.0-bin\<hash>\gradle-9.2.0\bin\gradle.bat` from an earlier
+IDE-triggered download — invoking that directly works for a local build attempt, though it still commonly hits
+the flakiness above before finishing. Best-effort only, not a substitute for the CI check.
+
 ## Still to do
 
 Bottom-up by dependency direction, per the source migration plan:
@@ -124,8 +133,9 @@ Bottom-up by dependency direction, per the source migration plan:
 1. ~~**Build-logic convention plugins**~~ — done: `axonframework.java-conventions`, `axonframework.published-conventions`,
    `axonframework.internal-conventions`. (No version catalog — see "Versioning approach" above, that decision
    stands.)
-2. **Leaf modules** — `test-logging` done, `common` skeleton done and source conversion underway (17 of 218
-   files, one at a time in dependency order). **`test` is not actually a leaf** despite this grouping's name:
+2. **Leaf modules** — `test-logging` done, `common` skeleton done and source conversion underway (61 of 144
+   files, one at a time in dependency order — see the "Done" table above for subpackage-level detail). **`test`
+   is not actually a leaf** despite this grouping's name:
    `test/pom.xml` depends on `axon-eventsourcing` (Phase 3, not started) and `axon-common` (test-jar) — converting
    it now would hit the same "Gradle won't configure the whole build" problem the module-directory blocker
    already caused once. Don't start `test` until `eventsourcing` exists.

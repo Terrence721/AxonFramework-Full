@@ -18,6 +18,10 @@
     --done-border: #a9d9ba;
     --done-ink: #1d6b3a;
 
+    --active-bg: #fff4e0;
+    --active-border: #f0c987;
+    --active-ink: #8a5a00;
+
     --todo-bg: #f3f4f6;
     --todo-border: #d9dce1;
     --todo-ink: #6b7280;
@@ -39,6 +43,10 @@
       --done-border: #2d6b41;
       --done-ink: #7fd99a;
 
+      --active-bg: #352505;
+      --active-border: #8a6a0e;
+      --active-ink: #f0c25c;
+
       --todo-bg: #1c2027;
       --todo-border: #333944;
       --todo-ink: #8b93a1;
@@ -59,6 +67,10 @@
     --done-bg: #17301f;
     --done-border: #2d6b41;
     --done-ink: #7fd99a;
+
+    --active-bg: #352505;
+    --active-border: #8a6a0e;
+    --active-ink: #f0c25c;
 
     --todo-bg: #1c2027;
     --todo-border: #333944;
@@ -123,6 +135,8 @@
 
   .node.done { border-color: var(--done-border); background: var(--done-bg); color: var(--done-ink); }
 
+  .node.active { border-color: var(--active-border); background: var(--active-bg); color: var(--active-ink); }
+
   .node.wide { flex-basis: 100%; }
 
   .arrow-row {
@@ -159,6 +173,7 @@
   .legend-item { display: flex; align-items: center; gap: 0.5rem; }
   .swatch { width: 0.9rem; height: 0.9rem; border-radius: 4px; border: 1px solid; flex: none; }
   .swatch.done { background: var(--done-bg); border-color: var(--done-border); }
+  .swatch.active { background: var(--active-bg); border-color: var(--active-border); }
   .swatch.todo { background: var(--todo-bg); border-color: var(--todo-border); }
 
   footer {
@@ -184,6 +199,7 @@
 
   <div class="legend">
     <div class="legend-item"><span class="swatch done"></span> Converted</div>
+    <div class="legend-item"><span class="swatch active"></span> In progress</div>
     <div class="legend-item"><span class="swatch todo"></span> Still Maven-only</div>
   </div>
 
@@ -202,7 +218,7 @@
     <div class="row">
       <div class="node done">test-logging</div>
       <div class="node">test</div>
-      <div class="node">common</div>
+      <div class="node active">common — 61/144 files</div>
     </div>
 
     <div class="arrow-row"><span>▲</span></div>
