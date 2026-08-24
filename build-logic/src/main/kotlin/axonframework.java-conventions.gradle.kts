@@ -108,12 +108,14 @@ if (providers.gradleProperty("quickInstall").isPresent) {
 }
 
 tasks.jar {
-    // maven-jar-plugin's addDefaultImplementationEntries=true equivalent.
+    // maven-jar-plugin's addDefaultImplementationEntries=true equivalent. Upstream derives
+    // Implementation-Vendor from root pom.xml's <organization> (AxonIQ B.V.) - this fork
+    // publishes under its own ownership, matching the POM metadata in published-conventions.
     manifest {
         attributes(
             "Implementation-Title" to project.name,
             "Implementation-Version" to project.version,
-            "Implementation-Vendor" to "AxonIQ B.V."
+            "Implementation-Vendor" to "Terrence Daniels"
         )
     }
 }
