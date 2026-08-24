@@ -89,6 +89,34 @@ actually converted — `test-logging` is the first to come back on. The build is
 (bootstrapping it is a separate, still-open task), so building currently requires a system-installed Gradle rather
 than `./gradlew`.
 
+### Known open issue: local Gradle/Kotlin build flakiness (Windows-specific, this machine)
+
+Starting around the `ProcessRetriesExhaustedException.java` conversion, local `gradle` builds on this development
+machine began intermittently failing at `:build-logic:compilePluginsBlocks` with `Source file or directory not
+found: ...kotlin-dsl-external-plugin-spec-builders\...\PluginSpecBuilders.kt` (or the equivalent
+`compileKotlin`/`compilePluginsBlocks` variants) — a file that `generateExternalPluginSpecBuilders` is supposed to
+have just written moments earlier.
+
+**Diagnosed, not guessed at** — ruled out, in order: stray/duplicate Gradle and Kotlin compile daemons (killed,
+recurred); VS Code's Gradle extension (`vscjava.vscode-gradle`, running its own background `GradleServer` process)
+racing its own builds against the CLI ones over the same `build-logic/build` directory (confirmed via `jps -l`
+showing it respawn repeatedly; disabling the extension for this workspace stopped the respawning, but the same
+compile failure still recurred afterward); global Kotlin-DSL cache corruption (`~/.gradle/caches/9.2.0/kotlin-dsl`
+cleared, recurred); Gradle's up-to-date task-history cache (`--rerun-tasks` forced, recurred, same file hash);
+Kotlin daemon reuse (`-Dkotlin.compiler.execution.strategy=in-process` forced, recurred, same file hash again).
+
+**Working theory, not yet confirmed:** a Windows-specific file-write-visibility race between the task that writes
+the generated accessor file and the task that reads it — plausibly antivirus scanning the newly-created file, or
+a remaining file watcher (`redhat.java`'s language server, deliberately left running) locking it briefly. The
+same source, same Gradle 9.2.0, same JDK 25 build **has stayed green on every CI run all session** (Ubuntu
+runners) — strong evidence this is local-machine/OS-specific, not a defect in the project's actual build
+configuration or source.
+
+**Current approach:** treat CI as the real verification for now rather than fighting this further locally per
+file. If it starts affecting real work (not just verification double-checks), worth trying: a Gradle daemon
+health check/reset, disabling Windows Defender real-time scanning for this repo's directory, or filing it
+upstream against `kotlin-dsl`/Gradle if a minimal repro can be isolated.
+
 ## Still to do
 
 Bottom-up by dependency direction, per the source migration plan:
