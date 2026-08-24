@@ -27,7 +27,7 @@ for live status, or [Milestones](https://github.com/Terrence721/AxonFramework-Fu
 | `common` module | `build.gradle.kts` skeleton done. Source conversion in progress: 61 files done, byte-identical to the Maven source, converted one at a time in dependency order. All 30 top-level files in `org.axonframework.common` are done, plus the `annotation`, `digest`, `function`, `io`, `tx`, `nullability`, and `util` subpackages in full, `lifecycle` (4 of 5 — `Phase.java` deferred until `configuration` exists), and `infra` (1 of 6, same `configuration`-dependency blocker for the rest). 83 files under `src/main/java` still to go (plus 1 of 2 resource files), one at a time |
 | `axon-<name>` artifactId fix | Real bug found while setting up `common`: `base.archivesName` doesn't propagate to `MavenPublication.artifactId` — a second, separate default that also needed overriding. Fixed once in `axonframework.published-conventions.gradle.kts` for every module; retroactively fixes `test-logging`, which had been generating a POM with `<artifactId>test-logging</artifactId>` instead of `axon-test-logging` |
 | Javadoc doclint gap | Real gap found converting `common`'s first real source: Gradle's javadoc task had no doclint suppression, unlike upstream's own root `pom.xml` (`<doclint>none</doclint>`). Axon's source uses self-closing `<p/>` tags throughout, which JDK 25's stricter javadoc rejects outright — confirmed by a real build failure. Fixed centrally in `axonframework.published-conventions.gradle.kts` |
-| CI workflow | `.github/workflows/build.yml` — JDK 25 (Temurin) + `gradle/actions/setup-gradle@v6` pinned to `9.2.0` (no wrapper yet, so `gradle-version` installs it directly), running `gradle build` on push to `main` and on pull requests. First real run caught a real bug: the shorthand `"9.2"` fails with `"Error: Gradle version 9.2 does not exist"` — needs the exact release string. Scoped minimal deliberately — no CodeQL/quality-badge suite yet. Every push since is checked against a real `gh run list` result before being called done — see "Known open issue" below for why this matters more than usual on this machine |
+| CI workflow | `.github/workflows/build.yml` — JDK 25 (Temurin) + `gradle/actions/setup-gradle@v6` pinned to `9.2.0` (no wrapper yet, so `gradle-version` installs it directly), running `gradle build` on push to `main` and on pull requests. First real run caught a real bug: the shorthand `"9.2"` fails with `"Error: Gradle version 9.2 does not exist"` — needs the exact release string. Scoped minimal deliberately — no CodeQL/quality-badge suite yet. Every push since is checked against a real `gh run list` result before being called done — see "Resolved: local Gradle/Kotlin build flakiness" below for why this mattered more than usual on this machine |
 | Documentation & presentation | `README.md`, this file, a [wiki](https://github.com/Terrence721/AxonFramework-Full/wiki) (7 short pointer pages), and [`docs/diagrams/`](docs/diagrams) (4 self-contained HTML pages) — cross-linked, none duplicating another. Every link points at this fork, never upstream's `AxonFramework/AxonFramework` repo |
 | GitHub Pages | Enabled, source `main` branch `/docs` — same config as this user's other portfolio forks, makes the diagrams viewable live at [terrence721.github.io/AxonFramework-Full](https://terrence721.github.io/AxonFramework-Full/) |
 | Full drift sweep (2026-08-23) | Checked `portfolio.html`, the wiki, all four diagrams, the landing-page card, and the GitHub profile README against actual current state. Found and fixed real drift: `portfolio.html`'s stats were stale (framework source claimed unstarted after 17 files landed; gap count was 5 of the real 8), the landing-page card matched; `build-logic-conventions.html` didn't mention the `artifactId`/doclint fixes; `migration-pipeline.html`'s `common` chip showed no progress. **Most notably: the GitHub profile README (`Terrence721/Terrence721`) already had an AxonFramework-Full entry linking to upstream** (`github.com/AxonFramework/AxonFramework`) — predates this session, not something added here, but a real violation of the never-link-upstream rule caught only by checking every surface directly rather than assuming it was covered |
@@ -92,39 +92,55 @@ actually converted — `test-logging` is the first to come back on. The build is
 (bootstrapping it is a separate, still-open task), so building currently requires a system-installed Gradle rather
 than `./gradlew`.
 
-### Known open issue: local Gradle/Kotlin build flakiness (Windows-specific, this machine)
+### Resolved: local Gradle/Kotlin build flakiness (was Windows-specific, this machine)
 
 Starting around the `ProcessRetriesExhaustedException.java` conversion, local `gradle` builds on this development
-machine began intermittently failing at `:build-logic:compilePluginsBlocks` with `Source file or directory not
-found: ...kotlin-dsl-external-plugin-spec-builders\...\PluginSpecBuilders.kt` (or the equivalent
-`compileKotlin`/`compilePluginsBlocks` variants) — a file that `generateExternalPluginSpecBuilders` is supposed to
-have just written moments earlier.
+machine began intermittently failing at `:build-logic:compilePluginsBlocks`/`compileKotlin` with a different
+symptom nearly every time: `Source file or directory not found` for a `kotlin-dsl`-generated accessor file,
+`NoSuchFileException` mid-directory-walk, a `ClassNotFoundException` from a transformed jar missing a class, an
+`Unresolved reference` for `signing`/`maven-publish` DSL members that had compiled fine moments earlier, even a
+Kotlin compiler argument the compiler itself couldn't parse.
 
-**Diagnosed, not guessed at** — ruled out, in order: stray/duplicate Gradle and Kotlin compile daemons (killed,
-recurred); VS Code's Gradle extension (`vscjava.vscode-gradle`, running its own background `GradleServer` process)
-racing its own builds against the CLI ones over the same `build-logic/build` directory (confirmed via `jps -l`
-showing it respawn repeatedly; disabling the extension for this workspace stopped the respawning, but the same
-compile failure still recurred afterward); global Kotlin-DSL cache corruption (`~/.gradle/caches/9.2.0/kotlin-dsl`
-cleared, recurred); Gradle's up-to-date task-history cache (`--rerun-tasks` forced, recurred, same file hash);
-Kotlin daemon reuse (`-Dkotlin.compiler.execution.strategy=in-process` forced, recurred, same file hash again).
+**Root cause, confirmed 2026-08-24 by a controlled 2×2 test, not guessed at:** VS Code's `redhat.java` Java
+language server runs its own background Gradle activity against this project while it's alive, racing manual/CLI
+Gradle builds over the same `build-logic/build` output directory. Two independent Gradle-aware processes writing
+and reading the same generated-sources tree — sometimes computing different content-hash directory names for
+what should be the same logical state — explains every one of the different symptoms above; which stage the two
+processes collide at determines which specific exception surfaces. Proven with four back-to-back local builds,
+alternating the one variable that mattered:
 
-**Working theory, not yet confirmed:** a Windows-specific file-write-visibility race between the task that writes
-the generated accessor file and the task that reads it — plausibly antivirus scanning the newly-created file, or
-a remaining file watcher (`redhat.java`'s language server, deliberately left running) locking it briefly. The
-same source, same Gradle 9.2.0, same JDK 25 build **has stayed green on every CI run all session** (Ubuntu
-runners) — strong evidence this is local-machine/OS-specific, not a defect in the project's actual build
-configuration or source.
+| `redhat.java` state at build start | Result |
+| --- | --- |
+| Freshly killed immediately before | SUCCESS |
+| Freshly killed immediately before | SUCCESS |
+| Left running | FAILURE |
+| Left running | FAILURE |
 
-**Current approach:** treat CI as the real verification for now rather than fighting this further locally per
-file. If it starts affecting real work (not just verification double-checks), worth trying: a Gradle daemon
-health check/reset, disabling Windows Defender real-time scanning for this repo's directory, or filing it
-upstream against `kotlin-dsl`/Gradle if a minimal repro can be isolated.
+Ruled out before landing on this, in order: stray/duplicate Gradle and Kotlin compile daemons (killed, recurred);
+`vscjava.vscode-gradle`'s own `GradleServer` process (disabling the extension stopped it respawning, but the
+failure still recurred — a *different* extension, `redhat.java`, was the real culprit, confirmed only later);
+global Kotlin-DSL and artifact-transform cache corruption (`~/.gradle/caches/9.2.0/kotlin-dsl` and
+`~/.gradle/caches/9.2.0/transforms` both cleared, recurred); `--no-daemon` (recurred, ruling out daemon reuse);
+Windows Defender real-time scanning (added exclusions for the repo directory and `~/.gradle` — legitimate
+general-purpose improvement, but the failure still recurred with `redhat.java` left running, ruling this out as
+the primary cause). The same source, same Gradle 9.2.0, same JDK 25 build **stayed green on every CI run all
+session** (Ubuntu runners, no `redhat.java` in the loop) — consistent with the confirmed cause the whole time.
 
-**Local build workaround, found 2026-08-24:** this machine has no `gradlew`/`gradlew.bat` committed (see the
-wrapper-bootstrap item below) and no `gradle` on `PATH` either. A Gradle 9.2.0 distribution is already extracted
-at `C:\Users\Terre\.gradle\wrapper\dists\gradle-9.2.0-bin\<hash>\gradle-9.2.0\bin\gradle.bat` from an earlier
-IDE-triggered download — invoking that directly works for a local build attempt, though it still commonly hits
-the flakiness above before finishing. Best-effort only, not a substitute for the CI check.
+**Fix applied:** `.vscode/settings.json` now sets `"java.import.gradle.enabled": false`, so `redhat.java` stops
+doing Gradle-based project import/sync for this workspace at all. Requires a VS Code window reload
+(`Developer: Reload Window`) to take effect — a process kill alone respawns the language server with the same
+stale in-memory config. **Fallback if flakiness ever recurs:** close VS Code, or kill the `redhat.java` process
+(`jps -l`, then `taskkill //PID <pid> //F`), before running a local Gradle build — proven to work above.
+
+Two Windows Defender exclusions were added along the way and are worth keeping regardless of whether they were
+the actual fix — real-time-scanning a directory full of freshly-written `.class`/`.jar` files on every build is
+wasted CPU either way: `Add-MpPreference -ExclusionPath "C:\Users\Terre\source\repos\AxonFramework-Full"` and
+`Add-MpPreference -ExclusionPath "C:\Users\Terre\.gradle"` (both require an elevated PowerShell).
+
+**Local build note:** this machine has no `gradlew`/`gradlew.bat` committed (see the wrapper-bootstrap item
+below) and no `gradle` on `PATH` either. A Gradle 9.2.0 distribution is already extracted at
+`C:\Users\Terre\.gradle\wrapper\dists\gradle-9.2.0-bin\<hash>\gradle-9.2.0\bin\gradle.bat` from an earlier
+IDE-triggered download — invoke that directly for a local build.
 
 ## Still to do
 
