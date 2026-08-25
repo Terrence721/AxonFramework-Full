@@ -17,7 +17,8 @@
 package org.axonframework.common.jpa;
 
 import jakarta.persistence.EntityManager;
-import org.axonframework.common.Assert;
+
+import java.util.Objects;
 
 /**
  * Simple implementation of the EntityManagerProvider that returns the EntityManager instance provided at construction
@@ -36,8 +37,7 @@ public class SimpleEntityManagerProvider implements EntityManagerProvider {
      * @param entityManager the EntityManager to return on {@link #getEntityManager()}
      */
     public SimpleEntityManagerProvider(EntityManager entityManager) {
-        Assert.notNull(entityManager, () -> "entityManager should not be null");
-        this.entityManager = entityManager;
+        this.entityManager = Objects.requireNonNull(entityManager, "entityManager");
     }
 
     @Override
