@@ -1,5 +1,8 @@
 # 🚀 AxonFramework-Full — A Deliberate Maven→Gradle Migration
 
+[![Build](https://github.com/Terrence721/AxonFramework-Full/actions/workflows/build.yml/badge.svg)](https://github.com/Terrence721/AxonFramework-Full/actions/workflows/build.yml)
+[![CodeQL](https://github.com/Terrence721/AxonFramework-Full/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Terrence721/AxonFramework-Full/security/code-scanning)
+
 **Last Updated: August 25, 2026**
 
 **[📜 View the portfolio page →](https://terrence721.github.io/AxonFramework-Full/portfolio.html)**
