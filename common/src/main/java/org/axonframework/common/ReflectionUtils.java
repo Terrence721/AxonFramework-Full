@@ -154,14 +154,13 @@ public final class ReflectionUtils {
      * @param otherValue other value to compare.
      * @return {@code true} if these objects explicitly indicate they are not equal, {@code false} otherwise.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static boolean explicitlyUnequal(@Nullable Object value, @Nullable Object otherValue) {
         if (Objects.equals(value, otherValue)) {
             return false;
         } else if (value == null || otherValue == null) {
             return true;
         } else if (value instanceof Comparable) {
-            //noinspection rawtypes
             return ((Comparable) value).compareTo(otherValue) != 0;
         } else if (hasEqualsMethod(value.getClass())) {
             return !value.equals(otherValue);
@@ -518,7 +517,7 @@ public final class ReflectionUtils {
     public static String toDiscernibleSignature(Executable executable) {
         return String.format("%s(%s)",
                              executable.getName(),
-                             Arrays.stream(executable.getParameterTypes()).map(Class::getName)
+                             Arrays.stream(executable.getParameterTypes()).map(type -> type.getName())
                                    .collect(Collectors.joining(",")));
     }
 
