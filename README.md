@@ -1,6 +1,6 @@
 # 🚀 AxonFramework-Full — A Deliberate Maven→Gradle Migration
 
-**Last Updated: August 24, 2026**
+**Last Updated: August 25, 2026**
 
 **[📜 View the portfolio page →](https://terrence721.github.io/AxonFramework-Full/portfolio.html)**
 
@@ -14,10 +14,16 @@ place. Not affiliated with the Axon Framework team or AxonIQ — a technical por
 - [`todo.md`](todo.md) — the living status doc: what's done, what's left, every non-obvious decision and why
 - [GitHub Project board](https://github.com/users/Terrence721/projects/8) — the same status, as a board
 - [Wiki](https://github.com/Terrence721/AxonFramework-Full/wiki) — short pointer pages into the real detail below
-- [`docs/diagrams/`](docs/diagrams) — the migration pipeline, module graph, and build-logic architecture, visually
+- [`docs/diagrams/`](docs/diagrams) — the migration pipeline, module graph, and build-logic architecture, visually:
+  [migration pipeline](https://terrence721.github.io/AxonFramework-Full/diagrams/migration-pipeline.html),
+  [module dependency graph](https://terrence721.github.io/AxonFramework-Full/diagrams/module-dependency-graph.html),
+  [build-logic conventions](https://terrence721.github.io/AxonFramework-Full/diagrams/build-logic-conventions.html),
+  [publishing pipeline](https://terrence721.github.io/AxonFramework-Full/diagrams/publishing-pipeline.html)
 - **[`portfolio.html`](https://terrence721.github.io/AxonFramework-Full/portfolio.html)** — this repo as a
   portfolio piece: real gaps found, real corrections made, and why, for anyone scanning it rather than reading it
   as documentation
+- [Portfolio hub](https://terrence721.github.io/) · [GitHub profile](https://github.com/Terrence721) — this
+  fork in the context of this user's other work
 
 ## 🧭 Why This Project Matters
 
