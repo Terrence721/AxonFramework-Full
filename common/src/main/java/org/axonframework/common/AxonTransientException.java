@@ -16,6 +16,8 @@
 
 package org.axonframework.common;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Exception indicating an error occurred that might be resolved by retrying the operation that caused the exception.
  * Typically, the cause of the exception is of temporary nature and may be resolved without intervention.
@@ -40,7 +42,7 @@ public abstract class AxonTransientException extends AxonException {
      * @param message The message describing the exception
      * @param cause   The underlying cause of the exception
      */
-    public AxonTransientException(String message, Throwable cause) {
+    public AxonTransientException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 }

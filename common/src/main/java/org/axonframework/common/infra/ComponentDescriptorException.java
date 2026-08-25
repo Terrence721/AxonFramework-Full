@@ -17,6 +17,7 @@
 package org.axonframework.common.infra;
 
 import org.axonframework.common.AxonNonTransientException;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Exception indicating that an error occurred in the component description process. This problem prevents the component
@@ -42,7 +43,7 @@ public class ComponentDescriptorException extends AxonNonTransientException {
      * @param message The message describing the exception.
      * @param cause   The underlying cause of the exception.
      */
-    public ComponentDescriptorException(String message, Throwable cause) {
+    public ComponentDescriptorException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 }

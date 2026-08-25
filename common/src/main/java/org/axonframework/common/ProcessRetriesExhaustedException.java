@@ -16,6 +16,8 @@
 
 package org.axonframework.common;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Exception indicating that an action was retried a maximum times, without a good result.
  *
@@ -39,7 +41,7 @@ public class ProcessRetriesExhaustedException extends AxonException {
      * @param message The message describing the exception
      * @param cause   The underlying cause of the exception
      */
-    public ProcessRetriesExhaustedException(String message, Throwable cause) {
+    public ProcessRetriesExhaustedException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 }

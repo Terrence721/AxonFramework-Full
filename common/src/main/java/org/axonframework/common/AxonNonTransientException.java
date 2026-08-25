@@ -16,6 +16,8 @@
 
 package org.axonframework.common;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Exception indicating an error has been caused that cannot be resolved without intervention. Retrying the operation
  * that threw the exception will most likely result in the same exception being thrown.
@@ -55,7 +57,7 @@ public abstract class AxonNonTransientException extends AxonException {
      * @param message The message describing the exception
      * @param cause   The underlying cause of the exception
      */
-    public AxonNonTransientException(String message, Throwable cause) {
+    public AxonNonTransientException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 }

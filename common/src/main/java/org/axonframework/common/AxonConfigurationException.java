@@ -16,6 +16,8 @@
 
 package org.axonframework.common;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Exception indicating that a configuration error has been made in the Axon configuration. This problem prevents the
  * application from operating properly.
@@ -40,7 +42,7 @@ public class AxonConfigurationException extends AxonNonTransientException {
      * @param message The message describing the exception
      * @param cause   The underlying cause of the exception
      */
-    public AxonConfigurationException(String message, Throwable cause) {
+    public AxonConfigurationException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 }
