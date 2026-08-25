@@ -26,7 +26,6 @@ import java.util.Comparator;
  * annotation.
  *
  * @param <T> The type of object to compare
- * @author Allard Buijze
  * @since 2.1.2
  */
 public class PriorityAnnotationComparator<T> implements Comparator<T> {

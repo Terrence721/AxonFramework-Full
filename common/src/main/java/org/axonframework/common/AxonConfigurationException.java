@@ -22,7 +22,6 @@ import org.jspecify.annotations.Nullable;
  * Exception indicating that a configuration error has been made in the Axon configuration. This problem prevents the
  * application from operating properly.
  *
- * @author Allard Buijze
  * @since 0.7
  */
 public class AxonConfigurationException extends AxonNonTransientException {

@@ -43,8 +43,6 @@ import java.util.function.UnaryOperator;
  * or writing). If the cache is not being accessed for a longer period of time, it may occur that listeners are not
  * notified.
  *
- * @author Allard Buijze
- * @author Henrique Sena
  * @since 2.2.1
  */
 public class WeakReferenceCache implements Cache {

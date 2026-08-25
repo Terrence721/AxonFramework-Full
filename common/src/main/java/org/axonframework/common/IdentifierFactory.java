@@ -35,7 +35,6 @@ import java.util.ServiceLoader;
  * <p/>
  * This class is thread safe to use.
  *
- * @author Allard Buijze
  * @see ServiceLoader
  * @since 1.2
  */

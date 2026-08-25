@@ -27,7 +27,6 @@ import java.util.function.Supplier;
 /**
  * Processing utilities.
  *
- * @author Marc Gathier
  * @since 4.2
  */
 public final class ProcessUtils {

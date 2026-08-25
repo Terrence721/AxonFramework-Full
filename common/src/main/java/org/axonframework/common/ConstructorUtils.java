@@ -29,7 +29,6 @@ import java.util.function.Supplier;
  * Utility functions in this class do not create instances directly. Instead, they provide reusable functions that can
  * be used to construct a multitude of instances of the same type. It is advisable to cache this function for reuse.
  *
- * @author Mitchell Herrijgers
  * @since 5.0.0
  */
 public final class ConstructorUtils {

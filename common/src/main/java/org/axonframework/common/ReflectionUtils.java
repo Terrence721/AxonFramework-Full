@@ -50,7 +50,6 @@ import static org.axonframework.common.ObjectUtils.getOrDefault;
 /**
  * Utility class for working with Java Reflection API.
  *
- * @author Allard Buijze
  * @since 0.7
  */
 public final class ReflectionUtils {

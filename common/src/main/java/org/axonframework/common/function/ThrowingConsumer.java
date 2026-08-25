@@ -21,7 +21,6 @@ package org.axonframework.common.function;
  *
  * @param <T> The input type of the consumer.
  * @param <X> The exception type the consumer may throw.
- * @author John Hendrikx
  * @since 5.0.2
  */
 public interface ThrowingConsumer<T, X extends Exception> {

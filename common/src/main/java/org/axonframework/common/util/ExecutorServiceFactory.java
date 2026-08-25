@@ -31,7 +31,6 @@ import java.util.function.BiFunction;
  * configurations to provide their own {@code ExecutorService} implementations as well.
  *
  * @param <C> The type of configuration to use for constructing a {@link ExecutorService}.
- * @author Steven van Beelen
  * @since 5.0.0
  */
 @FunctionalInterface

@@ -22,7 +22,6 @@ import org.jspecify.annotations.Nullable;
  * Exception indicating an error occurred that might be resolved by retrying the operation that caused the exception.
  * Typically, the cause of the exception is of temporary nature and may be resolved without intervention.
  *
- * @author Allard Buijze
  * @since 0.6
  */
 public abstract class AxonTransientException extends AxonException {

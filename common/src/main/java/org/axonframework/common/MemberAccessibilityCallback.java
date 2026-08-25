@@ -22,7 +22,6 @@ import java.security.PrivilegedAction;
 /**
  * PrivilegedAction that makes the given method accessible for reflection.
  *
- * @author Allard Buijze
  * @since 0.5
  */
 public class MemberAccessibilityCallback implements PrivilegedAction<Object> {

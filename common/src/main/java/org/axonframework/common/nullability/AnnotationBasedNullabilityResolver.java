@@ -40,7 +40,6 @@ import java.lang.reflect.Parameter;
  * <p>
  * Marked {@link Internal} as it is registered automatically and not meant to be referenced directly.
  *
- * @author Mateusz Nowak
  * @see NullabilityResolver
  * @since 5.3.0
  */

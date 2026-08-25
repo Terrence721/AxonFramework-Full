@@ -25,7 +25,6 @@ import java.util.function.Supplier;
 /**
  * Miscellaneous object utility methods.
  *
- * @author Allard Buijze
  * @since 3.0
  */
 public final class ObjectUtils {

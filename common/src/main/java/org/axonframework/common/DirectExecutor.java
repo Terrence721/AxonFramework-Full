@@ -21,7 +21,6 @@ import java.util.concurrent.Executor;
 /**
  * Simple executor implementation that runs a given Runnable immediately in the calling thread.
  *
- * @author Allard Buijze
  * @since 0.7
  */
 public final class DirectExecutor implements Executor {

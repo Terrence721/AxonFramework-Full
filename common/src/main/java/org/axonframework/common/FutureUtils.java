@@ -31,7 +31,6 @@ import java.util.function.Supplier;
 /**
  * Utility class containing reusable functionality for interacting with the {@link CompletableFuture}.
  *
- * @author Allard Buijze
  * @since 5.0.0
  */
 public final class FutureUtils {

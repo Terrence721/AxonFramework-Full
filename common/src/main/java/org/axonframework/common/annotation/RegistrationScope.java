@@ -33,7 +33,6 @@ import java.lang.annotation.Target;
  * {@link org.axonframework.common.configuration.DecoratorDefinition} classes to control their registration scopes.
  * </p>
  *
- * @author Simon Zambrovski
  * @since 5.1.0
  */
 @Documented

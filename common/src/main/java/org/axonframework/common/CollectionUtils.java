@@ -32,7 +32,6 @@ import static java.util.stream.Collectors.toList;
 /**
  * Utility methods for operations on collections.
  *
- * @author Allard Buijze
  * @since 0.7
  */
 public final class CollectionUtils {

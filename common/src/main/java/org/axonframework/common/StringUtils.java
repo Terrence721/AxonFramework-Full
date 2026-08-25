@@ -23,7 +23,6 @@ import java.util.Objects;
 /**
  * Utility methods for when dealing with {@link String}s.
  *
- * @author Steven van Beelen
  * @since 4.5
  */
 public final class StringUtils {

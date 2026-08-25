@@ -31,7 +31,6 @@ import static org.axonframework.common.ReflectionUtils.declaringClass;
  * This
  * reduces the amount of reflection for types that have been already inspected.
  *
- * @author Allard Buijze
  * @since 2.0
  */
 public final class IdentifierValidator {

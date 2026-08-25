@@ -24,7 +24,6 @@ import org.jspecify.annotations.Nullable;
  * @param <T> The input type of the function.
  * @param <R> The result type of the function.
  * @param <X> The exception type the function may throw.
- * @author John Hendrikx
  * @since 5.0.2
  */
 public interface ThrowingFunction<T, R, X extends Exception> {

@@ -28,7 +28,6 @@ import static org.axonframework.common.io.IOUtils.closeQuietly;
  * By default, Maven stores the meta-data in a file called 'pom.properties' in the JAR files under
  * 'META-INF/maven/&lt;groupId&gt;/&lt;artifactId&gt;/'.
  *
- * @author Sara Pellegrini
  * @since 4.2.1
  */
 public class MavenArtifactVersionResolver {

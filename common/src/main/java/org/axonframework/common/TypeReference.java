@@ -24,7 +24,6 @@ import java.util.Objects;
  * Represents a reference to a type of component, allowing for generic types to be specified without casting errors.
  *
  * @param <E> The type of the component.
- * @author Mitchell Herrijgers
  * @since 5.0.0
  */
 public abstract class TypeReference<E> {

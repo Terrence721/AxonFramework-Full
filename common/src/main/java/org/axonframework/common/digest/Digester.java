@@ -27,7 +27,6 @@ import java.security.NoSuchAlgorithmException;
  * Utility class for generating hashes for values using several algorithms. It uses the {@link MessageDigest} as
  * underlying mechanism.
  *
- * @author Allard Buijze
  * @since 2.0
  */
 public final class Digester {

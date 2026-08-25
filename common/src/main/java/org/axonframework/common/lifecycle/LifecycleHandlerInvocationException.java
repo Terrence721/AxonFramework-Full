@@ -21,7 +21,6 @@ import org.jspecify.annotations.Nullable;
 /**
  * Exception indicating a failure occurred during a lifecycle handler method invocation.
  *
- * @author Steven van Beelen
  * @since 4.3.0
  */
 public class LifecycleHandlerInvocationException extends RuntimeException {

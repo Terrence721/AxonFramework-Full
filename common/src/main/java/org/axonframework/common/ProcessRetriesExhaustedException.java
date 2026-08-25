@@ -21,7 +21,6 @@ import org.jspecify.annotations.Nullable;
 /**
  * Exception indicating that an action was retried a maximum times, without a good result.
  *
- * @author Gerard Klijs
  * @since 4.5.13
  */
 public class ProcessRetriesExhaustedException extends AxonException {

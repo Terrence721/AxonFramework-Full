@@ -42,7 +42,6 @@ import java.util.ServiceLoader;
  * Marked {@link Internal} as the contract is still provisional. It is public only so that implementations shipping in
  * separate artifacts, such as the Kotlin extension, can reach it.
  *
- * @author Mateusz Nowak
  * @see Nullability
  * @since 5.3.0
  */

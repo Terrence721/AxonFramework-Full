@@ -24,11 +24,6 @@ package org.axonframework.common.util;
  * uses the {@code index} to differentiate between tasks with the same priority, ensuring the insert order is leading in
  * those scenarios.
  *
- * @author Stefan Dragisic
- * @author Milan Savic
- * @author Allard Buijze
- * @author Steven van Beelen
- * @author Mitchell Herrijgers
  * @since 4.6.0
  */
 public interface PriorityTask extends Comparable<PriorityTask> {

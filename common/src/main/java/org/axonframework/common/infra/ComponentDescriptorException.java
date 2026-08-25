@@ -23,7 +23,6 @@ import org.jspecify.annotations.Nullable;
  * Exception indicating that an error occurred in the component description process. This problem prevents the component
  * structure from being properly described or rendered.
  *
- * @author Mateusz Nowak
  * @since 5.0.0
  */
 public class ComponentDescriptorException extends AxonNonTransientException {

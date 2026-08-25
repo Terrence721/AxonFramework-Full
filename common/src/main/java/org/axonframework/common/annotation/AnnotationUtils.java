@@ -37,7 +37,6 @@ import java.util.function.Predicate;
 /**
  * Utility class for locating annotation and attribute values on elements.
  *
- * @author Allard Buijze
  * @since 3.0
  */
 public final class AnnotationUtils {

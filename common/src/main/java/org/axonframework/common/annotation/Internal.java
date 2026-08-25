@@ -29,7 +29,6 @@ import java.lang.annotation.Target;
  * Code marked with this annotation is still usable by <b>everybody</b>. Just be aware unexpected changes may occur on
  * internal code. Hence, Axon Framework internal code may introduce breaking changes within minor and patch releases.
  *
- * @author Steven van Beelen
  * @since 5.0.0
  */
 @Documented

@@ -22,8 +22,6 @@ import java.nio.charset.StandardCharsets;
 /**
  * Utility methods for IO operations.
  *
- * @author Allard Buijze
- * @author Knut-Olav Hoven
  * @since 2.0
  */
 public final class IOUtils {

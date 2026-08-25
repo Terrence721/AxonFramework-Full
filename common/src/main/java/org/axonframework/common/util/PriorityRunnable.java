@@ -25,10 +25,6 @@ import java.util.Objects;
  * priority of the task. This task uses the {@code index} to differentiate between tasks with the same priority,
  * ensuring the insert order is leading in those scenarios.
  *
- * @author Stefan Dragisic
- * @author Milan Savic
- * @author Allard Buijze
- * @author Steven van Beelen
  * @since 4.6.0
  */
 public class PriorityRunnable implements Runnable, PriorityTask {

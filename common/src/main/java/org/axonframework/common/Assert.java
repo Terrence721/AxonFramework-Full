@@ -27,7 +27,6 @@ import java.util.function.Supplier;
  * <p>
  * To remove the need for explicit dependencies on Spring, the functionality of that class is migrated to this class.
  *
- * @author Allard Buijze
  * @since 0.3
  */
 public final class Assert {

@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Thread factory that created threads in a given group.
  *
- * @author Allard Buijze
  * @since 2.0
  */
 public class AxonThreadFactory implements ThreadFactory {

@@ -30,7 +30,6 @@ import java.lang.reflect.Parameter;
  * <p>
  * Marked {@link Internal} as it forms part of the {@link NullabilityResolver} contract.
  *
- * @author Mateusz Nowak
  * @see NullabilityResolver
  * @since 5.3.0
  */

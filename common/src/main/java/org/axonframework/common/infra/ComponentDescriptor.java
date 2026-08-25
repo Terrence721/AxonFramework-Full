@@ -35,10 +35,6 @@ import java.util.Map;
  * {@link DescribableComponent} refers to another component that eventually references back to the original.
  * {@link ComponentDescriptor} implementations must handle these circular dependencies to prevent infinite recursion.
  *
- * @author Allard Buijze
- * @author Mitchell Herrijgers
- * @author Steven van Beelen
- * @author Mateusz Nowak
  * @since 5.0.0
  */
 public interface ComponentDescriptor {

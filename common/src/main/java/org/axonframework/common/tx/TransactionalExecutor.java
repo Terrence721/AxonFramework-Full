@@ -39,7 +39,6 @@ import java.util.concurrent.CompletableFuture;
  * a result and operations that are purely side-effecting.
  *
  * @param <T> The type of the resource.
- * @author John Hendrikx
  * @since 5.0.2
  */
 @Internal

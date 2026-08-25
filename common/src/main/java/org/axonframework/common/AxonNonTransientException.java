@@ -24,7 +24,6 @@ import org.jspecify.annotations.Nullable;
  * <p/>
  * Examples of such errors are programming errors and version conflicts.
  *
- * @author Allard Buijze
  * @since 0.6
  */
 public abstract class AxonNonTransientException extends AxonException {

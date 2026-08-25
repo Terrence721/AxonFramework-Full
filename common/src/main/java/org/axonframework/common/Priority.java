@@ -26,7 +26,6 @@ import java.lang.annotation.Target;
  * Indicates the relative priority of the annotated component. Components with a higher priority are considered before
  * those with lower priority.
  *
- * @author Allard Buijze
  * @since 2.1
  */
 @Inherited

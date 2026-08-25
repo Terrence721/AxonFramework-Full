@@ -34,7 +34,6 @@ import java.util.function.Supplier;
  * indefinitely. If the latch is waited on through {@link #initiateShutdown()}, new operations can no longer be
  * registered.
  *
- * @author Steven van Beelen
  * @since 4.3
  */
 public class ShutdownLatch {

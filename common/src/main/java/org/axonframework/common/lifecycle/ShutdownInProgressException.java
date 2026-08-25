@@ -21,7 +21,6 @@ import org.axonframework.common.AxonNonTransientException;
 /**
  * Exception indicating a process tried to register an activity whilst the application is shutting down.
  *
- * @author Steven van Beelen
  * @see ShutdownLatch
  * @since 4.3
  */

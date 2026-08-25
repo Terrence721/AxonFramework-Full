@@ -29,7 +29,6 @@ import java.util.function.Supplier;
  * tests or integration scenarios. It also implements {@link InstantSource} so callers can use it wherever an instant
  * source is required.
  *
- * @author Jan Galinski
  * @since 5.2.0
  */
 public final class ClockUtils  {

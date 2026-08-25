@@ -21,8 +21,6 @@ import java.util.function.Predicate;
 
 /**
  * Exception utility methods.
- *
- * @author Rene de Waele
  */
 public final class ExceptionUtils {
 

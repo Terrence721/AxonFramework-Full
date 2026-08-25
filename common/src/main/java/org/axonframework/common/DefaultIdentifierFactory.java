@@ -25,7 +25,6 @@ import java.util.UUID;
  * This implementations selects a random identifier out of about 3 x 10<sup>38</sup> possible values, making the chance
  * to get a duplicate incredibly small.
  *
- * @author Allard Buijze
  * @since 1.2
  */
 public class DefaultIdentifierFactory extends IdentifierFactory {

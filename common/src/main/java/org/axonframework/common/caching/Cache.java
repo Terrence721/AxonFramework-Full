@@ -28,7 +28,6 @@ import java.util.function.UnaryOperator;
  * plugged in. In future versions, this abstraction may be replaced with the {@code javax.cache} api, as soon as that
  * api is final.
  *
- * @author Allard Buijze
  * @since 2.1.2
  */
 public interface Cache {

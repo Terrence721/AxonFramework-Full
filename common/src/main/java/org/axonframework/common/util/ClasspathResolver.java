@@ -19,7 +19,6 @@ package org.axonframework.common.util;
 /**
  * Resolves certain parameters from the classpath.
  *
- * @author Milan Savic
  * @since 4.6.0
  */
 public final class ClasspathResolver {

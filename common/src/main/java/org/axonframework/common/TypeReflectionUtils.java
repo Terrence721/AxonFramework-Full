@@ -37,8 +37,6 @@ import java.util.stream.IntStream;
  * The credits for creating this functionality however go to Wouter Coekaerts, which created this functionality in the
  * 'com.googlecode.gentyref' library with group id 'gentyref'.
  *
- * @author Wouter Coekaerts <wouter@coekaerts.be>
- * @author Steven van Beelen
  * @since 3.2
  */
 public final class TypeReflectionUtils {
@@ -233,8 +231,6 @@ public final class TypeReflectionUtils {
 
     /**
      * Mapping between type variables and actual parameters.
-     *
-     * @author Wouter Coekaerts <wouter@coekaerts.be>
      */
     private static class VarMap {
 

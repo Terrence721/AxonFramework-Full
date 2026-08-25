@@ -42,7 +42,6 @@ import java.util.ServiceLoader;
  * Kept package-private and separate from {@link NullabilityResolver} because an interface cannot hold the state this
  * requires. Callers reach this through {@link NullabilityResolver#nullabilityOf(Parameter)}.
  *
- * @author Mateusz Nowak
  * @see ServiceLoader
  * @since 5.3.0
  */
