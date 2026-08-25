@@ -1,0 +1,27 @@
+name: Dependency Submission
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  dependency-submission:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+
+      # GitHub's own automatic dependency submission for Gradle repos runs on a default JDK
+      # that's older than this project's toolchain requirement (JDK 21, confirmed by a real
+      # failed run: "Dependency requires at least JVM runtime version 25. This build uses a
+      # Java 21 JVM." - build-logic's own compiled plugin classes require a JDK 25 JVM just to
+      # load, not merely to compile). An explicit workflow like this one supersedes GitHub's
+      # automatic default entirely, letting it set up the right JDK first.
+      - uses: gradle/actions/dependency-submission@v6
