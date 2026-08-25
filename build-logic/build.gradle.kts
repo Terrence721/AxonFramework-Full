@@ -18,6 +18,15 @@ plugins {
     `kotlin-dsl`
 }
 
+// Matches the rest of the project's JDK 25 toolchain (axonframework.java-conventions). Kotlin
+// doesn't support emitting JVM 25 bytecode yet and falls back to JVM_24 regardless of what's
+// requested here - a cosmetic "Inconsistent JVM Target Compatibility" warning, not a build
+// failure. The real consequence: build-logic's own compiled plugin classes require a JDK 25
+// *runtime* just to load, not merely to compile, so any environment whose default JVM is older
+// than 25 can't use this build - including GitHub's own automatic dependency-submission workflow
+// for this repo (confirmed failing: "Dependency requires at least JVM runtime version 25. This
+// build uses a Java 21 JVM."), worked around with our own explicit
+// .github/workflows/dependency-submission.yml instead of changing this pin.
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(25))
