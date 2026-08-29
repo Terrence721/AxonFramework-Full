@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta
   name="description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Twelve real build-system gaps found and fixed so far, disclosed rather than smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Fourteen real build-system gaps found and fixed so far, disclosed rather than smoothed over."
 />
 <link rel="canonical" href="https://terrence721.github.io/AxonFramework-Full/portfolio.html" />
 
@@ -12,7 +12,7 @@
 <meta property="og:title" content="AxonFramework-Full — a Maven→Gradle build migration, by Terrence Daniels" />
 <meta
   property="og:description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — twelve real build-system gaps found and fixed, disclosed not smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — fourteen real build-system gaps found and fixed, disclosed not smoothed over."
 />
 
 <meta name="twitter:card" content="summary" />
@@ -228,15 +228,15 @@
 
 <div class="hero">
   <div class="wrap">
-    <p class="eyebrow">Portfolio Manifest — Prepared 2026-08-25</p>
+    <p class="eyebrow">Portfolio Manifest — Prepared 2026-08-29</p>
     <h1 class="name">Terrence&nbsp;Daniels</h1>
     <p class="role">Full-Stack Java/Gradle Engineer</p>
     <p class="thesis">
       A deliberate migration of <strong>Axon Framework 5</strong>'s build system from Maven to Gradle — converted
       <strong>one file at a time</strong>, each one individually inspected against the Maven source rather than run
       through an automated converter. Build-logic conventions are done, <code>test-logging</code> is published, and
-      <code>common</code>'s source conversion is underway (82 files in) — every gap found along the way, twelve so
-      far, is disclosed in this repo's own build log, not smoothed over. Genuinely early — 12 of 14 reactor modules
+      <code>common</code>'s source conversion is underway (100 files in) — every gap found along the way, fourteen
+      so far, is disclosed in this repo's own build log, not smoothed over. Genuinely early — 12 of 14 reactor modules
       haven't started converting at all.
     </p>
     <div class="hero-actions">
@@ -249,7 +249,7 @@
   </div>
   <div class="stamp" aria-hidden="true">
     <div class="stamp-inner">
-      <span class="n">12</span>
+      <span class="n">14</span>
       <span class="l">REAL GAPS<br />FOUND &amp; FIXED</span>
     </div>
   </div>
@@ -259,10 +259,10 @@
   <div class="wrap">
     <div class="manifest-row">
       <div class="manifest-cell"><span class="v">1 of 14</span><span class="k">reactor modules fully converted</span></div>
-      <div class="manifest-cell"><span class="v">111</span><span class="k">commits, 4 days</span></div>
+      <div class="manifest-cell"><span class="v">137</span><span class="k">commits, 8 days</span></div>
       <div class="manifest-cell"><span class="v">3</span><span class="k">build-logic convention plugins done</span></div>
-      <div class="manifest-cell"><span class="v">12</span><span class="k">real gaps found &amp; fixed</span></div>
-      <div class="manifest-cell"><span class="v">82</span><span class="k">common source files converted</span></div>
+      <div class="manifest-cell"><span class="v">14</span><span class="k">real gaps found &amp; fixed</span></div>
+      <div class="manifest-cell"><span class="v">100</span><span class="k">common source files converted</span></div>
       <div class="manifest-cell"><span class="v">8</span><span class="k">public surfaces kept in sync</span></div>
     </div>
   </div>
@@ -296,7 +296,7 @@
   <section>
     <h2>Build system first, real source now underway</h2>
     <p class="h2-sub">
-      Build-logic conventions done · test-logging published · common 82/144 files in · 12 modules not started
+      Build-logic conventions done · test-logging published · common 100/144 files in · 12 modules not started
     </p>
     <p class="lede">
       Migration order is deliberate and bottom-up: the shared Gradle conventions every module will apply — Java
@@ -304,7 +304,7 @@
       them. <code>test-logging</code> was the first module through that pipeline, published for real
       (<code>org.axonframework:axon-test-logging</code>) with its own genuine circular-dependency problem solved
       along the way. <code>common</code> is next, converted file by file in dependency order (base exception
-      hierarchy first, then each utility class once whatever it references exists) — 82 of 144 files so far. The
+      hierarchy first, then each utility class once whatever it references exists) — 100 of 144 files so far. The
       rest of the reactor — <code>conversion</code>, <code>messaging</code>, <code>eventsourcing</code>,
       <code>modelling</code>, and eight more — hasn't started; see
       <a href="https://github.com/Terrence721/AxonFramework-Full/blob/main/todo.md">todo.md</a>
@@ -332,7 +332,7 @@
   </section>
 
   <section>
-    <h2>Twelve real gaps, found and fixed</h2>
+    <h2>Fourteen real gaps, found and fixed</h2>
     <p class="h2-sub">
       Found by running a real build or reading a live API doc, not by assuming the first pass was right
     </p>
@@ -342,10 +342,12 @@
       public at the time. One turned up in this fork's own <code>.gitignore</code>. One turned up in upstream
       Axon's own Maven config — real drift in a widely-used project, not a typo. One turned up in Axon's own HTML
       hitting a stricter tool than upstream builds with. One turned up in the CI workflow's own first real run.
-      Four turned up while converting <code>common</code>'s own source files: a stale pre-Java-7 idiom carrying a
-      dead, unreachable catch block in two files, modernized without changing behavior, plus two real
+      Six turned up while converting <code>common</code>'s own source files: a stale pre-Java-7 idiom carrying a
+      dead, unreachable catch block in two files, modernized without changing behavior; two real
       inconsistencies caught by cross-checking new files against the interfaces and sibling classes they
-      implement rather than reading each file in isolation.
+      implement rather than reading each file in isolation; a nullness-contract chain across four files that
+      needed the user's own judgment call to resolve, not just a mechanical fix; and a nullness gap grounded in a
+      documented JDK API contract rather than a guess.
     </p>
     <div class="ledger">
       <div class="item">
@@ -526,6 +528,45 @@
           <div class="meta"><span class="tag">low · consistency drift</span></div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">13</div>
+        <div>
+          <div class="file">A nullness-contract chain across four files, resolved only after checking with the user</div>
+          <div class="desc">
+            <code>AbstractMethodPropertyAccessStrategy.propertyFor</code> declared its <code>property</code>
+            parameter <code>@Nullable</code>, widening <code>PropertyAccessStrategy</code>'s own non-null
+            abstract contract, then forwarded it unchecked into <code>getterName(String property)</code> —
+            non-null in the same class. <code>BeanPropertyAccessStrategy</code>'s override of
+            <code>getterName</code> inherited that widening, but its body calls
+            <code>property.charAt(0)</code> unconditionally — a real NPE if the annotation were ever taken at
+            its word. The real call path never passes null, but upstream's own test file declares
+            <code>@Nullable</code> on its test-double overrides of the same method, so the widening wasn't
+            obviously an accident either — confirmed the fix with the user rather than deciding unilaterally, the
+            one judgment call this fork treated as genuinely ambiguous. Separately, the same investigation found
+            the <em>return</em> type had the opposite problem: every real implementation returns <code>null</code>
+            in some branch and the only caller loops on it, but neither the abstract method nor one of its two
+            overrides declared <code>@Nullable Property&lt;T&gt;</code> — fixed to match the one override that
+            already had it right.
+          </div>
+          <div class="meta"><span class="tag">medium · nullness contract, confirmed not assumed</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">14</div>
+        <div>
+          <div class="file">A parameter's nullability didn't match what the JDK itself documents about it</div>
+          <div class="desc">
+            <code>ConnectionWrapperFactory.isEmpty</code> and
+            <code>.invokeMethodAndUnwrapNestedException</code> both receive <code>args</code> from
+            <code>InvocationHandler.invoke</code>'s own parameter, which the JDK documents as <code>null</code>
+            (not an empty array) when the invoked method takes no arguments. <code>isEmpty</code> already
+            null-checked it but didn't declare <code>@Nullable</code>; the other method forwarded the same
+            possibly-null value without declaring it either. Unlike gap #13, this one needed no judgment call —
+            the JDK's own contract settles it. Fixed both.
+          </div>
+          <div class="meta"><span class="tag">low · JDK-contract nullness gap</span></div>
+        </div>
+      </div>
     </div>
     <div class="note">
       <strong>Formerly an honest gap, now closed:</strong> the Gradle wrapper (<code>gradlew</code>,
@@ -596,7 +637,7 @@
       A deliberate Maven→Gradle build-system migration, not a bulk copy edited in place. Every number on this
       page is reproducible from the repository's own <code>todo.md</code>, commit history, and live project
       board — nothing here is asserted without a link to check it against. This one's genuinely early — 1 of 14
-      reactor modules fully converted, <code>common</code> 82 of 144 files in — see <code>todo.md</code> for the
+      reactor modules fully converted, <code>common</code> 100 of 144 files in — see <code>todo.md</code> for the
       honest current state rather than assuming it's further along.
     </p>
   </div>
