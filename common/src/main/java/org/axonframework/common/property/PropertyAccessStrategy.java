@@ -138,5 +138,5 @@ public abstract class PropertyAccessStrategy implements Comparable<PropertyAcces
      * @return the Property instance providing access to the property value, or {@code null} if property could not
      * be found.
      */
-    protected abstract <T> Property<T> propertyFor(Class<? extends T> targetClass, String property);
+    protected abstract @Nullable <T> Property<T> propertyFor(Class<? extends T> targetClass, String property);
 }
