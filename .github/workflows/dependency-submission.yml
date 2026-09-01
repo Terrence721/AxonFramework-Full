@@ -1,5 +1,7 @@
 name: Dependency Submission
 
+run-name: "Dependency Submission: ${{ github.event.head_commit.message }}"
+
 on:
   push:
     branches: [main]
