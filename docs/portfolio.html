@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta
   name="description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Fourteen real build-system gaps found and fixed so far, disclosed rather than smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Fifteen real build-system gaps found and fixed so far, disclosed rather than smoothed over."
 />
 <link rel="canonical" href="https://terrence721.github.io/AxonFramework-Full/portfolio.html" />
 
@@ -12,7 +12,7 @@
 <meta property="og:title" content="AxonFramework-Full — a Maven→Gradle build migration, by Terrence Daniels" />
 <meta
   property="og:description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — fourteen real build-system gaps found and fixed, disclosed not smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — fifteen real build-system gaps found and fixed, disclosed not smoothed over."
 />
 
 <meta name="twitter:card" content="summary" />
@@ -235,7 +235,7 @@
       A deliberate migration of <strong>Axon Framework 5</strong>'s build system from Maven to Gradle — converted
       <strong>one file at a time</strong>, each one individually inspected against the Maven source rather than run
       through an automated converter. Build-logic conventions are done, <code>test-logging</code> is published, and
-      <code>common</code>'s source conversion is underway (100 files in) — every gap found along the way, fourteen
+      <code>common</code>'s source conversion is underway (102 files in) — every gap found along the way, fifteen
       so far, is disclosed in this repo's own build log, not smoothed over. Genuinely early — 12 of 14 reactor modules
       haven't started converting at all.
     </p>
@@ -249,7 +249,7 @@
   </div>
   <div class="stamp" aria-hidden="true">
     <div class="stamp-inner">
-      <span class="n">14</span>
+      <span class="n">15</span>
       <span class="l">REAL GAPS<br />FOUND &amp; FIXED</span>
     </div>
   </div>
@@ -259,10 +259,10 @@
   <div class="wrap">
     <div class="manifest-row">
       <div class="manifest-cell"><span class="v">1 of 14</span><span class="k">reactor modules fully converted</span></div>
-      <div class="manifest-cell"><span class="v">137</span><span class="k">commits, 8 days</span></div>
+      <div class="manifest-cell"><span class="v">148</span><span class="k">commits, 11 days</span></div>
       <div class="manifest-cell"><span class="v">3</span><span class="k">build-logic convention plugins done</span></div>
-      <div class="manifest-cell"><span class="v">14</span><span class="k">real gaps found &amp; fixed</span></div>
-      <div class="manifest-cell"><span class="v">100</span><span class="k">common source files converted</span></div>
+      <div class="manifest-cell"><span class="v">15</span><span class="k">real gaps found &amp; fixed</span></div>
+      <div class="manifest-cell"><span class="v">102</span><span class="k">common source files converted</span></div>
       <div class="manifest-cell"><span class="v">8</span><span class="k">public surfaces kept in sync</span></div>
     </div>
   </div>
@@ -296,7 +296,7 @@
   <section>
     <h2>Build system first, real source now underway</h2>
     <p class="h2-sub">
-      Build-logic conventions done · test-logging published · common 100/144 files in · 12 modules not started
+      Build-logic conventions done · test-logging published · common 102/144 files in · 12 modules not started
     </p>
     <p class="lede">
       Migration order is deliberate and bottom-up: the shared Gradle conventions every module will apply — Java
@@ -304,7 +304,7 @@
       them. <code>test-logging</code> was the first module through that pipeline, published for real
       (<code>org.axonframework:axon-test-logging</code>) with its own genuine circular-dependency problem solved
       along the way. <code>common</code> is next, converted file by file in dependency order (base exception
-      hierarchy first, then each utility class once whatever it references exists) — 100 of 144 files so far. The
+      hierarchy first, then each utility class once whatever it references exists) — 102 of 144 files so far. The
       rest of the reactor — <code>conversion</code>, <code>messaging</code>, <code>eventsourcing</code>,
       <code>modelling</code>, and eight more — hasn't started; see
       <a href="https://github.com/Terrence721/AxonFramework-Full/blob/main/todo.md">todo.md</a>
@@ -332,7 +332,7 @@
   </section>
 
   <section>
-    <h2>Fourteen real gaps, found and fixed</h2>
+    <h2>Fifteen real gaps, found and fixed</h2>
     <p class="h2-sub">
       Found by running a real build or reading a live API doc, not by assuming the first pass was right
     </p>
@@ -342,12 +342,13 @@
       public at the time. One turned up in this fork's own <code>.gitignore</code>. One turned up in upstream
       Axon's own Maven config — real drift in a widely-used project, not a typo. One turned up in Axon's own HTML
       hitting a stricter tool than upstream builds with. One turned up in the CI workflow's own first real run.
-      Six turned up while converting <code>common</code>'s own source files: a stale pre-Java-7 idiom carrying a
+      Seven turned up while converting <code>common</code>'s own source files: a stale pre-Java-7 idiom carrying a
       dead, unreachable catch block in two files, modernized without changing behavior; two real
       inconsistencies caught by cross-checking new files against the interfaces and sibling classes they
       implement rather than reading each file in isolation; a nullness-contract chain across four files that
-      needed the user's own judgment call to resolve, not just a mechanical fix; and a nullness gap grounded in a
-      documented JDK API contract rather than a guess.
+      needed the user's own judgment call to resolve, not just a mechanical fix; a nullness gap grounded in a
+      documented JDK API contract rather than a guess; and a deliberate rewrite whose first, plausible-looking
+      attempt turned out wrong, caught only by testing it against a real, disposable database instance.
     </p>
     <div class="ledger">
       <div class="item">
@@ -567,6 +568,29 @@
           <div class="meta"><span class="tag">low · JDK-contract nullness gap</span></div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">15</div>
+        <div>
+          <div class="file">The "obvious" modernization was wrong, and a real Oracle instance is what caught it</div>
+          <div class="desc">
+            Upstream ships <code>Oracle11Utils</code>, a pre-12c workaround for Oracle lacking native
+            auto-increment: it retrofits one via <code>CREATE SEQUENCE</code> +
+            <code>CREATE OR REPLACE TRIGGER</code>. Nothing else in the Axon codebase calls it — confirmed by
+            grepping the whole Maven source — so rewriting it for Oracle 23ai, which has native identity
+            columns, breaks nothing else. First attempt: <code>ALTER TABLE ... MODIFY (col GENERATED AS
+            IDENTITY ...)</code> on the existing plain column — failed for real against a live, disposable
+            Oracle 23ai Free container with <code>ORA-30673</code> ("column to be modified is not an identity
+            column"). Oracle's <code>MODIFY</code> identity clause only adjusts a column that's already
+            identity; it cannot convert a plain one. The actual fix — drop the column, re-add it declared
+            identity — was verified the same way (three inserts producing ids 1, 2, 3), and is itself a
+            real, documented trade-off: unlike the original's purely-additive trigger, this discards any
+            existing data in that column. A <code>docker-compose.yml</code> plus two shell scripts (modeled on
+            this user's other portfolio forks' verification tooling, scoped down to the one container this
+            repo actually needs) now exist specifically so this kind of claim never has to be taken on faith.
+          </div>
+          <div class="meta"><span class="tag">medium · wrong-then-corrected, verified against a real instance</span></div>
+        </div>
+      </div>
     </div>
     <div class="note">
       <strong>Formerly an honest gap, now closed:</strong> the Gradle wrapper (<code>gradlew</code>,
@@ -637,7 +661,7 @@
       A deliberate Maven→Gradle build-system migration, not a bulk copy edited in place. Every number on this
       page is reproducible from the repository's own <code>todo.md</code>, commit history, and live project
       board — nothing here is asserted without a link to check it against. This one's genuinely early — 1 of 14
-      reactor modules fully converted, <code>common</code> 100 of 144 files in — see <code>todo.md</code> for the
+      reactor modules fully converted, <code>common</code> 102 of 144 files in — see <code>todo.md</code> for the
       honest current state rather than assuming it's further along.
     </p>
   </div>
