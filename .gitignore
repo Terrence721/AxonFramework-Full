@@ -27,6 +27,10 @@ axon.iws
 # IntelliJ project files
 *.iml
 
+# VS Code workspace file - personal/local, like the other portfolio forks (.vscode/settings.json
+# stays committed here though, since it carries the documented Gradle-import flakiness fix)
+*.code-workspace
+
 # Eclipse project files
 .classpath
 .project
