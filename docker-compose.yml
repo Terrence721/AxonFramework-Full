@@ -2,6 +2,10 @@ services:
   oracle-test:
     image: gvenzl/oracle-free:23-slim
     container_name: oracle23ai-test
+    # Persists across Docker Desktop restarts instead of needing an explicit stop -
+    # VS Code has no task hook for "on window close" to pair with folderOpen, so this
+    # is what actually keeps the container's lifecycle sane without one.
+    restart: unless-stopped
     ports:
       # Host port 1522, not the standard 1521 - avoids clashing with any other
       # Oracle instance/container already using the default port on this machine.
