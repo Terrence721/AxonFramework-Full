@@ -110,6 +110,32 @@ actually converted — `test-logging` is the first to come back on. The build is
 at the time, so building required a system-installed Gradle rather than `./gradlew` — resolved 2026-08-25, see
 "Gradle wrapper bootstrap" below.
 
+### Accepted exception: CI stays red across the `configuration` package's 12-file circular closure
+
+Unlike every other file converted so far, `common/.../configuration` isn't a clean dependency chain — it has real
+circular references, and one specific cluster turns out to span three packages at once. Tracing the actual
+`extends`/`implements`/method-signature dependencies **and** plain `import` statements that are only ever used in
+javadoc (an unresolved import is still a hard `javac` error, whether or not the imported type appears in real
+code — confirmed by real CI failures, not assumed), the following 12 files form one strongly-connected component
+that must all exist simultaneously before *any* of them compiles:
+
+`infra.DescribableComponent`, `lifecycle.Phase`, `configuration.Component`, `configuration.Configuration`,
+`configuration.LifecycleHandler`, `configuration.LifecycleRegistry`, `configuration.ComponentBuilder`,
+`configuration.ComponentLifecycleHandler`, `configuration.ComponentDefinition`, `configuration.AbstractComponent`,
+`configuration.InstantiatedComponentDefinition`, `configuration.LazyInitializedComponentDefinition`.
+
+**Deliberate choice, confirmed with the user rather than assumed:** rather than bundling these 12 files into one
+commit (the obvious way to keep every commit green), each still gets converted, diffed, and committed
+individually — meaning `:common:compileJava` fails on every one of the first 11 commits in this closure, with the
+exact same class of error each time (`cannot find symbol`, naming whichever not-yet-landed type that file
+references). This is expected and accepted, not a regression to chase — confirmed by watching the first real CI
+failure (`DescribableComponent`'s commit, citing `cannot find symbol: class Component`) match the prediction
+exactly. CI is only a meaningful signal again once the 12th file lands; treating an interior red run as "broken"
+and reacting to it would be a false alarm. The alternative — stubbing out placeholder types just to keep
+intermediate commits green — was considered and rejected as strictly worse: throwaway code committed to the repo
+purely to satisfy a build, then deleted again a few commits later, is a worse trail than an honestly-explained
+red streak.
+
 ### Resolved: local Gradle/Kotlin build flakiness (was Windows-specific, this machine)
 
 Starting around the `ProcessRetriesExhaustedException.java` conversion, local `gradle` builds on this development
