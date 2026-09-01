@@ -56,7 +56,7 @@ public interface Component<C> extends DescribableComponent {
      * @param configuration The configuration that declared this component.
      * @return The resolved instance defined in this component.
      */
-    C resolve(Configuration configuration);
+    @Nullable C resolve(Configuration configuration);
 
     /**
      * Indicates whether the component has been {@link #resolve(Configuration) resolved}.
