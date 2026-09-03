@@ -124,7 +124,7 @@ public interface LifecycleRegistry {
      */
     default LifecycleRegistry onStart(int phase, Consumer<Configuration> startHandler) {
         requireNonNull(startHandler, "startHandler must not be null");
-        return onStart(phase, configuration -> {
+        return onStart(phase, (LifecycleHandler) configuration -> {
             try {
                 startHandler.accept(configuration);
                 return FutureUtils.emptyCompletedFuture();
@@ -216,7 +216,7 @@ public interface LifecycleRegistry {
      */
     default LifecycleRegistry onShutdown(int phase, Consumer<Configuration> shutdownHandler) {
         requireNonNull(shutdownHandler, "shutdownHandler must not be null");
-        return onShutdown(phase, configuration -> {
+        return onShutdown(phase, (LifecycleHandler) configuration -> {
             try {
                 shutdownHandler.accept(configuration);
                 return FutureUtils.emptyCompletedFuture();
