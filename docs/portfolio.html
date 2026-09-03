@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta
   name="description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Sixteen real build-system gaps found and fixed so far, disclosed rather than smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Eighteen real build-system gaps found and fixed so far, disclosed rather than smoothed over."
 />
 <link rel="canonical" href="https://terrence721.github.io/AxonFramework-Full/portfolio.html" />
 
@@ -12,7 +12,7 @@
 <meta property="og:title" content="AxonFramework-Full — a Maven→Gradle build migration, by Terrence Daniels" />
 <meta
   property="og:description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — sixteen real build-system gaps found and fixed, disclosed not smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — eighteen real build-system gaps found and fixed, disclosed not smoothed over."
 />
 
 <meta name="twitter:card" content="summary" />
@@ -228,14 +228,14 @@
 
 <div class="hero">
   <div class="wrap">
-    <p class="eyebrow">Portfolio Manifest — Prepared 2026-08-29</p>
+    <p class="eyebrow">Portfolio Manifest — Prepared 2026-09-03</p>
     <h1 class="name">Terrence&nbsp;Daniels</h1>
     <p class="role">Full-Stack Java/Gradle Engineer</p>
     <p class="thesis">
       A deliberate migration of <strong>Axon Framework 5</strong>'s build system from Maven to Gradle — converted
       <strong>one file at a time</strong>, each one individually inspected against the Maven source rather than run
       through an automated converter. Build-logic conventions are done, <code>test-logging</code> is published, and
-      <code>common</code>'s source conversion is underway (119 files in) — every gap found along the way, sixteen
+      <code>common</code>'s source conversion is underway (136 files in) — every gap found along the way, eighteen
       so far, is disclosed in this repo's own build log, not smoothed over. Genuinely early — 12 of 14 reactor modules
       haven't started converting at all.
     </p>
@@ -249,7 +249,7 @@
   </div>
   <div class="stamp" aria-hidden="true">
     <div class="stamp-inner">
-      <span class="n">16</span>
+      <span class="n">18</span>
       <span class="l">REAL GAPS<br />FOUND &amp; FIXED</span>
     </div>
   </div>
@@ -259,10 +259,10 @@
   <div class="wrap">
     <div class="manifest-row">
       <div class="manifest-cell"><span class="v">1 of 14</span><span class="k">reactor modules fully converted</span></div>
-      <div class="manifest-cell"><span class="v">168</span><span class="k">commits, 11 days</span></div>
+      <div class="manifest-cell"><span class="v">190</span><span class="k">commits, 13 days</span></div>
       <div class="manifest-cell"><span class="v">3</span><span class="k">build-logic convention plugins done</span></div>
-      <div class="manifest-cell"><span class="v">16</span><span class="k">real gaps found &amp; fixed</span></div>
-      <div class="manifest-cell"><span class="v">119</span><span class="k">common source files converted</span></div>
+      <div class="manifest-cell"><span class="v">18</span><span class="k">real gaps found &amp; fixed</span></div>
+      <div class="manifest-cell"><span class="v">136</span><span class="k">common source files converted</span></div>
       <div class="manifest-cell"><span class="v">8</span><span class="k">public surfaces kept in sync</span></div>
     </div>
   </div>
@@ -296,7 +296,7 @@
   <section>
     <h2>Build system first, real source now underway</h2>
     <p class="h2-sub">
-      Build-logic conventions done · test-logging published · common 119/144 files in · 12 modules not started
+      Build-logic conventions done · test-logging published · common 136/144 files in · 12 modules not started
     </p>
     <p class="lede">
       Migration order is deliberate and bottom-up: the shared Gradle conventions every module will apply — Java
@@ -304,7 +304,7 @@
       them. <code>test-logging</code> was the first module through that pipeline, published for real
       (<code>org.axonframework:axon-test-logging</code>) with its own genuine circular-dependency problem solved
       along the way. <code>common</code> is next, converted file by file in dependency order (base exception
-      hierarchy first, then each utility class once whatever it references exists) — 119 of 144 files so far. The
+      hierarchy first, then each utility class once whatever it references exists) — 136 of 144 files so far. The
       rest of the reactor — <code>conversion</code>, <code>messaging</code>, <code>eventsourcing</code>,
       <code>modelling</code>, and eight more — hasn't started; see
       <a href="https://github.com/Terrence721/AxonFramework-Full/blob/main/todo.md">todo.md</a>
@@ -610,6 +610,39 @@
           <div class="meta"><span class="tag">low · nullness contract, found on a second pass</span></div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">17</div>
+        <div>
+          <div class="file">A lambda that only <code>javac</code> resolved correctly</div>
+          <div class="desc">
+            <code>LifecycleRegistry</code>'s <code>Consumer&lt;Configuration&gt;</code> overloads of
+            <code>onStart</code>/<code>onShutdown</code> each forward to a block lambda that returns a
+            <code>CompletableFuture&lt;?&gt;</code> — value-compatible only with the <code>LifecycleHandler</code>
+            overload, not the void-returning <code>Consumer</code> one, so <code>javac</code> resolves it
+            correctly per JLS 15.27.3 with no cast needed. The IDE's language server resolved it to the wrong
+            overload anyway, flagging valid <code>return</code> statements as errors. Two sibling overloads a few
+            lines up in the very same file already disambiguate this exact shape with an explicit
+            <code>(LifecycleHandler)</code>/<code>(Consumer&lt;Configuration&gt;)</code> cast; these two just
+            hadn't followed their own file's own established pattern. Added the matching cast to both.
+          </div>
+          <div class="meta"><span class="tag">low · overload-resolution disambiguation</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">18</div>
+        <div>
+          <div class="file">A decorator's declared contract didn't match what its only real caller actually passes it</div>
+          <div class="desc">
+            <code>ComponentDecorator.decorate</code>'s <code>delegate</code> parameter was declared plain
+            non-null, but its one real call site — <code>DecoratedComponent.doResolve</code> — passes
+            <code>delegate.resolve(configuration)</code> straight through, which is genuinely
+            <code>@Nullable</code> per <code>Component.resolve()</code>'s own contract (gap #16 above). Same
+            class of mismatch as #16, found the same way: reading the new file against the interfaces it actually
+            calls, not just against its own Maven source. Fixed by marking the parameter <code>@Nullable</code>.
+          </div>
+          <div class="meta"><span class="tag">low · nullness contract</span></div>
+        </div>
+      </div>
     </div>
     <div class="note">
       <strong>Formerly an honest gap, now closed:</strong> the Gradle wrapper (<code>gradlew</code>,
@@ -680,7 +713,7 @@
       A deliberate Maven→Gradle build-system migration, not a bulk copy edited in place. Every number on this
       page is reproducible from the repository's own <code>todo.md</code>, commit history, and live project
       board — nothing here is asserted without a link to check it against. This one's genuinely early — 1 of 14
-      reactor modules fully converted, <code>common</code> 119 of 144 files in — see <code>todo.md</code> for the
+      reactor modules fully converted, <code>common</code> 136 of 144 files in — see <code>todo.md</code> for the
       honest current state rather than assuming it's further along.
     </p>
   </div>
