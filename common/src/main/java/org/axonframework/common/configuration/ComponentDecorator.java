@@ -55,5 +55,5 @@ public interface ComponentDecorator<C, D> {
      */
     D decorate(Configuration config,
                @Nullable String name,
-               C delegate);
+               @Nullable C delegate);
 }
