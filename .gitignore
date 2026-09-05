@@ -31,6 +31,10 @@ axon.iws
 # stays committed here though, since it carries the documented Gradle-import flakiness fix)
 *.code-workspace
 
+# Isolated-extensions launcher script - personal machine tooling (hardcodes a personal AI-tool
+# choice and $env:USERPROFILE paths), same reasoning as the workspace file above
+open-isolated.ps1
+
 # cSpell dictionary - personal/local, same reasoning as the workspace file above
 cspell.json
 
