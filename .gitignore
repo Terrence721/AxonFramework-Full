@@ -38,11 +38,17 @@ open-isolated.ps1
 # cSpell dictionary - personal/local, same reasoning as the workspace file above
 cspell.json
 
-# Eclipse project files
+# Eclipse project files - auto-generated, machine-specific, never hand-edited
 .classpath
 .project
-.settings/
 .factorypath
+
+# .settings/ is otherwise Eclipse-generated too, but org.eclipse.jdt.core.prefs is a real, hand-authored
+# file VS Code's Java extension (jdt.ls) reads directly - kept committed like .vscode/settings.json,
+# for the same "helps anyone else's IDE experience with this repo" reasoning. Anything else that might
+# land in .settings/ from a real Eclipse import stays ignored.
+.settings/*
+!.settings/org.eclipse.jdt.core.prefs
 /.metadata/
 
 # Eclipse/JDT-style compiled-output dirs, written by the VS Code Java extension - scoped to
