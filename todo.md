@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated: August 29, 2026**
+**Last Updated: September 5, 2026**
 
 A living list of what's done and what's left on this build. This is a Maven-to-Gradle build-system migration of
 Axon Framework 5 — the Maven reactor is being converted **one file
@@ -62,13 +62,22 @@ for live status, or [Milestones](https://github.com/Terrence721/AxonFramework-Fu
 | `.vscode/settings.json`: `java.import.gradle.enabled` re-enabled | Disabling it earlier fixed a real race between the Java language server's own background Gradle sync and manual CLI builds, but it also leaves jdt.ls with no way to rebuild its project model after a workspace cache clear — every file then falls back to non-project, syntax-only checking. Re-enabled to restore full semantic analysis; avoid running manual `./gradlew` builds during a reload's re-import window to keep the original race from resurfacing |
 | `ComponentDecorator.decorate()` nullness gap | Its `delegate` parameter was declared plain non-null, but the only real call site (`DecoratedComponent.doResolve`) passes `delegate.resolve(configuration)` through directly — genuinely `@Nullable` per `Component.resolve()`'s own contract (same gap class as the `Component.resolve()` fix above). Found reading the new file against the interfaces it actually calls. Fixed to `@Nullable` |
 | Full drift sweep (2026-09-03) | Checked this file, `README.md`, `portfolio.html`, both diagrams, the wiki's Module Status page, the GitHub profile README, the personal-site landing-page card, and the GitHub Project board's `common module` tracking issue (#14). `common`'s file count had frozen at "119 of 144" (real: 136 of 144) — `infra` is now complete (6 of 6), `configuration` is 29 of 37 (only `ApplicationConfigurer`, `BaseModule`, `ComponentRegistry`, `ConfigurationEnhancer`, `ConfigurationExtensions`, `DefaultAxonApplication`, `DefaultComponentRegistry`, and `package-info.java` remain). Commit count corrected 168 → 190, days 11 → 13. Real-gap ledger count bumped 16 → 18, adding the `LifecycleRegistry` overload fix and the `ComponentDecorator` nullness fix as new ledger entries |
+| Full remaining-scope catalog & scrumboard expansion (2026-09-05) | Directly read every not-yet-started module's real `pom.xml` and counted its real source files in `F:\AxonFramework-main\AxonFramework-main` (`build/parent`'s remaining publications, `conversion`, `messaging`, `eventsourcing`, `modelling`, `migration`, `update`, `test`, all four `extensions` families, `integrationtests`, `docs/_samples`, `axon-framework-bom`) — real file counts, real artifactIds, and real intra-reactor dependency lists, not the surface-level module-name list this file carried before. One real correction found: `update` and `conversion` aren't peers of `messaging`, `messaging` depends on both, so they land first. Created 4 new milestones ([Phase 3](https://github.com/Terrence721/AxonFramework-Full/milestone/6)–[6](https://github.com/Terrence721/AxonFramework-Full/milestone/9)) and 16 new backlog issues (#15–#30, one per remaining module/publication), all added to the [project board](https://github.com/users/Terrence721/projects/8) with Status = Backlog — so the full remaining scope has the same tracking rigor as completed work, even though none of it is implemented yet |
 
-**Still to do:** the rest of the Maven reactor — `build/parent`, `axon-framework-bom`, `common`, `conversion`,
-`extensions` (its own sub-reactor: `kotlin`, `metrics`, `reactor`, `spring`), `eventsourcing`, `messaging`,
-`migration`, `modelling`, `test`, `update`, `integrationtests`, `docs/_samples` — converted bottom-up
-by dependency direction. Dependency versions are declared inline per module
-(no central `gradle/libs.versions.toml` catalog — see "Versioning approach" below), matching the style already used in
-`saga-full`. See "Still to do" below.
+**Still to do:** the rest of the Maven reactor — `build/parent`'s remaining publications, `axon-framework-bom`,
+`common`'s last 8 files, `conversion`, `extensions` (its own sub-reactor: `kotlin`, `metrics`, `reactor`, `spring`),
+`eventsourcing`, `messaging`, `migration`, `modelling`, `test`, `update`, `integrationtests`, `docs/_samples` —
+converted bottom-up by dependency direction. Dependency versions are declared inline per module (no central
+`gradle/libs.versions.toml` catalog — see "Versioning approach" below), matching the style already used in
+`saga-full`. **Every one of these now has its own backlog issue and sits on the [project
+board](https://github.com/users/Terrence721/projects/8) under one of four new milestones** — [Phase 3: Core Domain
+Modules](https://github.com/Terrence721/AxonFramework-Full/milestone/6), [Phase 4: Extensions
+Sub-Reactor](https://github.com/Terrence721/AxonFramework-Full/milestone/7), [Phase 5: Aggregation &
+Verification](https://github.com/Terrence721/AxonFramework-Full/milestone/8), [Phase 6: Publishing (BOM & Parent
+POMs)](https://github.com/Terrence721/AxonFramework-Full/milestone/9) — added 2026-09-05 by directly cataloguing
+the real Maven source (file counts, real `pom.xml` dependency lists, real artifactIds — not the surface-level
+module-name list this section used to carry) so the full remaining scope is visible even though none of it is
+implemented yet. See "Still to do" below for the per-module detail.
 
 ## ✅ Done
 
@@ -198,24 +207,100 @@ IDE-triggered download, which is what got invoked directly for every local build
 
 ## Still to do
 
-Bottom-up by dependency direction, per the source migration plan:
+Bottom-up by dependency direction. **The module catalog below (added 2026-09-05) comes from directly reading every
+remaining module's real `pom.xml` and counting its real source files in `F:\AxonFramework-main\AxonFramework-main`**
+— not from the surface-level module-name list this section used to carry. That direct read corrected the build
+order in one real way: `update` and `conversion` are *not* peers of `messaging` — `messaging` itself depends on
+both of them, so they have to land first. Every module below has its own backlog issue (linked) and lives on the
+[project board](https://github.com/users/Terrence721/projects/8), grouped into four milestones so the remaining
+scope is visible as a whole, not just as bare module names.
 
 1. ~~**Build-logic convention plugins**~~ — done: `axonframework.java-conventions`, `axonframework.published-conventions`,
    `axonframework.internal-conventions`. (No version catalog — see "Versioning approach" above, that decision
    stands.)
 2. **Leaf modules** — `test-logging` done, `common` skeleton done and source conversion underway (136 of 144
    files, one at a time in dependency order — see the "Done" table above for subpackage-level detail). **`test`
-   is not actually a leaf** despite this grouping's name:
-   `test/pom.xml` depends on `axon-eventsourcing` (Phase 3, not started) and `axon-common` (test-jar) — converting
-   it now would hit the same "Gradle won't configure the whole build" problem the module-directory blocker
-   already caused once. Don't start `test` until `eventsourcing` exists.
-3. **Core domain modules** — `conversion`, `messaging`, `eventsourcing`, `modelling`, `migration`, `update`
-4. **`extensions` sub-reactor** — `kotlin`, `metrics`, `reactor`, `spring`
-5. **Aggregation & verification** — `integrationtests`, `docs/_samples`, JaCoCo coverage aggregation
-   (`build/coverage-report` equivalent)
-6. **Publishing** — Central Portal publishing (`com.gradleup.nmcp`) and signing are wired; still open:
-   `axon-framework-bom` (via Gradle's `java-platform` plugin) and the root `axon` / `axon-parent` POM-only
-   publications — last, once every publishable module's coordinates are final
+   is not actually a leaf** despite this grouping's name — see its own row under Phase 3 below, since it depends
+   on `eventsourcing`.
+3. **Core domain modules — [Phase 3: Core Domain Modules](https://github.com/Terrence721/AxonFramework-Full/milestone/6)**
+   (~1,035 main source files across these seven modules combined — the bulk of what's left). Real build order,
+   confirmed from actual `pom.xml` dependency lists: `update` → `conversion` → `messaging` → `modelling` →
+   `eventsourcing` → `test`; `migration` has zero reactor dependencies and can land independently, any time.
+   - **`update`** (real artifact `axon-update`, [issue #16](https://github.com/Terrence721/AxonFramework-Full/issues/16))
+     — 27 main files. A phone-home-style update/vulnerability checker: detects the running Axon version, JVM/Kotlin
+     environment, and a machine identifier, then can query for available upgrades and known CVEs. Depends only on
+     `common`. Smallest and simplest of the seven.
+   - **`conversion`** (`axon-conversion`, [issue #15](https://github.com/Terrence721/AxonFramework-Full/issues/15))
+     — 39 main files. Payload (de)serialization — pluggable `Converter` abstractions with Jackson 2, Jackson 3, and
+     Avro implementations, replacing AF4's `Serializer`. Depends only on `common`. Publishes a test-jar.
+   - **`messaging`** (`axon-messaging`, [issue #17](https://github.com/Terrence721/AxonFramework-Full/issues/17))
+     — **534 main files, the largest module in the entire reactor**, larger than `common`'s full 144. The core
+     pub/sub and command/event/query bus infrastructure: message types, buses/gateways, interceptors,
+     unit-of-work, retry, sequencing, annotation-driven handler discovery, and the tracing SPI. Depends on
+     `common`, `update`, `conversion`. Given its size, this almost certainly deserves its own multi-session pass
+     the way `common` got, not a single sitting.
+   - **`modelling`** (`axon-modelling`, [issue #18](https://github.com/Terrence721/AxonFramework-Full/issues/18))
+     — 96 main files (95 test files — near 1:1). Domain-modelling building blocks: entity/aggregate metamodel,
+     repositories, annotation processing for Aggregates and Sagas. Depends on `messaging`.
+   - **`eventsourcing`** (`axon-eventsourcing`, [issue #19](https://github.com/Terrence721/AxonFramework-Full/issues/19))
+     — 113 main files. The event store abstraction and implementations, snapshotting, and the annotation-driven
+     event-sourced entity model — storing application state as a sequence of immutable events. Depends on
+     `modelling` and `messaging`.
+   - **`test`** (real artifact `axon-test` — the given-when-then fixture module, **not** `test-logging`, which is
+     already done — [issue #20](https://github.com/Terrence721/AxonFramework-Full/issues/20)) — 56 main files. The
+     `AxonTestFixture` API application developers use in their own test suites, successor to AF4's
+     `AggregateTestFixture`/`SagaTestFixture`. Depends on `eventsourcing` — the deepest single dependency of any
+     core module, so it's genuinely last among the seven, confirming it was never a real leaf module.
+   - **`migration`** (`axon-migration`, [issue #21](https://github.com/Terrence721/AxonFramework-Full/issues/21))
+     — 21 main files. **Not runtime code** — a library of OpenRewrite recipes that mechanically rewrite an AF4
+     consumer codebase toward AF5 (class/package renames, coordinate swaps, config property renames). Zero
+     dependencies on any other module in this reactor, so it's the one item in Phase 3 that could be picked up
+     out of order.
+4. **`extensions` sub-reactor — [Phase 4: Extensions Sub-Reactor](https://github.com/Terrence721/AxonFramework-Full/milestone/7)**
+   — optional integrations layered on top of Phase 3, four families:
+   - **`kotlin`** (`axon-kotlin` + `axon-kotlin-test`, [issue #22](https://github.com/Terrence721/AxonFramework-Full/issues/22))
+     — 11 files total. Kotlin DSL/extension-function wrappers over the Java gateway and configuration API, plus a
+     Kotlin wrapper over the `test` fixture API. The first Kotlin (not Java) source in this fork — needs its own
+     Gradle Kotlin-plugin wiring on top of the existing Java `build-logic` conventions.
+   - **`metrics`** (`axon-metrics-dropwizard` + `axon-metrics-micrometer`, [issue #23](https://github.com/Terrence721/AxonFramework-Full/issues/23))
+     — 22 files total. Message-monitoring metrics via Dropwizard Metrics 5 and via Micrometer. Both optionally
+     depend on `extensions/spring`'s autoconfigure module — a real cross-dependency within the extensions
+     sub-reactor, not just extensions-onto-core.
+   - **`reactor`** (`axon-reactor`, [issue #24](https://github.com/Terrence721/AxonFramework-Full/issues/24)) —
+     18 files. Reactive command/event/query gateways using Project Reactor, with dispatch interceptors that run
+     inside the Reactor subscription (giving access to Reactor context like `ReactiveSecurityContextHolder`).
+     Simplest of the four families — depends only on `messaging`.
+   - **`spring`** (`axon-spring` + `-boot-autoconfigure` + `-boot-starter` + `-boot-starter-test`,
+     [issue #25](https://github.com/Terrence721/AxonFramework-Full/issues/25)) — 98 files total, the largest
+     extension family. Spring wiring helpers, Spring Boot autoconfiguration, a pure-aggregation starter POM (no
+     source), and an `@AxonSpringBootTest` annotation with an auto-configured fixture bean. The only module family
+     in the whole reactor that legitimately depends on Spring at compile scope — it doesn't carry the
+     banned-Spring enforcer rule every core module does.
+5. **Aggregation & verification — [Phase 5: Aggregation & Verification](https://github.com/Terrence721/AxonFramework-Full/milestone/8)**
+   — cross-module checks that only become meaningful once Phases 3–4 exist:
+   - **`integrationtests`** (`axon-integrationtests`, [issue #26](https://github.com/Terrence721/AxonFramework-Full/issues/26))
+     — 0 main files, 126 test files. Cross-module black-box integration suite, no production code by design.
+     Widest database-driver surface of any module (Oracle, MySQL, HSQLDB, c3p0) for cross-store coverage.
+   - **`docs/_samples`** (`axon-docs-samples`, [issue #27](https://github.com/Terrence721/AxonFramework-Full/issues/27))
+     — a compile-only guard with no source of its own; it pulls in `.java` files that physically live in sibling
+     Antora documentation directories and just compiles them, to guarantee every documented code sample still
+     builds. Depends on `eventsourcing`, `test`, and the Spring extension's autoconfigure + starter-test modules
+     — meaning this is the very last core-reactor module that can be converted, full stop.
+   - **JaCoCo coverage aggregation** (`build/coverage-report` equivalent, [issue #28](https://github.com/Terrence721/AxonFramework-Full/issues/28))
+     — upstream's `coverage` Maven profile aggregates JaCoCo reports reactor-wide; no Gradle equivalent exists yet,
+     deferred until enough real code exists under test for it to mean anything.
+6. **Publishing — [Phase 6: Publishing (BOM & Parent POMs)](https://github.com/Terrence721/AxonFramework-Full/milestone/9)**
+   — Central Portal publishing (`com.gradleup.nmcp`) and signing are already wired; still open:
+   - **`build/parent` full implementation** ([issue #29](https://github.com/Terrence721/AxonFramework-Full/issues/29))
+     — the root `axon` POM-only publication (the aggregator artifact itself) and `axon-parent`'s own POM-only
+     publication carrying its ~50-entry third-party `dependencyManagement` version catalog and the banned-Spring
+     enforcer rule. This fork has no Gradle version catalog (see "Versioning approach" above), so this isn't a
+     literal transcription — it's a real decision to make once `conversion`/`messaging` actually need centralized
+     versions.
+   - **`axon-framework-bom`** ([issue #30](https://github.com/Terrence721/AxonFramework-Full/issues/30)) — via
+     Gradle's `java-platform` plugin. Manages 14 artifacts total; effectively the checklist for "is this fork
+     functionally complete for publishing purposes" — once every artifactId it lists has a real Gradle equivalent,
+     this is the last thing left to do.
 7. ~~**Gradle wrapper bootstrap**~~ — done 2026-08-25: `gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar`,
    and `gradle-wrapper.properties` (pinned to 9.2.0, with an explicit `distributionSha256Sum` sourced from
    Gradle's own distribution server — not just the bare default the `wrapper` task generates) are committed.
