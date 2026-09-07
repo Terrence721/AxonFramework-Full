@@ -19,9 +19,8 @@
 // (27 files under src/main/java; that's its own pass). Published (real org.axonframework:axon-update
 // coordinate). Real leaf dependency-wise: only depends on axon-common, which is fully converted.
 //
-// Same Maven <scope>/<optional> -> Gradle configuration mapping as common/build.gradle.kts:
-//   default (compile) scope, not optional -> api
-//   test scope                             -> testImplementation
+// See axonframework.java-conventions.gradle.kts for the canonical Maven scope/optional -> Gradle
+// configuration mapping used throughout this file.
 
 plugins {
     id("axonframework.published-conventions")

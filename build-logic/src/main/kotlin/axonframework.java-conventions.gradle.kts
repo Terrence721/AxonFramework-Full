@@ -18,6 +18,16 @@
 // Covers everything axon-parent applies to every module via Maven inheritance EXCEPT
 // publishing/signing/Central-portal wiring, which comes from root pom.xml's plugins/profiles
 // and belongs in a separate convention plugin.
+//
+// Canonical Maven <scope>/<optional> -> Gradle configuration mapping, used by every module's own
+// build.gradle.kts (kept here once rather than repeated per module, since this is the one file
+// every module actually applies):
+//   default (compile) scope, not optional -> api        (propagates to consumers, matches Maven)
+//   optional=true                          -> implementation (used internally, not exposed - the
+//                                              standard real-world mapping for Maven "optional";
+//                                              not a perfect semantic match, but the practical one)
+//   provided scope                         -> compileOnly
+//   test scope                             -> testImplementation
 
 plugins {
     `java-library`

@@ -22,13 +22,8 @@
 // unlike test/pom.xml (depends on axon-eventsourcing, not yet converted - not actually a leaf
 // despite todo.md's "leaf modules" grouping saying otherwise).
 //
-// Maven <scope>/<optional> -> Gradle configuration mapping used throughout:
-//   default (compile) scope, not optional -> api        (propagates to consumers, matches Maven)
-//   optional=true                          -> implementation (used internally, not exposed - the
-//                                              standard real-world mapping for Maven "optional";
-//                                              not a perfect semantic match, but the practical one)
-//   provided scope                         -> compileOnly
-//   test scope                             -> testImplementation
+// See axonframework.java-conventions.gradle.kts for the canonical Maven scope/optional -> Gradle
+// configuration mapping used throughout this file.
 
 plugins {
     id("axonframework.published-conventions")
