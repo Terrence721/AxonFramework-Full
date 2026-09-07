@@ -16,7 +16,6 @@
 
 package org.axonframework.common.infra;
 
-import org.axonframework.common.configuration.Component;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -185,9 +184,7 @@ public class FilesystemStyleComponentDescriptor implements ComponentDescriptor {
             String itemPath
     ) {
         var descriptor = new FilesystemStyleComponentDescriptor(componentPaths, itemPath);
-        var type = component instanceof Component<?>
-                ? ((Component<?>) component).identifier().typeAsClass().getName()
-                : component.getClass().getName();
+        var type = DescribableComponent.resolvedTypeName(component);
         descriptor.describeProperty("_ref", System.identityHashCode(component));
         descriptor.describeProperty("_type", type);
         component.describeTo(descriptor);

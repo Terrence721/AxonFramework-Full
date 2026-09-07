@@ -59,4 +59,21 @@ public interface DescribableComponent {
      * @param descriptor The component descriptor to describe {@code this DescribableComponent}n its properties in.
      */
     void describeTo(ComponentDescriptor descriptor);
+
+    /**
+     * Resolves a display-friendly type name for the given {@code component}, for use in diagnostic output such as
+     * {@link ComponentDescriptor} implementations.
+     * <p>
+     * If the given {@code component} is a {@link Component}, its {@link Component#identifier() identifier}'s
+     * registered type is used, since that reflects how the component was actually registered rather than its
+     * (possibly generated or proxied) runtime class. Otherwise, the component's own runtime class name is used.
+     *
+     * @param component The component to resolve a type name for.
+     * @return The resolved type name of the given {@code component}.
+     */
+    static String resolvedTypeName(DescribableComponent component) {
+        return component instanceof Component<?>
+                ? ((Component<?>) component).identifier().typeAsClass().getName()
+                : component.getClass().getName();
+    }
 }

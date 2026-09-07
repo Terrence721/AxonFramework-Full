@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.axonframework.common.configuration.Component;
 import org.jspecify.annotations.Nullable;
 
 
@@ -139,10 +138,7 @@ public class JacksonComponentDescriptor implements ComponentDescriptor {
     }
 
     private static void describeType(DescribableComponent component, ObjectNode objectNode) {
-        var type = component instanceof Component<?>
-                ? ((Component<?>) component).identifier().typeAsClass().getName()
-                : component.getClass().getName();
-        objectNode.put("_type", type);
+        objectNode.put("_type", DescribableComponent.resolvedTypeName(component));
     }
 
     @Override
