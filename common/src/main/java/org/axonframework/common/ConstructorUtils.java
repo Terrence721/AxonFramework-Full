@@ -79,7 +79,7 @@ public final class ConstructorUtils {
         return (Constructor<T>) Arrays
                 .stream(type.getDeclaredConstructors())
                 .filter(constructor -> constructorHasZeroOrExactlyThisArgument(constructor, argument))
-                .max(Comparator.comparingInt(Constructor::getParameterCount))
+                .max(Comparator.comparingInt(constructor -> constructor.getParameterCount()))
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No suitable constructor found for entity of type [%s] with optional argument of type [%s]"
                                 .formatted(type.getName(), argument.getName())));

@@ -39,8 +39,8 @@ public final class ClassUtils {
      * @param <C>       The class type.
      * @return The loaded class.
      */
+    @SuppressWarnings("unchecked")
     public static <C> Class<C> loadClass(String className) {
-        //noinspection unchecked
         return (Class<C>) cache.computeIfAbsent(className, (name) -> {
             try {
                 return classLoader.loadClass(name);
