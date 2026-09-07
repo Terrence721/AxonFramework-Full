@@ -19,6 +19,7 @@ package org.axonframework.common.caching;
 import org.axonframework.common.Assert;
 import org.axonframework.common.ObjectUtils;
 import org.axonframework.common.Registration;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
@@ -58,7 +59,7 @@ public class WeakReferenceCache implements Cache {
     }
 
     @Override
-    public <K, V> V get(K key) {
+    public @Nullable <K, V> V get(K key) {
         Assert.nonNull(key, () -> "Key may not be null");
         purgeItems();
         final Reference<Object> entry = cache.get(key);

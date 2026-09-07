@@ -23,6 +23,7 @@ import org.ehcache.event.CacheEventListener;
 import org.ehcache.event.EventFiring;
 import org.ehcache.event.EventOrdering;
 import org.ehcache.event.EventType;
+import org.jspecify.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.function.UnaryOperator;
@@ -48,7 +49,7 @@ public class EhCacheAdapter extends AbstractCacheAdapter<CacheEventListener> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <K, V> V get(K key) {
+    public @Nullable <K, V> V get(K key) {
         final Object value = ehCache.get(key);
         //noinspection unchecked
         return value != null ? (V) value : null;

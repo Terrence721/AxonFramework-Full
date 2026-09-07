@@ -319,10 +319,10 @@ public class JdbcUtils {
      * @throws NullPointerException If the {@code resultSet} or {@code columnType} are {@code null}.
      * @see #extract(ResultSet, int, Class, Object)
      */
-    public static <T> T nextAndExtract(ResultSet resultSet,
-                                       int column,
-                                       Class<T> columnType,
-                                       T defaultValue) throws SQLException, NullPointerException {
+    public static @Nullable <T> T nextAndExtract(ResultSet resultSet,
+                                                 int column,
+                                                 Class<T> columnType,
+                                                 @Nullable T defaultValue) throws SQLException, NullPointerException {
         return resultSet.next() ? extract(resultSet, column, columnType, defaultValue) : defaultValue;
     }
 
@@ -364,10 +364,10 @@ public class JdbcUtils {
      * @throws SQLException         if an error occurs while reading the object
      * @throws NullPointerException if the {@code resultSet} or {@code columnType} are {@code null}
      */
-    public static <T> T extract(ResultSet resultSet,
-                                int column,
-                                Class<T> columnType,
-                                T defaultValue) throws SQLException, NullPointerException {
+    public static @Nullable <T> T extract(ResultSet resultSet,
+                                          int column,
+                                          Class<T> columnType,
+                                          @Nullable T defaultValue) throws SQLException, NullPointerException {
         final T value = resultSet.getObject(column, columnType);
         return value == null || resultSet.wasNull() ? defaultValue : value;
     }

@@ -16,6 +16,8 @@
 
 package org.axonframework.common.io;
 
+import org.jspecify.annotations.Nullable;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -40,7 +42,7 @@ public final class IOUtils {
      *
      * @param closeable the object to be closed
      */
-    public static void closeQuietly(AutoCloseable closeable) {
+    public static void closeQuietly(@Nullable AutoCloseable closeable) {
         if (closeable != null) {
             try {
                 closeable.close();
@@ -56,7 +58,7 @@ public final class IOUtils {
      *
      * @param closeable the object to be closed
      */
-    public static void closeQuietlyIfCloseable(Object closeable) {
+    public static void closeQuietlyIfCloseable(@Nullable Object closeable) {
         if (closeable instanceof AutoCloseable) {
             closeQuietly((AutoCloseable) closeable);
         }

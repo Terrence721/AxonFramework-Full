@@ -16,6 +16,8 @@
 
 package org.axonframework.common.util;
 
+import org.jspecify.annotations.Nullable;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -58,6 +60,7 @@ public class MavenArtifactVersionResolver {
      * @return the version in the metadata of the artifact
      * @throws IOException When an exception occurs reading from the maven configuration file
      */
+    @Nullable
     public String get() throws IOException {
 
         final InputStream propFile = classLoader.getResourceAsStream(

@@ -17,6 +17,7 @@
 package org.axonframework.common.caching;
 
 import org.axonframework.common.Registration;
+import org.jspecify.annotations.Nullable;
 
 import java.util.function.UnaryOperator;
 import javax.cache.configuration.CacheEntryListenerConfiguration;
@@ -49,7 +50,7 @@ public class JCacheAdapter extends AbstractCacheAdapter<CacheEntryListenerConfig
     }
 
     @Override
-    public <K, V> V get(K key) {
+    public @Nullable <K, V> V get(K key) {
         //noinspection unchecked
         return (V) jCache.get(key);
     }

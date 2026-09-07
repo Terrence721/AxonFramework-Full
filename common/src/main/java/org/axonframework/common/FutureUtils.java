@@ -182,6 +182,7 @@ public final class FutureUtils {
      * @throws Throwable        the unwrapped cause if the future completed exceptionally (exact type preserved).
      */
     @SuppressWarnings("JavadocDeclaration")
+    @Nullable
     public static <T> T joinAndUnwrap(CompletableFuture<T> future, Duration timeout) {
         try {
             return future.orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS)
