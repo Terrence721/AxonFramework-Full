@@ -38,7 +38,7 @@ public class PriorityCallable<T> implements Callable<T>, PriorityTask {
     /**
      * Construct a priority task.
      *
-     * @param task     The {@link Callable<T>} that should be executed with a {@code priority}.
+     * @param task     The {@link Callable} that should be executed with a {@code priority}.
      * @param priority The priority of the {@code task} to execute, dedicating the order among tasks.
      * @param sequence The sequence of the {@code task} to execute, dedicating the order among equal {@code priority}
      *                 tasks.
