@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta
   name="description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Eighteen real build-system gaps found and fixed so far, disclosed rather than smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Thirty-one real build-system gaps found and fixed so far, disclosed rather than smoothed over."
 />
 <link rel="canonical" href="https://terrence721.github.io/AxonFramework-Full/portfolio.html" />
 
@@ -12,7 +12,7 @@
 <meta property="og:title" content="AxonFramework-Full — a Maven→Gradle build migration, by Terrence Daniels" />
 <meta
   property="og:description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — eighteen real build-system gaps found and fixed, disclosed not smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — thirty-one real build-system gaps found and fixed, disclosed not smoothed over."
 />
 
 <meta name="twitter:card" content="summary" />
@@ -228,16 +228,16 @@
 
 <div class="hero">
   <div class="wrap">
-    <p class="eyebrow">Portfolio Manifest — Prepared 2026-09-03</p>
+    <p class="eyebrow">Portfolio Manifest — Prepared 2026-09-07</p>
     <h1 class="name">Terrence&nbsp;Daniels</h1>
     <p class="role">Full-Stack Java/Gradle Engineer</p>
     <p class="thesis">
       A deliberate migration of <strong>Axon Framework 5</strong>'s build system from Maven to Gradle — converted
       <strong>one file at a time</strong>, each one individually inspected against the Maven source rather than run
-      through an automated converter. Build-logic conventions are done, <code>test-logging</code> is published, and
-      <code>common</code>'s source conversion is underway (136 files in) — every gap found along the way, eighteen
-      so far, is disclosed in this repo's own build log, not smoothed over. Genuinely early — 12 of 14 reactor modules
-      haven't started converting at all.
+      through an automated converter. Build-logic conventions are done, <code>test-logging</code> and
+      <code>common</code> are both fully converted, and <code>update</code>'s source conversion is underway (7 of 27
+      files in) — every gap found along the way, thirty-one so far, is disclosed in this repo's own build log, not
+      smoothed over. Still early — 11 of 14 reactor modules haven't started converting at all.
     </p>
     <div class="hero-actions">
       <a class="btn primary" href="https://github.com/Terrence721/AxonFramework-Full">View the repository →</a>
@@ -249,7 +249,7 @@
   </div>
   <div class="stamp" aria-hidden="true">
     <div class="stamp-inner">
-      <span class="n">18</span>
+      <span class="n">31</span>
       <span class="l">REAL GAPS<br />FOUND &amp; FIXED</span>
     </div>
   </div>
@@ -258,11 +258,11 @@
 <div class="manifest">
   <div class="wrap">
     <div class="manifest-row">
-      <div class="manifest-cell"><span class="v">1 of 14</span><span class="k">reactor modules fully converted</span></div>
-      <div class="manifest-cell"><span class="v">190</span><span class="k">commits, 13 days</span></div>
+      <div class="manifest-cell"><span class="v">2 of 14</span><span class="k">reactor modules fully converted</span></div>
+      <div class="manifest-cell"><span class="v">236</span><span class="k">commits, 17 days</span></div>
       <div class="manifest-cell"><span class="v">3</span><span class="k">build-logic convention plugins done</span></div>
-      <div class="manifest-cell"><span class="v">18</span><span class="k">real gaps found &amp; fixed</span></div>
-      <div class="manifest-cell"><span class="v">136</span><span class="k">common source files converted</span></div>
+      <div class="manifest-cell"><span class="v">31</span><span class="k">real gaps found &amp; fixed</span></div>
+      <div class="manifest-cell"><span class="v">144 of 144</span><span class="k">common source files converted</span></div>
       <div class="manifest-cell"><span class="v">8</span><span class="k">public surfaces kept in sync</span></div>
     </div>
   </div>
@@ -296,17 +296,19 @@
   <section>
     <h2>Build system first, real source now underway</h2>
     <p class="h2-sub">
-      Build-logic conventions done · test-logging published · common 136/144 files in · 12 modules not started
+      Build-logic conventions done · test-logging published · common complete (144/144) · update underway (7/27)
+      · 11 modules not started
     </p>
     <p class="lede">
       Migration order is deliberate and bottom-up: the shared Gradle conventions every module will apply — Java
       toolchain, checkstyle, publishing, signing — had to exist before any real module could be converted onto
       them. <code>test-logging</code> was the first module through that pipeline, published for real
       (<code>org.axonframework:axon-test-logging</code>) with its own genuine circular-dependency problem solved
-      along the way. <code>common</code> is next, converted file by file in dependency order (base exception
-      hierarchy first, then each utility class once whatever it references exists) — 136 of 144 files so far. The
-      rest of the reactor — <code>conversion</code>, <code>messaging</code>, <code>eventsourcing</code>,
-      <code>modelling</code>, and eight more — hasn't started; see
+      along the way. <code>common</code> followed, converted file by file in dependency order (base exception
+      hierarchy first, then each utility class once whatever it references exists) — now fully done at 144 of 144
+      files, the first module beyond <code>test-logging</code> to reach that state. <code>update</code> is next,
+      7 of 27 files in. The rest of the reactor — <code>conversion</code>, <code>messaging</code>,
+      <code>eventsourcing</code>, <code>modelling</code>, and seven more — hasn't started; see
       <a href="https://github.com/Terrence721/AxonFramework-Full/blob/main/todo.md">todo.md</a>
       for the honest current state rather than assuming more is done.
     </p>
@@ -332,9 +334,10 @@
   </section>
 
   <section>
-    <h2>Sixteen real gaps, found and fixed</h2>
+    <h2>Thirty-one real gaps, found and fixed</h2>
     <p class="h2-sub">
-      Found by running a real build or reading a live API doc, not by assuming the first pass was right
+      Found by running a real build, reading a live API doc, or auditing already-converted files a second time —
+      not by assuming the first pass was right
     </p>
     <p class="lede">
       Four turned up in this fork's own Gradle translation of Maven's inheritance and publishing model. One
@@ -348,7 +351,16 @@
       implement rather than reading each file in isolation; a nullness-contract chain across four files that
       needed the user's own judgment call to resolve, not just a mechanical fix; a nullness gap grounded in a
       documented JDK API contract rather than a guess; and a deliberate rewrite whose first, plausible-looking
-      attempt turned out wrong, caught only by testing it against a real, disposable database instance.
+      attempt turned out wrong, caught only by testing it against a real, disposable database instance. Six more
+      turned up finishing <code>common</code>'s last few files: missing-<code>@Nullable</code> gaps, a
+      message-polarity bug, and a wrong exception type, all found by cross-checking a file against the interface
+      or sibling it implements rather than reading it in isolation. The remaining seven turned up from a
+      deliberate retroactive pass: once <code>common</code> reached 144 of 144 files, a second, independent audit
+      re-checked every one of them against a DRY/SOLID charter this fork adopted partway through — not because
+      any of them were wrong when first converted, but because the charter itself came later. All seven are the
+      same class of gap as everything above: a javadoc claim that didn't match its own implementation, a
+      copy-pasted error message with the polarity backwards, and five places where a value can genuinely be
+      <code>null</code> but the type didn't say so.
     </p>
     <div class="ledger">
       <div class="item">
@@ -643,6 +655,188 @@
           <div class="meta"><span class="tag">low · nullness contract</span></div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">19</div>
+        <div>
+          <div class="file">Two overloads of a private helper widened nullability without saying so</div>
+          <div class="desc">
+            <code>DefaultComponentRegistry.LocalConfiguration.fromParent</code>'s <code>Class&lt;C&gt;</code> and
+            <code>TypeReference&lt;C&gt;</code> overloads both declared their <code>name</code> parameter non-null,
+            but both are called from <code>getOptionalComponent</code>'s own <code>@Nullable String name</code>
+            and forward it straight into <code>Configuration.getOptionalComponent(..., @Nullable String)</code>.
+            Fixed both to <code>@Nullable</code>.
+          </div>
+          <div class="meta"><span class="tag">low · nullness contract</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">20</div>
+        <div>
+          <div class="file">An assertion message described half of what it actually checks</div>
+          <div class="desc">
+            <code>DefaultComponentRegistry.getModuleConfiguration</code>'s
+            <code>Assert.nonEmpty(name, "The name must not be null.")</code> only names the null case, but
+            <code>nonEmpty</code> also rejects an empty string — <code>DecoratorDefinition.java</code>'s identical
+            call already said "must not be empty or null." Matched it.
+          </div>
+          <div class="meta"><span class="tag">low · message accuracy</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">21</div>
+        <div>
+          <div class="file">A validation message had its own polarity backwards</div>
+          <div class="desc">
+            <code>BaseModule.componentRegistry</code>'s
+            <code>requireNonNull(registryAction, "The registryAction must be null.")</code> fires precisely when
+            the value <em>is</em> null, but the message claims the opposite requirement — a copy-paste error that
+            would mislead anyone reading the exception rather than the source. Fixed to "must not be null."
+          </div>
+          <div class="meta"><span class="tag">low · message-polarity bug</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">22</div>
+        <div>
+          <div class="file">An import that nothing in the file actually used</div>
+          <div class="desc">
+            <code>DefaultAxonApplication</code> imported <code>org.jspecify.annotations.NonNull</code>, but
+            nothing in the file references it — only the unrelated <code>Objects.requireNonNull</code> static
+            import shares the substring, which is likely how it went unnoticed. Removed.
+          </div>
+          <div class="meta"><span class="tag">low · dead import</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">23</div>
+        <div>
+          <div class="file">Another interface/implementation nullness mismatch, same shape as gap #16</div>
+          <div class="desc">
+            <code>AxonConfigurationImpl.getParent()</code> genuinely returns <code>null</code> for the root
+            configuration, but wasn't declared <code>@Nullable</code> — while <code>Configuration.getParent()</code>
+            itself is, and <code>DefaultComponentRegistry</code>'s own <code>LocalConfiguration.getParent()</code>
+            already implements it correctly. Matched the interface's real contract.
+          </div>
+          <div class="meta"><span class="tag">low · nullness contract</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">24</div>
+        <div>
+          <div class="file">The wrong exception type for a state violation, not an argument problem</div>
+          <div class="desc">
+            <code>DefaultAxonApplication.registerLifecycleHandler</code>'s "configuration already initialized"
+            check threw <code>IllegalArgumentException</code>, but nothing about an argument is wrong here — it's
+            a timing/state violation. <code>BaseModule</code>'s identical "already been built" check correctly
+            uses <code>IllegalStateException</code>. Matched.
+          </div>
+          <div class="meta"><span class="tag">low · wrong exception type</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">25</div>
+        <div>
+          <div class="file">A utility method's javadoc described an ordering its own implementation doesn't produce</div>
+          <div class="desc">
+            <code>CollectionUtils.intersect</code>'s javadoc claims matched items are returned "in the order as
+            found in collection2," but the implementation seeds a lookup set from <code>collection2</code> and
+            then iterates <code>collection1</code>, appending matches in <em>that</em> order — confirmed
+            byte-identical to the real upstream method, so this is genuine upstream drift, not something this
+            fork introduced. Found during a deliberate retroactive DRY/SOLID re-audit of all 144 finished
+            <code>common</code> files, not a build failure. Corrected the javadoc to match the actual, correct
+            behavior rather than changing a working algorithm to match a wrong sentence.
+          </div>
+          <div class="meta"><span class="tag">low · javadoc/implementation mismatch</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">26</div>
+        <div>
+          <div class="file">Same message-polarity bug as gap #21, one package over</div>
+          <div class="desc">
+            <code>Components.postProcessComponents</code>'s
+            <code>requireNonNull(processor, "The component post processor must be null.")</code> has the identical
+            backwards polarity as the <code>BaseModule</code> fix above — confirmed present in the real upstream
+            source too. Fixed to "must not be null."
+          </div>
+          <div class="meta"><span class="tag">low · message-polarity bug</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">27</div>
+        <div>
+          <div class="file">A return path documented as nullable in prose, but not in the type</div>
+          <div class="desc">
+            <code>FutureUtils.joinAndUnwrap(future, timeout)</code> can return <code>null</code> by its own
+            javadoc, yet only the 1-arg overload that just delegates to it carried <code>@Nullable</code> —
+            confirmed present in the real upstream source too. Added it to the 2-arg overload as well.
+          </div>
+          <div class="meta"><span class="tag">low · nullness contract</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">28</div>
+        <div>
+          <div class="file">Two more parameters documented as nullable in prose, but not in the type</div>
+          <div class="desc">
+            <code>IOUtils.closeQuietly</code> and <code>closeQuietlyIfCloseable</code> both say in their own
+            javadoc that the argument "may be null, in which case nothing happens" — neither parameter carried
+            <code>@Nullable</code>. Added it to both.
+          </div>
+          <div class="meta"><span class="tag">low · nullness contract</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">29</div>
+        <div>
+          <div class="file">A method that returns null from two different paths, declaring neither</div>
+          <div class="desc">
+            <code>MavenArtifactVersionResolver.get()</code> returns <code>null</code> explicitly when the
+            metadata file is missing, and implicitly via <code>Properties#getProperty</code> when the
+            <code>version</code> key isn't present — confirmed present in the real upstream source. Declared
+            <code>@Nullable</code>.
+          </div>
+          <div class="meta"><span class="tag">low · nullness contract</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">30</div>
+        <div>
+          <div class="file">A default value's nullability didn't survive being forwarded between overloads</div>
+          <div class="desc">
+            <code>JdbcUtils</code>'s 3-arg <code>nextAndExtract</code>/<code>extract</code> overloads call their
+            4-arg siblings with a literal <code>null</code> <code>defaultValue</code>, and the 4-arg bodies can
+            return that <code>null</code> straight through — neither the parameter nor the return type on the
+            4-arg overloads declared <code>@Nullable</code>, confirmed present in the real upstream source.
+            Fixed both.
+          </div>
+          <div class="meta"><span class="tag">low · nullness contract</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">31</div>
+        <div>
+          <div class="file">Four cache implementations dropped their interface's own @Nullable</div>
+          <div class="desc">
+            <code>Cache.get(K)</code> is declared <code>@Nullable</code> — a cache miss is the normal, documented
+            case — but none of its four implementations (<code>WeakReferenceCache</code>, <code>JCacheAdapter</code>,
+            <code>EhCacheAdapter</code>, <code>NoCache</code>) repeated the annotation on their override, despite
+            every one of them genuinely returning <code>null</code> on a miss. Fixed all four to match the
+            interface they implement.
+          </div>
+          <div class="meta"><span class="tag">low · nullness contract, four files</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <strong>Not counted in the 31 above, but part of the same retroactive audit:</strong> three real DRY
+      duplications (a type-name ternary copy-pasted across two <code>ComponentDescriptor</code> implementations,
+      two near-identical private filter methods in <code>Components</code>, and <code>JdbcSQLErrorCodesResolver</code>
+      reimplementing a cause-chain walk <code>ExceptionUtils</code> already provides) and a batch of pure
+      formatting drift (eight IntelliJ-only <code>//noinspection</code> comments invisible to this project's
+      actual Eclipse-based tooling, sixteen doubled blank lines, one file still using tab indentation). All fixed
+      the same session, all verified the same way — but none of them change behavior, so none of them are counted
+      as a "gap," matching how the <code>ComponentRegistry</code> javadoc typo above wasn't either.
     </div>
     <div class="note">
       <strong>Formerly an honest gap, now closed:</strong> the Gradle wrapper (<code>gradlew</code>,
@@ -712,8 +906,8 @@
     <p class="fine">
       A deliberate Maven→Gradle build-system migration, not a bulk copy edited in place. Every number on this
       page is reproducible from the repository's own <code>todo.md</code>, commit history, and live project
-      board — nothing here is asserted without a link to check it against. This one's genuinely early — 1 of 14
-      reactor modules fully converted, <code>common</code> 136 of 144 files in — see <code>todo.md</code> for the
+      board — nothing here is asserted without a link to check it against. This one's still early — 2 of 14
+      reactor modules fully converted, <code>update</code> 7 of 27 files in — see <code>todo.md</code> for the
       honest current state rather than assuming it's further along.
     </p>
   </div>
