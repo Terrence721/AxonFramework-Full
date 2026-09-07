@@ -56,10 +56,40 @@ tasks.withType<Javadoc>().configureEach {
     (options as StandardJavadocDocletOptions).addStringOption("Xdoclint:none", "-quiet")
 }
 
+// Several real Maven modules (common, conversion, messaging, eventsourcing, modelling, update) use
+// maven-jar-plugin's test-jar goal so other modules can depend on their test-scope helper classes
+// (fixtures, base test classes) via a <type>test-jar</type> dependency - deferred here until a real
+// consumer existed to verify it against (axon-update is the first: its pom.xml depends on
+// axon-common's test-jar). Centralized rather than repeated per module, since the mechanism is
+// identical everywhere it's needed. Exposed two ways: as a real artifact on the Maven publication
+// (for external consumers, matching Maven's own behavior) and as an outgoing "testArtifacts"
+// configuration (so sibling modules in this same build can depend on it directly via project(...)
+// without a publish-then-resolve round trip).
+val testJar by tasks.registering(Jar::class) {
+    archiveClassifier = "test"
+    from(sourceSets["test"].output)
+}
+
+// Maven's test-jar goal is bound to the package phase, so it runs on every normal build/install -
+// matched here rather than leaving testJar only runnable on-demand.
+tasks.assemble {
+    dependsOn(testJar)
+}
+
+val testArtifacts by configurations.creating {
+    isCanBeResolved = false
+    isCanBeConsumed = true
+}
+
+artifacts {
+    add(testArtifacts.name, testJar)
+}
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
+            artifact(testJar)
             // base.archivesName above only renames the jar file itself - MavenPublication's
             // artifactId still defaults to the raw project.name independently and needs setting
             // here too, confirmed by inspecting the actually-generated POM, not assumed from the
