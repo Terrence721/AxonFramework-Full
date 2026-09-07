@@ -16,7 +16,6 @@
 
 package org.axonframework.common.util;
 
-import java.util.Objects;
 import java.util.concurrent.Callable;
 
 /**
@@ -29,11 +28,7 @@ import java.util.concurrent.Callable;
  * @since 4.6.0
  * @param <T> The type of the result returned by the {@link Callable#call()} method.
  */
-public class PriorityCallable<T> implements Callable<T>, PriorityTask {
-
-    private final Callable<T> task;
-    private final long priority;
-    private final long sequence;
+public class PriorityCallable<T> extends AbstractPriorityTask<Callable<T>> implements Callable<T> {
 
     /**
      * Construct a priority task.
@@ -44,47 +39,11 @@ public class PriorityCallable<T> implements Callable<T>, PriorityTask {
      *                 tasks.
      */
     public PriorityCallable(Callable<T> task, long priority, long sequence) {
-        this.task = task;
-        this.priority = priority;
-        this.sequence = sequence;
+        super(task, priority, sequence);
     }
 
     @Override
     public T call() throws Exception {
         return task.call();
-    }
-
-    public long priority() {
-        return priority;
-    }
-
-    public long sequence() {
-        return sequence;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        PriorityCallable<?> that = (PriorityCallable<?>) o;
-        return priority == that.priority && sequence == that.sequence && Objects.equals(task, that.task);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(task, priority, sequence);
-    }
-
-    @Override
-    public String toString() {
-        return "PriorityCallable{" +
-                "task=" + task +
-                ", priority=" + priority +
-                ", sequence=" + sequence +
-                '}';
     }
 }

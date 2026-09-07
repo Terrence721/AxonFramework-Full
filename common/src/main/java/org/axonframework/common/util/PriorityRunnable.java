@@ -16,8 +16,6 @@
 
 package org.axonframework.common.util;
 
-import java.util.Objects;
-
 /**
  * A wrapper class of {@link Runnable Runnables} that adheres to a priority by implementing {@link PriorityTask}. Uses a
  * combination of {@code priority} and {@code index} to compare between {@code this} and other priority task instances.
@@ -27,11 +25,7 @@ import java.util.Objects;
  *
  * @since 4.6.0
  */
-public class PriorityRunnable implements Runnable, PriorityTask {
-
-    private final Runnable task;
-    private final long priority;
-    private final long sequence;
+public class PriorityRunnable extends AbstractPriorityTask<Runnable> implements Runnable {
 
     /**
      * Construct a priority task.
@@ -42,47 +36,11 @@ public class PriorityRunnable implements Runnable, PriorityTask {
      *                 tasks.
      */
     public PriorityRunnable(Runnable task, long priority, long sequence) {
-        this.task = task;
-        this.priority = priority;
-        this.sequence = sequence;
+        super(task, priority, sequence);
     }
 
     @Override
     public void run() {
         task.run();
-    }
-
-    public long priority() {
-        return priority;
-    }
-
-    public long sequence() {
-        return sequence;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        PriorityRunnable that = (PriorityRunnable) o;
-        return priority == that.priority && sequence == that.sequence && Objects.equals(task, that.task);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(task, priority, sequence);
-    }
-
-    @Override
-    public String toString() {
-        return "PriorityRunnable{" +
-                "task=" + task +
-                ", priority=" + priority +
-                ", sequence=" + sequence +
-                '}';
     }
 }
