@@ -84,7 +84,7 @@ include("common")
 // include("modelling")
 // include("test")
 include("test-logging")
-// include("update")
+include("update")
 
 // include("integrationtests")
 
