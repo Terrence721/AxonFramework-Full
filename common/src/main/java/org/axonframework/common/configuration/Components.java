@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -70,18 +71,8 @@ public class Components implements DescribableComponent {
                        });
     }
 
-    @SuppressWarnings("unchecked")
     private <C> List<Component<C>> getComponentsAssignableTo(Identifier<C> identifier) {
-        List<Component<C>> matches = components.entrySet().stream()
-                                               .filter(entry -> identifier.matches(entry.getKey()))
-                                               .map(entry -> entry.getValue())
-                                               .map(component -> (Component<C>) component)
-                                               .toList();
-
-        if (matches.size() > 1) {
-            throw new AmbiguousComponentMatchException(identifier);
-        }
-        return matches;
+        return getComponentsMatching(identifier, identifier::matches);
     }
 
     /**
@@ -107,11 +98,14 @@ public class Components implements DescribableComponent {
                        });
     }
 
-    @SuppressWarnings("unchecked")
     private <C> List<Component<C>> getComponentsTypeRefAssignableTo(Identifier<C> identifier) {
+        return getComponentsMatching(identifier, identifier::matchesByTypeRef);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <C> List<Component<C>> getComponentsMatching(Identifier<C> identifier, Predicate<Identifier<?>> matcher) {
         List<Component<C>> matches = components.entrySet().stream()
-                                               .filter(e ->
-                                                               identifier.matchesByTypeRef(e.getKey()))
+                                               .filter(entry -> matcher.test(entry.getKey()))
                                                .map(entry -> entry.getValue())
                                                .map(component -> (Component<C>) component)
                                                .toList();
@@ -212,7 +206,7 @@ public class Components implements DescribableComponent {
      * @param processor The action to invoke for each component.
      */
     public void postProcessComponents(Consumer<Component<?>> processor) {
-        requireNonNull(processor, "The component post processor must be null.");
+        requireNonNull(processor, "The component post processor must not be null.");
         components.values().forEach(processor);
     }
 

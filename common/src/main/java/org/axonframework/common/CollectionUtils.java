@@ -111,7 +111,7 @@ public final class CollectionUtils {
     /**
      * Returns a collection containing the elements that are in both given collections {@code collection1} and
      * {@code collection2}, using the given {@code collectionBuilder} to create an instance for the new collection. The
-     * items are added to the resulting collection in the order as found in collection2.
+     * items are added to the resulting collection in the order as found in collection1.
      *
      * @param collection1       The first collection
      * @param collection2       The second collection
