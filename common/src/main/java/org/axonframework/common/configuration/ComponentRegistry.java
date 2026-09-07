@@ -237,7 +237,6 @@ public interface ComponentRegistry extends DescribableComponent {
         return registerIfNotPresent(type, null, builder);
     }
 
-
     /**
      * Registers a {@link Component} only <b>if</b> there is none yet for the given {@code type}.
      * <p>
@@ -283,7 +282,6 @@ public interface ComponentRegistry extends DescribableComponent {
         return registerIfNotPresent(ComponentDefinition.ofTypeAndName(type, name).withBuilder(builder));
     }
 
-
     /**
      * Registers a {@link Component} only <b>if</b> there is none yet for the given {@code type} and {@code name}
      * combination.
@@ -326,7 +324,6 @@ public interface ComponentRegistry extends DescribableComponent {
                 ? hasComponent(definition.rawType()) ? this : registerComponent(definition)
                 : hasComponent(definition.rawType(), definition.name()) ? this : registerComponent(definition);
     }
-
 
     /**
      * Registers a {@link Component} based on the given {@code definition} only <b>if</b> there is none yet for the

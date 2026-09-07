@@ -115,7 +115,6 @@ public class DefaultComponentRegistry implements ComponentRegistry, Configurable
         return registry;
     }
 
-
     @Override
     public <C> ComponentRegistry registerComponent(ComponentDefinition<? extends C> definition) {
         requireNonNull(definition, "The ComponentDefinition must not be null.");
@@ -485,7 +484,6 @@ public class DefaultComponentRegistry implements ComponentRegistry, Configurable
                     : defaultSupplier.get();
         }
 
-
         @Override
         public List<Configuration> getModuleConfigurations() {
             return modules.builtConfigurations();
@@ -496,7 +494,6 @@ public class DefaultComponentRegistry implements ComponentRegistry, Configurable
             descriptor.describeProperty("components", components);
             descriptor.describeProperty("modules", modules.builtConfigurations());
         }
-
 
         @Override
         public Optional<Configuration> getModuleConfiguration(String name) {

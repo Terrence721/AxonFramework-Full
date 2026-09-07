@@ -23,7 +23,6 @@ import java.util.ServiceLoader;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-
 /**
  * Abstract Strategy that provides access to all PropertyAccessStrategy implementations.
  * <p/>

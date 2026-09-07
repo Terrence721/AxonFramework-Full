@@ -19,7 +19,6 @@ package org.axonframework.common.caching;
 import org.axonframework.common.Registration;
 import org.jspecify.annotations.Nullable;
 
-
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 

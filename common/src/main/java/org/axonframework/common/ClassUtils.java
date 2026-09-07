@@ -32,7 +32,6 @@ public final class ClassUtils {
     private ClassUtils() {
     }
 
-
     /**
      * Loads a class by name
      *

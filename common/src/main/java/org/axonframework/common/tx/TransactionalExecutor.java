@@ -21,7 +21,6 @@ import org.axonframework.common.function.ThrowingConsumer;
 import org.axonframework.common.function.ThrowingFunction;
 import org.jspecify.annotations.Nullable;
 
-
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 

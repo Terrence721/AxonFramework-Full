@@ -18,7 +18,6 @@ package org.axonframework.common.infra;
 
 import org.jspecify.annotations.Nullable;
 
-
 import java.util.Collection;
 import java.util.Map;
 

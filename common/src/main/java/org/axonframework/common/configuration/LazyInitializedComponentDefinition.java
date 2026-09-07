@@ -20,7 +20,6 @@ import org.axonframework.common.annotation.Internal;
 import org.axonframework.common.infra.ComponentDescriptor;
 import org.jspecify.annotations.Nullable;
 
-
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 

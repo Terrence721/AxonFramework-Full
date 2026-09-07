@@ -19,7 +19,6 @@ package org.axonframework.common.configuration;
 import org.axonframework.common.infra.ComponentDescriptor;
 import org.jspecify.annotations.Nullable;
 
-
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 

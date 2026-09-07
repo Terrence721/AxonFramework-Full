@@ -20,7 +20,6 @@ import org.axonframework.common.annotation.Internal;
 
 import org.jspecify.annotations.Nullable;
 
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jspecify.annotations.Nullable;
 
-
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
