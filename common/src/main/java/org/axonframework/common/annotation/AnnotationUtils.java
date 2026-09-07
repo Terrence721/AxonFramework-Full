@@ -288,7 +288,7 @@ public final class AnnotationUtils {
         return false;
     }
 
-    private @Nullable static Annotation getAnnotation(AnnotatedElement target, String annotationType) {
+    private static @Nullable Annotation getAnnotation(AnnotatedElement target, String annotationType) {
         for (Annotation annotation : target.getAnnotations()) {
             if (annotationType.equals(annotation.annotationType().getName())) {
                 return annotation;

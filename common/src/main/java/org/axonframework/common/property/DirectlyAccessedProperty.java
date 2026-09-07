@@ -26,24 +26,23 @@ import static java.lang.String.format;
  */
 public class DirectlyAccessedProperty<T> implements Property<T> {
 
-	private final Field field;
-	private final String property;
+    private final Field field;
+    private final String property;
 
-	public DirectlyAccessedProperty(Field field, String property){
-		this.field = field;
-		this.property = property;
-	}
+    public DirectlyAccessedProperty(Field field, String property) {
+        this.field = field;
+        this.property = property;
+    }
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public <V> V getValue(T target) {
-		try {
-			return (V)field.get(target);
-		}
-		catch (IllegalAccessException e) {
-			throw new PropertyAccessException(format(
-					"Failed to get value of '%s' in '%s'. Property should be accessible",
-					property, target.getClass().getName()), e);
-		}
-	}
+    @Override
+    @SuppressWarnings("unchecked")
+    public <V> V getValue(T target) {
+        try {
+            return (V) field.get(target);
+        } catch (IllegalAccessException e) {
+            throw new PropertyAccessException(format(
+                    "Failed to get value of '%s' in '%s'. Property should be accessible",
+                    property, target.getClass().getName()), e);
+        }
+    }
 }

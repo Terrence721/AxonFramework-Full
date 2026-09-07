@@ -21,7 +21,6 @@ import org.axonframework.common.Assert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -56,11 +55,8 @@ public abstract class BaseModule<S extends BaseModule<S>> implements Module {
     public Configuration build(Configuration parent,
                                LifecycleRegistry lifecycleRegistry) {
 
-        var registry = Optional.of(parent.getComponent(ComponentRegistry.class,
-                                                       () ->
-                                                           new DefaultComponentRegistry().disableEnhancerScanning()
-                                                       ))
-                               .get();
+        var registry = parent.getComponent(ComponentRegistry.class,
+                                           () -> new DefaultComponentRegistry().disableEnhancerScanning());
 
         if (!(registry instanceof DefaultComponentRegistry componentRegistry)) {
             throw new IllegalStateException("BaseModule requires a DefaultComponentRegistry to build its configuration.");

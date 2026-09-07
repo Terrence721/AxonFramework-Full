@@ -83,13 +83,13 @@ public final class ProcessUtils {
      *         {@link ProcessRetriesExhaustedException} if max tries is reached
      */
     public static CompletableFuture<Void> executeUntilTrue(Supplier<CompletableFuture<Boolean>> action,
-                                                                 long retryInterval, long maxTries, Executor executor) {
+                                                           long retryInterval, long maxTries, Executor executor) {
         return executeUntilTrue(action, retryInterval, maxTries, maxTries, executor);
     }
 
     private static CompletableFuture<Void> executeUntilTrue(Supplier<CompletableFuture<Boolean>> action,
-                                                                  long retryInterval, long originalMaxTries,
-                                                                  long attemptsLeft, Executor executor) {
+                                                            long retryInterval, long originalMaxTries,
+                                                            long attemptsLeft, Executor executor) {
         if (attemptsLeft <= 0) {
             return CompletableFuture.failedFuture(new ProcessRetriesExhaustedException(String.format(
                     "Tried invoking the action for %d times, without the result being true", originalMaxTries
@@ -119,7 +119,7 @@ public final class ProcessUtils {
         AtomicLong totalTriesCounter = new AtomicLong();
         boolean result = runnable.getAsBoolean();
         while (!result) {
-            if (totalTriesCounter.incrementAndGet() >= maxTries){
+            if (totalTriesCounter.incrementAndGet() >= maxTries) {
                 throw new ProcessRetriesExhaustedException(String.format(
                         "Tried invoking the action for %d times, without the result being true",
                         maxTries));

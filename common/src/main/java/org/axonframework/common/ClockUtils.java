@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  *
  * @since 5.2.0
  */
-public final class ClockUtils  {
+public final class ClockUtils {
 
     /**
      * A supplier that returns the current instant of the global clock.
