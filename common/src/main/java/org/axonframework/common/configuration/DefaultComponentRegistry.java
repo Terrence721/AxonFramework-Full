@@ -30,23 +30,17 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.function.Predicate.not;
-import static java.util.stream.Collectors.toMap;
 import static org.axonframework.common.annotation.AnnotationUtils.isTypeAnnotatedWithHavingAttributeValue;
 
 /**
@@ -56,25 +50,19 @@ import static org.axonframework.common.annotation.AnnotationUtils.isTypeAnnotate
  *
  * @since 5.0.0
  */
-public class DefaultComponentRegistry implements ComponentRegistry {
+public class DefaultComponentRegistry implements ComponentRegistry, ConfigurableComponentRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Components components = new Components();
     private OverridePolicy overridePolicy = OverridePolicy.WARN;
-    private final List<DecoratorDefinition.CompletedDecoratorDefinition<?, ?>> decoratorDefinitions = new ArrayList<>();
-
-    private final Map<String, ConfigurationEnhancer> enhancers = new LinkedHashMap<>();
-    private boolean enhancerScanning = true;
-    private final List<Class<? extends ConfigurationEnhancer>> disabledEnhancers = new ArrayList<>();
-    private final List<Class<? extends ConfigurationEnhancer>> invokedEnhancers = new ArrayList<>();
-
-    private final Map<String, Module> modules = new ConcurrentHashMap<>();
+    private final DecoratorDefinitions decoratorDefinitions = new DecoratorDefinitions();
+    private final ConfigurationEnhancers configurationEnhancers = new ConfigurationEnhancers();
+    private final Modules modules = new Modules();
     private final List<ComponentFactory<?>> factories = new ArrayList<>();
 
     private final AtomicReference<@Nullable Configuration> parentConfig = new AtomicReference<>();
     private final AtomicReference<@Nullable Configuration> initializedConfiguration = new AtomicReference<>();
-    private final Map<String, Configuration> moduleConfigurations = new ConcurrentHashMap<>();
 
     /**
      * Creates a clone of this registry from existing registry. The clone will include the same enhancers, disabled
@@ -84,9 +72,9 @@ public class DefaultComponentRegistry implements ComponentRegistry {
      */
     DefaultComponentRegistry copyWithDecoratorsAndEnhancers() {
         return create(
-                this.decoratorDefinitions,
-                this.enhancers.values(),
-                this.disabledEnhancers
+                this.decoratorDefinitions.definitions(),
+                this.configurationEnhancers.registered().values(),
+                this.configurationEnhancers.disabledTypes()
         );
     }
 
@@ -112,21 +100,18 @@ public class DefaultComponentRegistry implements ComponentRegistry {
                         RegistrationScope.Scope.CURRENT
                 )
         );
-        registry.enhancers.putAll(
-                enhancers.stream()
-                         .filter(shouldRegisterForChildRegistry)
-                         .collect(toMap(e -> e.getClass().getName(), e -> e))
-        );
-        registry.disabledEnhancers.addAll(
+        enhancers.stream()
+                 .filter(shouldRegisterForChildRegistry)
+                 .forEach(registry.configurationEnhancers::register);
+        registry.configurationEnhancers.disableAll(
                 disabledEnhancers.stream()
                                  .filter(shouldRegisterForChildRegistry)
                                  .toList()
         );
-        registry.decoratorDefinitions.addAll(
-                decoratorDefinitions.stream()
-                                    .filter(shouldRegisterForChildRegistry)
-                                    .collect(Collectors.toSet())
-        );
+        decoratorDefinitions.stream()
+                            .filter(shouldRegisterForChildRegistry)
+                            .collect(Collectors.toSet())
+                            .forEach(registry.decoratorDefinitions::register);
         return registry;
     }
 
@@ -164,7 +149,7 @@ public class DefaultComponentRegistry implements ComponentRegistry {
         }
 
         logger.debug("Registering decorator definition: [{}]", definition);
-        decoratorDefinitions.add(decoratorRegistration);
+        decoratorDefinitions.register(decoratorRegistration);
         return this;
     }
 
@@ -187,7 +172,7 @@ public class DefaultComponentRegistry implements ComponentRegistry {
     @Override
     public ComponentRegistry registerEnhancer(ConfigurationEnhancer enhancer) {
         logger.debug("Registering enhancer [{}].", enhancer.getClass().getSimpleName());
-        ConfigurationEnhancer previous = this.enhancers.put(enhancer.getClass().getName(), enhancer);
+        ConfigurationEnhancer previous = configurationEnhancers.register(enhancer);
         if (previous != null) {
             logger.warn("Duplicate Configuration Enhancer registration dedicated. Replaced enhancer of type [{}].",
                         enhancer.getClass().getSimpleName());
@@ -200,10 +185,7 @@ public class DefaultComponentRegistry implements ComponentRegistry {
         if (logger.isDebugEnabled()) {
             logger.debug("Registering module [{}].", module.name());
         }
-        if (modules.containsKey(module.name())) {
-            throw new DuplicateModuleRegistrationException(module);
-        }
-        this.modules.put(module.name(), module);
+        modules.register(module);
         return this;
     }
 
@@ -251,11 +233,11 @@ public class DefaultComponentRegistry implements ComponentRegistry {
             return configuration;
         }
         this.parentConfig.set(optionalParent);
-        if (enhancerScanning) {
-            scanForConfigurationEnhancers();
+        if (configurationEnhancers.scanningEnabled()) {
+            configurationEnhancers.discover(getClass().getClassLoader()).forEach(this::registerEnhancer);
         }
-        invokeEnhancers();
-        decorateComponents();
+        configurationEnhancers.invokeAll(this);
+        decoratorDefinitions.applyTo(components);
         Configuration currentConfiguration = createLocalConfiguration(this.parentConfig.get());
 
         buildModules(currentConfiguration, lifecycleRegistry);
@@ -292,68 +274,12 @@ public class DefaultComponentRegistry implements ComponentRegistry {
         return currentConfiguration;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private void decorateComponents() {
-        decoratorDefinitions.sort(Comparator.comparingInt(d -> d.order()));
-        for (DecoratorDefinition.CompletedDecoratorDefinition decorator : decoratorDefinitions) {
-            for (Identifier id : components.identifiers()) {
-                if (decorator.matches(id)) {
-                    components.replace(id, decorator::decorate);
-                }
-            }
-        }
-    }
-
-    /**
-     * Invoke all the {@link #registerEnhancer(ConfigurationEnhancer) registered}
-     * {@link ConfigurationEnhancer enhancers} on this {@code ComponentRegistry} implementation in their
-     * {@link ConfigurationEnhancer#order()}.
-     * <p>
-     * This will ensure all sensible default components and decorators are in place from these enhancers.
-     * <p>
-     * The disabled enhancers filter is invoked in a for-loop instead of as a Stream operation, as a
-     * {@code ConfigurationEnhancer} can add more enhancers that should be disabled. By making the filter part of the
-     * stream operation, that update is lost.
-     * <p>
-     * This method supports dynamic enhancer registration - if an enhancer registers another enhancer during its
-     * {@link ConfigurationEnhancer#enhance(ComponentRegistry)} call, the newly registered enhancer will be processed in
-     * the correct order based on its {@link ConfigurationEnhancer#order()} value relative to all unprocessed enhancers.
-     * Each enhancer is processed one at a time to ensure proper ordering when new enhancers are registered
-     * dynamically.
-     */
-    private void invokeEnhancers() {
-        Set<String> processedEnhancerKeys = new HashSet<>();
-
-        while (processedEnhancerKeys.size() < enhancers.size()) {
-            // Find the next unprocessed enhancer with the lowest order value
-            Optional<Map.Entry<String, ConfigurationEnhancer>> nextEnhancer =
-                    enhancers.entrySet()
-                             .stream()
-                             .filter(entry -> !processedEnhancerKeys.contains(entry.getKey()))
-                             .min(Comparator.comparingInt(entry -> entry.getValue().order()));
-
-            if (nextEnhancer.isEmpty()) {
-                break; // No more enhancers to process
-            }
-
-            Map.Entry<String, ConfigurationEnhancer> entry = nextEnhancer.get();
-            String key = entry.getKey();
-            ConfigurationEnhancer enhancer = entry.getValue();
-
-            if (!disabledEnhancers.contains(enhancer.getClass())) {
-                enhancer.enhance(this);
-                invokedEnhancers.add(enhancer.getClass());
-            }
-            processedEnhancerKeys.add(key);
-        }
-    }
-
     /**
      * Ensure all registered {@link Module Modules} are built too. Store their {@link Configuration} results for
      * exposure on {@link Configuration#getModuleConfigurations()}.
      */
     private void buildModules(Configuration configuration, LifecycleRegistry lifecycleRegistry) {
-        for (Module module : modules.values()) {
+        for (Module module : modules.registered()) {
             var moduleRegistry = this.copyWithDecoratorsAndEnhancers();
             var builtModuleConfiguration = HierarchicalLifecycleRegistry.build(
                     lifecycleRegistry,
@@ -363,7 +289,7 @@ public class DefaultComponentRegistry implements ComponentRegistry {
                         return moduleRegistry.buildNested(moduleConfiguration, childLifecycleRegistry);
                     }
             );
-            moduleConfigurations.put(module.name(), builtModuleConfiguration);
+            modules.recordBuildResult(module.name(), builtModuleConfiguration);
         }
     }
 
@@ -417,60 +343,40 @@ public class DefaultComponentRegistry implements ComponentRegistry {
 
     @Override
     public DefaultComponentRegistry disableEnhancer(Class<? extends ConfigurationEnhancer> enhancerClass) {
-        if (invokedEnhancers.contains(enhancerClass)) {
-            logger.warn("Disabling Configuration Enhancer [{}] won't take effect as it has already been invoked. "
-                                + "We recommend to invoke disabling of this enhancer before it takes effect.",
-                        enhancerClass.getSimpleName());
-            return this;
-        }
-        if (!this.disabledEnhancers.contains(enhancerClass)) {
-            if (logger.isInfoEnabled()) {
-                logger.info(
-                        "Configuration Enhancer [{}] has been disabled. "
-                                + "Ensure components set by this enhancer are not mandatory in this application.",
-                        enhancerClass
-                );
+        switch (configurationEnhancers.disable(enhancerClass)) {
+            case TOO_LATE -> logger.warn(
+                    "Disabling Configuration Enhancer [{}] won't take effect as it has already been invoked. "
+                            + "We recommend to invoke disabling of this enhancer before it takes effect.",
+                    enhancerClass.getSimpleName());
+            case DISABLED -> {
+                if (logger.isInfoEnabled()) {
+                    logger.info(
+                            "Configuration Enhancer [{}] has been disabled. "
+                                    + "Ensure components set by this enhancer are not mandatory in this application.",
+                            enhancerClass
+                    );
+                }
             }
-            this.disabledEnhancers.add(enhancerClass);
+            case ALREADY_DISABLED -> {
+                // No-op - matches the original silent no-op when an enhancer is already disabled.
+            }
         }
         return this;
     }
 
     @Override
     public DefaultComponentRegistry disableEnhancerScanning() {
-        this.enhancerScanning = false;
+        configurationEnhancers.disableScanning();
         return this;
-    }
-
-    private void scanForConfigurationEnhancers() {
-        ServiceLoader<ConfigurationEnhancer> enhancerLoader = ServiceLoader.load(
-                ConfigurationEnhancer.class, getClass().getClassLoader()
-        );
-        enhancerLoader.stream()
-                      .map(provider -> provider.get())
-                      .filter(enhancer -> !disabledEnhancers.contains(enhancer.getClass()))
-                      .filter(this::isNotYetRegistered)
-                      .forEach(this::registerEnhancer);
-    }
-
-    /**
-     * Filter ensuring the {@link ConfigurationEnhancer} ServiceLoader solution does not add an enhancer that was
-     * already set by a higher level Configurer.
-     *
-     * @param enhancer The enhancer to check if it is already present.
-     * @return {@code true} if the given {@code enhancer} has not been registered yet, {@code false} otherwise.
-     */
-    private boolean isNotYetRegistered(ConfigurationEnhancer enhancer) {
-        return !enhancers.containsKey(enhancer.getClass().getName());
     }
 
     @Override
     public void describeTo(ComponentDescriptor descriptor) {
         descriptor.describeProperty("initialized", initializedConfiguration.get() != null);
         descriptor.describeProperty("components", components);
-        descriptor.describeProperty("decorators", decoratorDefinitions);
-        descriptor.describeProperty("configurerEnhancers", enhancers);
-        descriptor.describeProperty("modules", modules.values());
+        descriptor.describeProperty("decorators", decoratorDefinitions.definitions());
+        descriptor.describeProperty("configurerEnhancers", configurationEnhancers.registered());
+        descriptor.describeProperty("modules", modules.registered());
         descriptor.describeProperty("factories", factories);
     }
 
@@ -582,20 +488,20 @@ public class DefaultComponentRegistry implements ComponentRegistry {
 
         @Override
         public List<Configuration> getModuleConfigurations() {
-            return List.copyOf(moduleConfigurations.values());
+            return modules.builtConfigurations();
         }
 
         @Override
         public void describeTo(ComponentDescriptor descriptor) {
             descriptor.describeProperty("components", components);
-            descriptor.describeProperty("modules", moduleConfigurations.values());
+            descriptor.describeProperty("modules", modules.builtConfigurations());
         }
 
 
         @Override
         public Optional<Configuration> getModuleConfiguration(String name) {
             Assert.nonEmpty(name, "The name must not be empty or null.");
-            return Optional.ofNullable(moduleConfigurations.get(name));
+            return modules.builtConfiguration(name);
         }
 
         @Override
