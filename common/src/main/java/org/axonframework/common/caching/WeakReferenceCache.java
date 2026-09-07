@@ -112,7 +112,7 @@ public class WeakReferenceCache implements Cache {
     public <T> T computeIfAbsent(Object key, Supplier<T> valueSupplier) {
         purgeItems();
         Entry currentEntry = cache.get(key);
-        Object existingValue = ObjectUtils.getOrDefault(currentEntry, Entry::get, null);
+        Object existingValue = ObjectUtils.getOrDefault(currentEntry, entry -> entry.get(), null);
         if (existingValue != null) {
             return (T) existingValue;
         }

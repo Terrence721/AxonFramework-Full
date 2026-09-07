@@ -30,7 +30,7 @@ import java.util.Comparator;
  */
 public class PriorityAnnotationComparator<T> implements Comparator<T> {
 
-    private static final PriorityAnnotationComparator INSTANCE = new PriorityAnnotationComparator();
+    private static final PriorityAnnotationComparator<Object> INSTANCE = new PriorityAnnotationComparator<>();
 
     /**
      * Returns the instance of the comparator.
@@ -40,7 +40,7 @@ public class PriorityAnnotationComparator<T> implements Comparator<T> {
      */
     @SuppressWarnings("unchecked")
     public static <T> PriorityAnnotationComparator<T> getInstance() {
-        return INSTANCE;
+        return (PriorityAnnotationComparator<T>) INSTANCE;
     }
 
     private PriorityAnnotationComparator() {
