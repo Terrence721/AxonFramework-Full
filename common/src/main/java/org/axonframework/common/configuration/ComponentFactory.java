@@ -28,7 +28,7 @@ import java.util.Optional;
  * {@link AxonConfiguration#start() started} before a factory is consulted. Hence, failing to invoke start operations
  * results in components in a faulty state.
  * <p>
- * When {@link ComponentRegistry#registerFactory(ComponentFactory) registered} with a {@link ComponentRegistry}, the
+ * When {@link ConfigurableComponentRegistry#registerFactory(ComponentFactory) registered} with a {@link ComponentRegistry}, the
  * registry will consult the factory <b>only</b> when there is no registered component for a given type and name.
  *
  * @param <C> The component this factory builds on request.

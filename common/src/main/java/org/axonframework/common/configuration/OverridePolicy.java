@@ -20,7 +20,7 @@ package org.axonframework.common.configuration;
  * Enumeration describing how a {@link ComponentRegistry} should react when a {@link Component} is to be overridden
  * during a {@link ComponentRegistry#registerComponent(ComponentDefinition)} invocation.
  *
- * @see ComponentRegistry#setOverridePolicy(OverridePolicy)
+ * @see ConfigurableComponentRegistry#setOverridePolicy(OverridePolicy)
  * @since 5.0.0
  */
 public enum OverridePolicy {

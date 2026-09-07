@@ -26,8 +26,9 @@ import org.axonframework.common.configuration.Component.Identifier;
  * Provides utilities to {@link #registerComponent(Class, ComponentBuilder) register components},
  * {@link #registerDecorator(Class, int, ComponentDecorator) decorators} of these components, check if a component
  * {@link #hasComponent(Class) exists}, register {@link #registerEnhancer(ConfigurationEnhancer) enhancers} for the
- * entire configurer, register {@link #registerModule(Module) modules}, and register
- * {@link #registerFactory(ComponentFactory) component factories}.
+ * entire configurer, and register {@link #registerModule(Module) modules}. See
+ * {@link ConfigurableComponentRegistry} for registering {@link ComponentFactory component factories} and setting
+ * an {@link OverridePolicy}.
  *
  * @since 5.0.0
  */
