@@ -294,7 +294,7 @@ public class DefaultComponentRegistry implements ComponentRegistry {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void decorateComponents() {
-        decoratorDefinitions.sort(Comparator.comparingInt(DecoratorDefinition.CompletedDecoratorDefinition::order));
+        decoratorDefinitions.sort(Comparator.comparingInt(d -> d.order()));
         for (DecoratorDefinition.CompletedDecoratorDefinition decorator : decoratorDefinitions) {
             for (Identifier id : components.identifiers()) {
                 if (decorator.matches(id)) {
@@ -396,6 +396,7 @@ public class DefaultComponentRegistry implements ComponentRegistry {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public ComponentRegistry disableEnhancer(String fullyQualifiedClassName) {
         Objects.requireNonNull(fullyQualifiedClassName, "The fully qualified class name must not be null.");
         try {
@@ -405,7 +406,6 @@ public class DefaultComponentRegistry implements ComponentRegistry {
                         String.format("Class %s is not a ConfigurationEnhancer", fullyQualifiedClassName)
                 );
             }
-            //noinspection unchecked
             return disableEnhancer((Class<? extends ConfigurationEnhancer>) enhancerClass);
         } catch (ClassNotFoundException e) {
             logger.warn(
@@ -447,7 +447,7 @@ public class DefaultComponentRegistry implements ComponentRegistry {
                 ConfigurationEnhancer.class, getClass().getClassLoader()
         );
         enhancerLoader.stream()
-                      .map(ServiceLoader.Provider::get)
+                      .map(provider -> provider.get())
                       .filter(enhancer -> !disabledEnhancers.contains(enhancer.getClass()))
                       .filter(this::isNotYetRegistered)
                       .forEach(this::registerEnhancer);
@@ -548,6 +548,7 @@ public class DefaultComponentRegistry implements ComponentRegistry {
             return type.cast(component);
         }
 
+        @SuppressWarnings("unchecked")
         private <C> Optional<Component<C>> fromFactory(Class<C> type, @Nullable String name) {
             if (name == null) {
                 // The ComponentFactory requires a non-null name at all times.
@@ -558,7 +559,6 @@ public class DefaultComponentRegistry implements ComponentRegistry {
                 if (!type.isAssignableFrom(factory.forType())) {
                     continue;
                 }
-                //noinspection unchecked - suppress ComponentFactory cast
                 Optional<Component<C>> factoryComponent = ((ComponentFactory<C>) factory).construct(name, this);
                 if (factoryComponent.isPresent()) {
                     return factoryComponent;

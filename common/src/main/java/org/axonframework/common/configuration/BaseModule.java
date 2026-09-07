@@ -94,12 +94,12 @@ public abstract class BaseModule<S extends BaseModule<S>> implements Module {
      * @param registryAction The action to perform on the component registry.
      * @return This instance for fluent interfacing.
      */
+    @SuppressWarnings("unchecked")
     public S componentRegistry(Consumer<ComponentRegistry> registryAction) {
         if (built.get()) {
             throw new IllegalStateException("Module has already been built.");
         }
         this.registryActions.add(Objects.requireNonNull(registryAction, "The registryAction must not be null."));
-        //noinspection unchecked
         return (S) this;
     }
 }

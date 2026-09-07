@@ -11,5 +11,5 @@ org.eclipse.jdt.core.compiler.problem.unusedParameterWhenOverridingConcrete=disa
 org.eclipse.jdt.core.compiler.problem.unusedLabel=warning
 org.eclipse.jdt.core.compiler.problem.unusedTypeParameter=warning
 org.eclipse.jdt.core.compiler.problem.unusedExceptionParameter=warning
-org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownException=ignore
+org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownException=warning
 org.eclipse.jdt.core.compiler.problem.unusedWarningToken=warning

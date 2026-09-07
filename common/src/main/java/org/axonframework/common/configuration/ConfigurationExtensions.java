@@ -96,7 +96,7 @@ public class ConfigurationExtensions implements DescribableComponent {
      * @throws AxonConfigurationException if any extension's validation fails
      */
     public void validate() {
-        extensions.values().forEach(ConfigurationExtension::validate);
+        extensions.values().forEach(extension -> extension.validate());
     }
 
     /**
