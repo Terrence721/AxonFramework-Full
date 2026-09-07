@@ -16,6 +16,8 @@
 
 package org.axonframework.common.jdbc;
 
+import org.axonframework.common.ExceptionUtils;
+
 import java.sql.SQLIntegrityConstraintViolationException;
 
 /**
@@ -29,12 +31,7 @@ public class JdbcSQLErrorCodesResolver implements PersistenceExceptionResolver {
 
     @Override
     public boolean isDuplicateKeyViolation(Exception exception) {
-        return causeIsEntityExistsException(exception);
-    }
-
-    private boolean causeIsEntityExistsException(Throwable exception) {
-        return exception instanceof SQLIntegrityConstraintViolationException
-                || (exception.getCause() != null && causeIsEntityExistsException(exception.getCause()));
+        return ExceptionUtils.findException(exception, SQLIntegrityConstraintViolationException.class).isPresent();
     }
 
 }
