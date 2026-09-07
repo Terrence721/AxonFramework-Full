@@ -49,9 +49,9 @@ public class JCacheAdapter extends AbstractCacheAdapter<CacheEntryListenerConfig
         this.jCache = jCache;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public @Nullable <K, V> V get(K key) {
-        //noinspection unchecked
         return (V) jCache.get(key);
     }
 
@@ -80,6 +80,7 @@ public class JCacheAdapter extends AbstractCacheAdapter<CacheEntryListenerConfig
         return jCache.containsKey(key);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <V> void computeIfPresent(Object key, UnaryOperator<V> update) {
         Object oldValue;
@@ -89,7 +90,6 @@ public class JCacheAdapter extends AbstractCacheAdapter<CacheEntryListenerConfig
             if (oldValue == null) {
                 break;
             }
-            //noinspection unchecked
             newValue = update.apply((V) oldValue);
         } while (!replaceOrRemove(key, oldValue, newValue));
     }

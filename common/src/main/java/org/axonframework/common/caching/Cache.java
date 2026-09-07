@@ -71,10 +71,10 @@ public interface Cache {
      * @return The value that is in the cache after the operation. This can be the original value or the one supplied by
      * the {@code valueSupplier}.
      */
+    @SuppressWarnings("unchecked")
     default <T> T computeIfAbsent(Object key, Supplier<T> valueSupplier) {
         Object currentValue = get(key);
         if (currentValue != null) {
-            //noinspection unchecked
             return (T) currentValue;
         }
         T newValue = valueSupplier.get();

@@ -64,7 +64,7 @@ public class WeakReferenceCache implements Cache {
         purgeItems();
         final Reference<Object> entry = cache.get(key);
 
-        //noinspection unchecked
+        @SuppressWarnings("unchecked")
         final V returnValue = entry == null ? null : (V) entry.get();
         if (returnValue != null) {
             for (EntryListener adapter : adapters) {
@@ -107,13 +107,13 @@ public class WeakReferenceCache implements Cache {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T computeIfAbsent(Object key, Supplier<T> valueSupplier) {
         purgeItems();
         Entry currentEntry = cache.get(key);
         Object existingValue = ObjectUtils.getOrDefault(currentEntry, Entry::get, null);
         if (existingValue != null) {
-            //noinspection unchecked
             return (T) existingValue;
         }
         T newValue = valueSupplier.get();
@@ -177,7 +177,7 @@ public class WeakReferenceCache implements Cache {
             if (currentValue == null) {
                 return null;
             }
-            //noinspection unchecked
+            @SuppressWarnings("unchecked")
             V value = update.apply((V) currentValue);
             if (value != null) {
                 for (EntryListener adapter : adapters) {

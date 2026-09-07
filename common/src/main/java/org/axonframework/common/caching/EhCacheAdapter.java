@@ -51,7 +51,6 @@ public class EhCacheAdapter extends AbstractCacheAdapter<CacheEventListener> {
     @Override
     public @Nullable <K, V> V get(K key) {
         final Object value = ehCache.get(key);
-        //noinspection unchecked
         return value != null ? (V) value : null;
     }
 
@@ -98,7 +97,6 @@ public class EhCacheAdapter extends AbstractCacheAdapter<CacheEventListener> {
             if (oldValue == null) {
                 break;
             }
-            //noinspection unchecked
             newValue = update.apply((V) oldValue);
         } while (!replaceOrRemove(key, oldValue, newValue));
     }
