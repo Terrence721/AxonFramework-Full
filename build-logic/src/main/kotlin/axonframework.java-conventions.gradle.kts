@@ -64,6 +64,19 @@ checkstyle {
     // plugin already creates a check task per source set (checkstyleMain, checkstyleTest) by default.
 }
 
+// Checkstyle 13.10.0 pulls in Maven's doxia reporting modules (used for its site-report output
+// format, which this build never invokes - we only run checkstyleMain/checkstyleTest) that in turn
+// resolve two real, Dependabot-flagged vulnerable transitive versions: plexus-utils 3.3.0 (directory
+// traversal, CVE fixed in 3.6.1) and commons-lang3 3.8.1 (uncontrolled recursion, CVE fixed in
+// 3.18.0). Forced to patched versions here since neither is a dependency Checkstyle's actual linting
+// logic exercises - confirmed via `gradle :common:dependencies --configuration checkstyle`.
+configurations.named("checkstyle") {
+    resolutionStrategy {
+        force("org.codehaus.plexus:plexus-utils:3.6.1")
+        force("org.apache.commons:commons-lang3:3.18.0")
+    }
+}
+
 // Mockito-as-Java-agent workaround (avoids dynamic self-attachment warnings on newer JDKs).
 // Resolves the mockito-core jar itself via a dedicated, non-transitive configuration rather than
 // reaching into the local Maven repository the way build/parent/pom.xml's argLine did.
