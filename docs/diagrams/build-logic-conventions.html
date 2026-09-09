@@ -205,9 +205,11 @@
   <p class="eyebrow">AxonFramework-Full — build-logic conventions</p>
   <h1>One base, two ways every module opts in</h1>
   <p class="dek">
-    Gradle's answer to Maven's <code>axon-parent</code> inheritance — three precompiled script plugins in
+    Gradle's answer to Maven's <code>axon-parent</code> inheritance — three custom plugins in
     <code>build-logic/</code>, applied by name from each module's own <code>build.gradle.kts</code> rather than
-    inherited implicitly.
+    inherited implicitly. Written as plain Java classes (not Kotlin precompiled script plugins, as they were
+    originally) since 2026-09-09, when the Kotlin implementation turned out to be the sole source of a real
+    Dependabot alert with no available fix — see <a href="../../todo.md">todo.md</a> for the full story.
   </p>
 
   <div class="base-card">
@@ -244,7 +246,7 @@
         <li>Picked up automatically for Central Portal upload — see the
           <a href="./publishing-pipeline.html">publishing pipeline</a></li>
       </ul>
-      <div class="used-by">Used by <span class="chip">test-logging</span> <span class="chip">common</span></div>
+      <div class="used-by">Used by <span class="chip">test-logging</span> <span class="chip">common</span> <span class="chip">update</span></div>
     </div>
 
     <div class="branch-card int">

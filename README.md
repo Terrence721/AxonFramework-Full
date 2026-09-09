@@ -3,7 +3,7 @@
 [![Build](https://github.com/Terrence721/AxonFramework-Full/actions/workflows/build.yml/badge.svg)](https://github.com/Terrence721/AxonFramework-Full/actions/workflows/build.yml)
 [![CodeQL](https://github.com/Terrence721/AxonFramework-Full/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Terrence721/AxonFramework-Full/security/code-scanning)
 
-Last updated: September 7, 2026
+Last updated: September 9, 2026
 
 **[📜 View the portfolio page →](https://terrence721.github.io/AxonFramework-Full/portfolio.html)**
 
@@ -78,4 +78,4 @@ page for every place this fork deliberately doesn't match the Maven source's beh
 - [Wiki](https://github.com/Terrence721/AxonFramework-Full/wiki) — one page per subsystem, each a pointer to the
   authoritative source rather than a duplicate of it
 
-On AI-assisted development: Commits co-authored as Claude are AI-assisted implementations directed, reviewed, and merged by Terrence Daniels — same process as every other change, documented in docs/code-review.md.
+On AI-assisted development: this project uses Claude Code for AI-assisted implementation — every change is directed, reviewed, and merged by Terrence Daniels, with no commit co-author trailers.

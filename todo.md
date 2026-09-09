@@ -1,6 +1,6 @@
 # 📝 TODO
 
-Last updated: September 7, 2026
+Last updated: September 9, 2026
 
 A living list of what's done and what's left on this build. This is a Maven-to-Gradle build-system migration of
 Axon Framework 5 — the Maven reactor is being converted **one file
