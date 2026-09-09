@@ -14,4 +14,11 @@
  * limitations under the License.
  */
 
+plugins {
+    // Lets Gradle auto-download a JDK 21 toolchain when the local machine doesn't already have one
+    // (this repo's own dev machines only have JDK 25 installed) - needed now that build-logic's own
+    // toolchain (see build.gradle.kts) is deliberately lower than the JDK 25 every real module targets.
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
 rootProject.name = "build-logic"

@@ -18,23 +18,27 @@ plugins {
     `kotlin-dsl`
 }
 
-// Matches the rest of the project's JDK 25 toolchain (axonframework.java-conventions). Kotlin
-// doesn't support emitting JVM 25 bytecode yet and falls back to JVM_24 regardless of what's
-// requested here - a cosmetic "Inconsistent JVM Target Compatibility" warning, not a build
-// failure. The real consequence: build-logic's own compiled plugin classes require a JDK 25
-// *runtime* just to load, not merely to compile, so any environment whose default JVM is older
-// than 25 can't use this build - including GitHub's own automatic dependency-submission workflow
-// for this repo (confirmed failing: "Dependency requires at least JVM runtime version 25. This
-// build uses a Java 21 JVM."), worked around with our own explicit
-// .github/workflows/dependency-submission.yml instead of changing this pin.
+// Deliberately NOT 25, unlike axonframework.java-conventions: build-logic only *specifies*
+// JDK 25 for the real modules (common/update/test-logging) via that convention plugin - it never
+// needs to run on JDK 25 itself, since it has no Java 25 language features to compile against and
+// Kotlin doesn't even support emitting JVM 25 bytecode yet (falls back to JVM_24 regardless of
+// what's requested). Previously pinned to 25 "to match," which had a real, then-unnoticed cost:
+// build-logic's own compiled plugin classes required a JDK 25 *runtime* just to load, breaking any
+// environment whose default JVM is older - including GitHub's own automatic dependency-submission
+// workflow for this repo (confirmed failing: "Dependency requires at least JVM runtime version 25.
+// This build uses a Java 21 JVM."). Lowered to 21 (Gradle's own minimum-supported baseline) so that
+// workflow - and any other JDK-21-default environment - can load this build's plugin classpath
+// without needing its own JDK 25 setup step, while every real module's published artifacts still
+// require JDK 25 exactly as before (that requirement lives entirely in
+// axonframework.java-conventions.gradle.kts, untouched by this file).
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(25))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 kotlin {
-    jvmToolchain(25)
+    jvmToolchain(21)
 }
 
 repositories {

@@ -37,6 +37,11 @@ pluginManagement {
 // only ever change between machines/CI runs, not within one.
 plugins {
     id("com.gradleup.nmcp.settings") version "1.6.1"
+    // Lets Gradle auto-download every module's JDK 25 toolchain (axonframework.java-conventions)
+    // when the running environment's default JVM is older - needed for any JDK-21-default CI
+    // runner to build this project without a separate JDK-25-setup step (see build-logic's own
+    // settings.gradle.kts for the matching fix to its own, deliberately-lower JDK 21 toolchain).
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 nmcpSettings {
