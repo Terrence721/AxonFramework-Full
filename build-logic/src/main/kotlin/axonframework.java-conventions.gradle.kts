@@ -66,14 +66,24 @@ checkstyle {
 
 // Checkstyle 13.10.0 pulls in Maven's doxia reporting modules (used for its site-report output
 // format, which this build never invokes - we only run checkstyleMain/checkstyleTest) that in turn
-// resolve two real, Dependabot-flagged vulnerable transitive versions: plexus-utils 3.3.0 (directory
-// traversal, CVE fixed in 3.6.1) and commons-lang3 3.8.1 (uncontrolled recursion, CVE fixed in
-// 3.18.0). Forced to patched versions here since neither is a dependency Checkstyle's actual linting
-// logic exercises - confirmed via `gradle :common:dependencies --configuration checkstyle`.
+// resolve a real, Dependabot-flagged vulnerable transitive version: commons-lang3 3.8.1
+// (uncontrolled recursion, CVE fixed in 3.18.0). Forced to the patched version here since it's not
+// a dependency Checkstyle's actual linting logic exercises - confirmed via
+// `gradle :common:dependencies --configuration checkstyle`.
 configurations.named("checkstyle") {
     resolutionStrategy {
-        force("org.codehaus.plexus:plexus-utils:3.6.1")
         force("org.apache.commons:commons-lang3:3.18.0")
+    }
+}
+
+// plexus-utils 3.3.0-3.6.0 (directory-traversal CVE, fixed in 3.6.1) shows up transitively from two
+// unrelated places: checkstyle's doxia dependency above (3.3.0), and test-logging's published
+// log4j-core-test dependency's own maven-core -> maven-model chain (3.6.0 - one patch version short
+// of the fix). Since test-logging is api-exposed and every module here depends on it in test scope,
+// this needs forcing project-wide (every configuration), not just the checkstyle one.
+configurations.all {
+    resolutionStrategy {
+        force("org.codehaus.plexus:plexus-utils:3.6.1")
     }
 }
 
