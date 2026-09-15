@@ -1,6 +1,6 @@
 # 📝 TODO
 
-Last updated: September 9, 2026
+Last updated: September 15, 2026
 
 A living list of what's done and what's left on this build. This is a Maven-to-Gradle build-system migration of
 Axon Framework 5 — the Maven reactor is being converted **one file
@@ -225,6 +225,56 @@ below) — use those for a local build. Before this, this machine had no `gradle
 distribution happened to already be extracted at
 `C:\Users\Terre\.gradle\wrapper\dists\gradle-9.2.0-bin\<hash>\gradle-9.2.0\bin\gradle.bat` from an earlier
 IDE-triggered download, which is what got invoked directly for every local build attempt in this section above.
+
+### Resolved: `redhat.java` duplicate-project collision, and IDE-only null-analysis noise (2026-09-15)
+
+A different `redhat.java` failure mode than the one above (that one was a *build-correctness* race; this one is
+IDE-state corruption with no effect on `./gradlew` or CI). Eclipse's `Buildship: A project with the name
+axon-AxonFramework-Full already exists` error started appearing, alongside every module briefly losing semantic
+analysis (`The import org.gradle cannot be resolved`, `The project was not built since its build path is
+incomplete`). Root cause, found by inspecting
+`%APPDATA%\Code\User\workspaceStorage\<hash>\redhat.java\jdt_ws\.metadata\.plugins\org.eclipse.core.resources\.projects\`
+directly: **two** registered project directories for the same logical project — `axon-AxonFramework-Full` (current
+naming scheme: `<gradleRootProjectName>-<folderName>`, since this repo's Gradle root is deliberately named `axon`
+to match the Maven artifactId) and a stale, unprefixed `AxonFramework-Full` left over from an older naming scheme
+that was never cleaned up after an extension update. Buildship's own name-collision-avoidance logic then fought
+itself on every re-sync.
+
+**Fix:** deleted both stale entries directly, then (once they recurred after a later reload) wiped the entire
+`jdt_ws` cache for a full clean rebuild — same end state as the Java extension's own **"Java: Clean Java Language
+Server Workspace"** command, which is the supported way to reach for this if it recurs, rather than repeating the
+manual `.projects` surgery. A related, separate symptom kept resurfacing alongside it: two `redhat.java` processes
+staying alive at once after a restart (`jps -lv`, confirmed both children of the same single extension host, not a
+second window). **Killing the strays manually made this worse, not better** — the extension host just spawned a
+replacement without cleaning up whatever else was already orphaned, so it repeated across three separate
+manual-kill attempts this session. The one action that reliably left exactly one clean process and a correct
+5-entry project list every time: **`Developer: Reload Window`, untouched by any manual process kill in between.**
+That's now the standing recovery step for this whole failure class — worth reading together with "Resolved: local
+Gradle/Kotlin build flakiness" above, since both trace back to the same extension's background Gradle-sync
+behavior, and that entry's own warning ("avoid running manual `./gradlew` builds during a reload's re-import
+window") applies here too. No permanent code-level fix exists for the underlying orphan-process behavior itself —
+it lives inside `redhat.java`'s own process management, confirmed still present in the latest stable release
+(1.56.0) via its own changelog. A `Ctrl+Alt+R` → `workbench.action.reloadWindow` keybinding was added to make
+recovery one keystroke — **in this machine's own global `keybindings.json`, not this repo**: VS Code has no
+supported project-scoped keybindings mechanism (no `.vscode/keybindings.json`, no `.code-workspace` `"keybindings"`
+block — only `settings`/`tasks`/`extensions` are workspace-scoped), confirmed by checking current VS Code docs
+rather than assumed.
+
+Separately, the same reload surfaced a large batch of Eclipse-JDT-only "Null type safety" warnings across
+`common`/`update` (e.g. `DecoratorDefinitions.java`, `UpdateCheckRequest.java`, `UpdateCheckResponse.java`) plus a
+couple of "problem in category 'unused' is not analysed" notices (`FutureUtils.java`, `BaseModule.java`).
+Confirmed as IDE-only noise, not real defects: `./gradlew :common:compileJava` already builds every one of these
+files clean, because the real build runs `javac`, not Eclipse's own compiler (`ecj`) that powers this analysis.
+The specific pattern — JSpecify's `@NonNull`/`@NullMarked` meeting `Optional<T>`/`Function<T,R>`/arrays, JDK
+generics JDT's own diagnostic text admits "don't seem to be designed with null type annotations in mind" — is a
+known false-positive category, not something worth annotating away file-by-file across dozens of sites. Fixed
+with three committed `.settings/org.eclipse.jdt.core.prefs` files (`common`, `test-logging`, `update` — the three
+modules that actually apply `axonframework.java-conventions`, and therefore JSpecify nullness, to themselves;
+`build-logic` doesn't and was left alone), each turning `nullUncheckedConversion`,
+`pessimisticNullAnalysisForFreeTypeVariables`, and `unusedWarningToken` down to `ignore`. Standard native Eclipse
+project-preference files — Buildship reads them from each project's own root regardless of
+`java.import.generatesMetadataFilesAtProjectRoot`, which only controls whether jdt.ls *writes* generated files
+there, not whether it *reads* ones already committed.
 
 ## Still to do
 
