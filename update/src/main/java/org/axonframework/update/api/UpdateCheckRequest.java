@@ -88,11 +88,12 @@ public record UpdateCheckRequest(
     }
 
     private String getAxonBaseVersion() {
-        return libraries.stream()
-                        .filter(a -> a.groupId().equals("org.axonframework"))
-                        .filter(a -> a.artifactId().equals("axon-messaging"))
-                        .map(Artifact::version)
-                        .findFirst()
-                        .orElse("4.12.0");
+        for (Artifact artifact : libraries) {
+            if ("org.axonframework".equals(artifact.groupId())
+                    && "axon-messaging".equals(artifact.artifactId())) {
+                return artifact.version();
+            }
+        }
+        return "4.12.0";
     }
 }
