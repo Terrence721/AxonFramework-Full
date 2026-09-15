@@ -227,14 +227,14 @@
 
 <div class="hero">
   <div class="wrap">
-    <p class="eyebrow">Portfolio Manifest — Prepared 2026-09-09</p>
+    <p class="eyebrow">Portfolio Manifest — Prepared 2026-09-15</p>
     <h1 class="name">Terrence&nbsp;Daniels</h1>
     <p class="role">Full-Stack Java/Gradle Engineer</p>
     <p class="thesis">
       A deliberate migration of <strong>Axon Framework 5</strong>'s build system from Maven to Gradle — converted
       <strong>one file at a time</strong>, each one individually inspected against the Maven source rather than run
       through an automated converter. Build-logic conventions are done, <code>test-logging</code> and
-      <code>common</code> are both fully converted, and <code>update</code>'s source conversion is underway (7 of 27
+      <code>common</code> are both fully converted, and <code>update</code>'s source conversion is underway (17 of 27
       files in) — every gap found along the way, thirty-one so far, is disclosed in this repo's own build log, not
       smoothed over. Still early — 11 of 14 reactor modules haven't started converting at all.
     </p>
@@ -258,7 +258,7 @@
   <div class="wrap">
     <div class="manifest-row">
       <div class="manifest-cell"><span class="v">2 of 14</span><span class="k">reactor modules fully converted</span></div>
-      <div class="manifest-cell"><span class="v">253</span><span class="k">commits, 19 days</span></div>
+      <div class="manifest-cell"><span class="v">271</span><span class="k">commits, 25 days</span></div>
       <div class="manifest-cell"><span class="v">3</span><span class="k">build-logic convention plugins done</span></div>
       <div class="manifest-cell"><span class="v">31</span><span class="k">real gaps found &amp; fixed</span></div>
       <div class="manifest-cell"><span class="v">144 of 144</span><span class="k">common source files converted</span></div>
@@ -295,7 +295,7 @@
   <section>
     <h2>Build system first, real source now underway</h2>
     <p class="h2-sub">
-      Build-logic conventions done · test-logging published · common complete (144/144) · update underway (7/27)
+      Build-logic conventions done · test-logging published · common complete (144/144) · update underway (17/27)
       · 11 modules not started
     </p>
     <p class="lede">
@@ -306,7 +306,7 @@
       along the way. <code>common</code> followed, converted file by file in dependency order (base exception
       hierarchy first, then each utility class once whatever it references exists) — now fully done at 144 of 144
       files, the first module beyond <code>test-logging</code> to reach that state. <code>update</code> is next,
-      7 of 27 files in. The rest of the reactor — <code>conversion</code>, <code>messaging</code>,
+      17 of 27 files in. The rest of the reactor — <code>conversion</code>, <code>messaging</code>,
       <code>eventsourcing</code>, <code>modelling</code>, and seven more — hasn't started; see
       <a href="https://github.com/Terrence721/AxonFramework-Full/blob/main/todo.md">todo.md</a>
       for the honest current state rather than assuming more is done.
@@ -906,7 +906,7 @@
       A deliberate Maven→Gradle build-system migration, not a bulk copy edited in place. Every number on this
       page is reproducible from the repository's own <code>todo.md</code>, commit history, and live project
       board — nothing here is asserted without a link to check it against. This one's still early — 2 of 14
-      reactor modules fully converted, <code>update</code> 7 of 27 files in — see <code>todo.md</code> for the
+      reactor modules fully converted, <code>update</code> 17 of 27 files in — see <code>todo.md</code> for the
       honest current state rather than assuming it's further along.
     </p>
   </div>

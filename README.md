@@ -3,7 +3,7 @@
 [![Build](https://github.com/Terrence721/AxonFramework-Full/actions/workflows/build.yml/badge.svg)](https://github.com/Terrence721/AxonFramework-Full/actions/workflows/build.yml)
 [![CodeQL](https://github.com/Terrence721/AxonFramework-Full/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Terrence721/AxonFramework-Full/security/code-scanning)
 
-Last updated: September 9, 2026
+Last updated: September 15, 2026
 
 **[📜 View the portfolio page →](https://terrence721.github.io/AxonFramework-Full/portfolio.html)**
 
@@ -46,10 +46,11 @@ next to the decision instead of buried in a commit message nobody reads later.
 
 Axon Framework is a Java framework for building applications on CQRS and event-sourcing principles — command/query
 separation, an event store as the system of record, and the messaging infrastructure to wire it all together. This
-fork doesn't change any of that; right now it changes nothing about the framework's actual code at all. Every
-module in the reactor still needs its Java/Kotlin source converted — what exists so far is the **build system**
-those modules will eventually sit inside: the Gradle project structure, the shared conventions every module will
-apply, and the publishing pipeline that will ship them to Maven Central.
+fork doesn't change any of that. Two modules' real Java source are converted so far — `test-logging` and `common`
+(144 of 144 files) — with `update` underway (17 of 27); the rest of the reactor's Java/Kotlin source still needs
+converting. What exists alongside that is the **build system** every module sits inside: the Gradle project
+structure, the shared conventions every module applies, and the publishing pipeline that will ship them to Maven
+Central.
 
 ## 🏗 Architecture Overview
 
