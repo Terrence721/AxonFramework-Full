@@ -254,11 +254,14 @@ Gradle/Kotlin build flakiness" above, since both trace back to the same extensio
 behavior, and that entry's own warning ("avoid running manual `./gradlew` builds during a reload's re-import
 window") applies here too. No permanent code-level fix exists for the underlying orphan-process behavior itself —
 it lives inside `redhat.java`'s own process management, confirmed still present in the latest stable release
-(1.56.0) via its own changelog. A `Ctrl+Alt+R` → `workbench.action.reloadWindow` keybinding was added to make
-recovery one keystroke — **in this machine's own global `keybindings.json`, not this repo**: VS Code has no
-supported project-scoped keybindings mechanism (no `.vscode/keybindings.json`, no `.code-workspace` `"keybindings"`
-block — only `settings`/`tasks`/`extensions` are workspace-scoped), confirmed by checking current VS Code docs
-rather than assumed.
+(1.56.0) via its own changelog. A `Ctrl+Alt+Shift+R` → `java.clean.workspace` ("Java: Clean Java Language Server
+Workspace") keybinding was added to make the escalation-path recovery one keystroke — **in this machine's own
+global `keybindings.json`, not this repo**: VS Code has no supported project-scoped keybindings mechanism (no
+`.vscode/keybindings.json`, no `.code-workspace` `"keybindings"` block — only `settings`/`tasks`/`extensions` are
+workspace-scoped), confirmed by checking current VS Code docs rather than assumed. (A lighter `Ctrl+Alt+R` →
+`workbench.action.reloadWindow` binding was tried first, then deliberately removed once it became clear the two
+tiers were both needed and shouldn't be conflated — reload is cheap but doesn't fix real corruption, clean-workspace
+fixes real corruption but costs a full resync, so only the heavier one earned a permanent keybinding.)
 
 Separately, the same reload surfaced a large batch of Eclipse-JDT-only "Null type safety" warnings across
 `common`/`update` (e.g. `DecoratorDefinitions.java`, `UpdateCheckRequest.java`, `UpdateCheckResponse.java`) plus a
@@ -274,7 +277,21 @@ modules that actually apply `axonframework.java-conventions`, and therefore JSpe
 `pessimisticNullAnalysisForFreeTypeVariables`, and `unusedWarningToken` down to `ignore`. Standard native Eclipse
 project-preference files — Buildship reads them from each project's own root regardless of
 `java.import.generatesMetadataFilesAtProjectRoot`, which only controls whether jdt.ls *writes* generated files
-there, not whether it *reads* ones already committed.
+there, not whether it *reads* ones already committed. A fourth null-analysis category surfaced the same way after
+the first three were silenced — `nullAnnotationInferenceConflict` (a declared `List<UsagePropertyProvider>` local
+flagged as "less-annotated" than its `ArrayList<@NonNull UsagePropertyProvider>` initializer, even though every
+element is non-null by construction) — turned down the same way, in the same three files.
+
+**Standing rule, added after this recurred a second time the same day: a "prerequisite X is not built"/"File
+already exists on disk: .../bin/main/&lt;file&gt;" cascade across `common`→`test-logging`/`update`→`common` means
+Eclipse's own `bin/` output folders have stale content blocking its incremental builder — not a project-registration
+problem, and not something `Developer: Reload Window` or `Ctrl+Alt+Shift+R` fixes, since neither touches those
+folders.** Fix: delete the affected modules' `bin/` directories directly (`common/bin`, `test-logging/bin`,
+`update/bin`, `build-logic/bin` — all Eclipse-generated, gitignored, never tracked; confirmed safe to delete without
+checking further) and let Eclipse's own incremental builder recreate them clean. Recurred with 3 `redhat.java`
+processes alive at once (worse than the usual 2-process duplication above) — the two symptoms likely share a cause
+(multiple processes racing to write the same output path), but the `bin/`-deletion fix doesn't require solving the
+process duplication first; it resolves the immediate blocker on its own every time it's been tried.
 
 ## Still to do
 
