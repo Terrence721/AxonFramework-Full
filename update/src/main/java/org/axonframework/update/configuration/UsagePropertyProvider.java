@@ -19,7 +19,6 @@ package org.axonframework.update.configuration;
 import org.axonframework.common.annotation.Internal;
 import org.jspecify.annotations.Nullable;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -70,12 +69,11 @@ public interface UsagePropertyProvider {
      * @return A new {@code UsagePropertyProvider} instance.
      */
     static UsagePropertyProvider create(UsagePropertyProvider... additionalProviders) {
-        List<UsagePropertyProvider> providers = new ArrayList<>(Arrays.asList(
-                new CommandLineUsagePropertyProvider(),
-                new EnvironmentVariableUsagePropertyProvider(),
-                new PropertyFileUsagePropertyProvider(),
-                DefaultUsagePropertyProvider.INSTANCE
-        ));
+        List<UsagePropertyProvider> providers = new ArrayList<>();
+        providers.add(new CommandLineUsagePropertyProvider());
+        providers.add(new EnvironmentVariableUsagePropertyProvider());
+        providers.add(new PropertyFileUsagePropertyProvider());
+        providers.add(DefaultUsagePropertyProvider.INSTANCE);
         providers.addAll(Arrays.asList(additionalProviders));
         return new HierarchicalUsagePropertyProvider(providers);
     }
