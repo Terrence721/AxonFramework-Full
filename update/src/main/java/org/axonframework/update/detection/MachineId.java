@@ -38,7 +38,7 @@ public class MachineId {
     private static final Logger logger = LoggerFactory.getLogger(MachineId.class);
     private static final String MACHINE_ID_PATH = "/.axoniq/.machine-id";
 
-    private String machineId;
+    private final String machineId;
 
     /**
      * Creates a new instance of {@code MachineId}.
