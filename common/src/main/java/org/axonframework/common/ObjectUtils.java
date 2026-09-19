@@ -41,7 +41,7 @@ public final class ObjectUtils {
      * @param <T>             the type of value to return
      * @return {@code instance} if not {@code null}, otherwise the value provided by {@code defaultProvider}
      */
-    public static <T> T getOrDefault(T instance, Supplier<T> defaultProvider) {
+    public static <T> T getOrDefault(@Nullable T instance, Supplier<T> defaultProvider) {
         if (instance == null) {
             return defaultProvider.get();
         }
@@ -56,7 +56,7 @@ public final class ObjectUtils {
      * @param <T>          the type of value to return
      * @return {@code instance} if not {@code null}, otherwise {@code defaultValue}
      */
-    public static <T> T getOrDefault(T instance, T defaultValue) {
+    public static <T> T getOrDefault(@Nullable T instance, T defaultValue) {
         if (instance == null) {
             return defaultValue;
         }
@@ -71,7 +71,7 @@ public final class ObjectUtils {
      * @param <T>          the type of value to return
      * @return {@code instance} if not {@code null}, otherwise {@code defaultValue}
      */
-    public static <T extends CharSequence> T getNonEmptyOrDefault(T instance, T defaultValue) {
+    public static <T extends CharSequence> T getNonEmptyOrDefault(@Nullable T instance, T defaultValue) {
         if (instance == null || instance.length() == 0) {
             return defaultValue;
         }
