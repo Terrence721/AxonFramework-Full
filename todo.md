@@ -368,6 +368,42 @@ even though the shape of the task was similar):
 Every finding was cross-checked against the real upstream Maven source before fixing — most were confirmed
 pre-existing there too, not introduced by this fork's own conversion.
 
+### Real, root-cause dependency gap found and fixed: `update`'s missing JSR-305 classpath entry (2026-09-19)
+
+Continuing `update`'s migration cadence turned up a recurring IDE error — `"The type javax.annotation.Nonnull
+cannot be resolved. It is indirectly referenced from required .class files"` — every time an `update` file
+touching a `common` type was opened. Initially (and repeatedly) dismissed as the same class of Eclipse-JDT-only
+staleness already documented above, since `./gradlew :update:compileJava` kept succeeding cleanly every single
+time it was checked. **The user pushed back and asked for it to actually be dug into rather than dismissed
+again — that pressure was correct: this one was real.**
+
+Root cause: `common/build.gradle.kts` declares its JSR-305 dependency (`com.google.code.findbugs:jsr305`, which
+provides `javax.annotation.Nonnull`/`Nullable`) as `compileOnly` — deliberately, to avoid leaking a
+tooling-only, class-retention-annotation dependency into `common`'s own published artifact's transitive graph.
+`compileOnly` is never transitive, not even through `update`'s `api(project(":common"))` dependency. Meanwhile
+`common`'s compiled bytecode is full of real `@Nonnull`/`@Nullable` annotations on countless method signatures
+(the whole module's nullness convention), so `update`'s classpath was genuinely missing a type its own
+dependency's `.class` files reference. `javac` tolerates this — it doesn't need to resolve an
+indirectly-referenced, class-retention annotation type to compile code that merely calls the annotated methods
+— but Eclipse's own compiler is stricter and correctly reported it as a real missing type every time.
+
+**Confirmed this exact gap exists in the real upstream Maven source too, not introduced by this fork's
+conversion**: `common/pom.xml` declares the same dependency with `<scope>provided</scope>` (Maven's non-transitive
+equivalent), and `update/pom.xml` doesn't reference it either — it just never surfaced as a visible problem there
+since Maven/javac tooling never needed to resolve it, and `update` is the *first* real consumer-module dependency
+on `common` anywhere in this Gradle build so far (real build order: `common` → `update` → ...), so it's also the
+first place this latent gap could ever manifest.
+
+**Fixed as a deliberate, disclosed divergence from upstream's exact dependency list** (`test-logging` was checked
+too, ruled out as a comparison — it doesn't depend on `:common` at all): added the same
+`compileOnly("com.google.code.findbugs:jsr305:3.0.2")` declaration directly to `update/build.gradle.kts`, matching
+`common`'s own scope choice so it still doesn't leak into either module's published artifact. Verified for real,
+not assumed: `./gradlew :update:dependencies --configuration compileClasspath` confirmed `jsr305:3.0.2` now
+genuinely resolves on `update`'s classpath, and the real build still succeeds. **Every future module that depends
+on `common` will need the same `compileOnly` addition to its own build file** the first time it's converted, for
+the identical reason — worth checking for on `conversion`, `messaging`, `modelling`, `eventsourcing`, and `test`
+when each of those starts.
+
 ## Still to do
 
 Bottom-up by dependency direction. **The module catalog below (added 2026-09-05) comes from directly reading every
