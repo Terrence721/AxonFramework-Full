@@ -16,6 +16,8 @@
 
 package org.axonframework.common.property;
 
+import org.jspecify.annotations.Nullable;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -47,7 +49,7 @@ public class MethodAccessedProperty<T> implements Property<T> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <V> V getValue(T target) {
+    public <V> @Nullable V getValue(T target) {
         try {
             return (V) method.invoke(target);
         } catch (IllegalAccessException e) {
