@@ -23,8 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ClassUtils {
 
-    private static ClassLoader classLoader = ClassUtils.class.getClassLoader();
-    private static ConcurrentHashMap<String, Class<?>> cache = new ConcurrentHashMap<>();
+    private static final ClassLoader classLoader = ClassUtils.class.getClassLoader();
+    private static final ConcurrentHashMap<String, Class<?>> cache = new ConcurrentHashMap<>();
 
     /**
      * Avoid instantiation.
