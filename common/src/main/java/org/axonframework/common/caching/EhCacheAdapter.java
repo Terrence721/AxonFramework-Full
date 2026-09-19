@@ -26,7 +26,6 @@ import org.ehcache.event.EventType;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumSet;
-import java.util.function.UnaryOperator;
 
 /**
  * Cache implementation that delegates all calls to an EhCache instance.
@@ -87,37 +86,15 @@ public class EhCacheAdapter extends AbstractCacheAdapter<CacheEventListener> {
         return ehCache.containsKey(key);
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public <V> void computeIfPresent(Object key, UnaryOperator<V> update) {
-        Object oldValue;
-        V newValue;
-        do {
-            oldValue = ehCache.get(key);
-            if (oldValue == null) {
-                break;
-            }
-            newValue = update.apply((V) oldValue);
-        } while (!replaceOrRemove(key, oldValue, newValue));
-    }
-
     /**
-     * Replace or remove the element under {@code key}. If the {@code newValue} is not {@code null}, we invoke replace.
-     * If the {@code newValue} is {@code null}, the compute task decided to remove the entry instead. Since an
-     * invocation of {@link Ehcache#replace(Object, Object, Object)} does not remove an {@link Object} if it's value is
-     * {@code null}, we need to do this ourselves.
-     *
-     * @param key      The reference to the value to replace or remove, depending on whether the {@code newValue} is
-     *                 {@code null}.
-     * @param oldValue The old entry to replace with the {@code newValue}, if {@code newValue} is not {@code null}.
-     * @param newValue The new value to replace with the {@code oldValue}, if it is not {@code null}.
-     * @param <V>      The generic type of the value stored under the given {@code key}.
-     * @return A boolean stating whether the {@link Ehcache#replace(Object, Object, Object)} or {@link #remove(Object)}
-     * task succeeded.
+     * {@inheritDoc}
+     * <p>
+     * Delegates to {@link Ehcache#replace(Object, Object, Object)}.
      */
     @SuppressWarnings("unchecked")
-    private <V> boolean replaceOrRemove(Object key, V oldValue, V newValue) {
-        return newValue != null ? ehCache.replace(key, oldValue, newValue) : remove(key);
+    @Override
+    protected <V> boolean replace(Object key, V oldValue, V newValue) {
+        return ehCache.replace(key, oldValue, newValue);
     }
 
     @Override
