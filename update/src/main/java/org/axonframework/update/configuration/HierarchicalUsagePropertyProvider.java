@@ -21,6 +21,7 @@ import org.axonframework.common.annotation.Internal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * Combines multiple {@link UsagePropertyProvider} instances into a single provider.
@@ -49,19 +50,20 @@ public class HierarchicalUsagePropertyProvider implements UsagePropertyProvider 
 
     @Override
     public Boolean getDisabled() {
-        return providers.stream()
-                        .map(UsagePropertyProvider::getDisabled)
-                        .filter(Objects::nonNull)
-                        .findFirst()
-                        .orElse(false);
+        return firstNonNull(UsagePropertyProvider::getDisabled, false);
     }
 
     @Override
     public String getUrl() {
-        return providers.stream().map(UsagePropertyProvider::getUrl)
+        return firstNonNull(UsagePropertyProvider::getUrl, "");
+    }
+
+    private <T> T firstNonNull(Function<UsagePropertyProvider, T> extractor, T defaultValue) {
+        return providers.stream()
+                        .map(extractor)
                         .filter(Objects::nonNull)
                         .findFirst()
-                        .orElse("");
+                        .orElse(defaultValue);
     }
 
     @Override
