@@ -16,6 +16,8 @@
 
 package org.axonframework.common;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,7 +56,7 @@ public final class CollectionUtils {
      * @param <T>           the type of collection
      * @return a collection that combines both collections
      */
-    public static <S, T extends Collection<S>> T merge(T collection1, T collection2, Supplier<T> factoryMethod) {
+    public static <S, T extends Collection<S>> @Nullable T merge(@Nullable T collection1, @Nullable T collection2, Supplier<T> factoryMethod) {
         if (collection1 == null || collection1.isEmpty()) {
             return collection2;
         }
@@ -86,7 +88,7 @@ public final class CollectionUtils {
      * @return A Collection of the elements contained in the given {@code potentialCollection}
      */
     @SuppressWarnings("unchecked")
-    public static <R> Collection<R> asCollection(Object potentialCollection) {
+    public static <R> Collection<R> asCollection(@Nullable Object potentialCollection) {
         if (potentialCollection == null) {
             return Collections.emptyList();
         }
