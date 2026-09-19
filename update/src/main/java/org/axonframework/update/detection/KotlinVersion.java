@@ -17,6 +17,7 @@
 package org.axonframework.update.detection;
 
 import org.axonframework.common.annotation.Internal;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Utility class to retrieve the current Kotlin version at runtime. It attempts to access the `kotlin.KotlinVersion`
@@ -27,7 +28,7 @@ import org.axonframework.common.annotation.Internal;
 @Internal
 public class KotlinVersion {
 
-    private static volatile String kotlinVersion = null;
+    private static volatile @Nullable String kotlinVersion = null;
 
     /**
      * Returns the current Kotlin version as a string. If the Kotlin library is not present, it returns "none".
@@ -35,10 +36,12 @@ public class KotlinVersion {
      * @return the current Kotlin version or "none" if not available
      */
     public static String get() {
-        if (kotlinVersion == null || kotlinVersion.isEmpty()) {
-            kotlinVersion = detect();
+        String value = kotlinVersion;
+        if (value == null || value.isEmpty()) {
+            value = detect();
+            kotlinVersion = value;
         }
-        return kotlinVersion;
+        return value;
     }
 
     private static String detect() {
