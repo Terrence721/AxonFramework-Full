@@ -91,7 +91,7 @@ public final class ObjectUtils {
      * @return the output of {@code valueProvider} by ingesting {@code instance} if it is not {@code null}, otherwise
      * the {@code defaultValue}
      */
-    public static <I, T> T getOrDefault(@Nullable I instance, Function<I, T> valueProvider, T defaultValue) {
+    public static <I, T> @Nullable T getOrDefault(@Nullable I instance, Function<I, T> valueProvider, @Nullable T defaultValue) {
         return instance != null ? valueProvider.apply(instance) : defaultValue;
     }
 
