@@ -16,6 +16,8 @@
 
 package org.axonframework.common.property;
 
+import org.jspecify.annotations.Nullable;
+
 import java.lang.reflect.Field;
 
 import static java.lang.String.format;
@@ -36,7 +38,7 @@ public class DirectlyAccessedProperty<T> implements Property<T> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <V> V getValue(T target) {
+    public <V> @Nullable V getValue(T target) {
         try {
             return (V) field.get(target);
         } catch (IllegalAccessException e) {
