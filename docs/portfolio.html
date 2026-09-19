@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta
   name="description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Thirty-one real build-system gaps found and fixed so far, disclosed rather than smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5 — converted one file at a time, each one individually inspected against the Maven source. Forty-three real build-system gaps found and fixed so far, disclosed rather than smoothed over."
 />
 <link rel="canonical" href="https://terrence721.github.io/AxonFramework-Full/portfolio.html" />
 
@@ -12,7 +12,7 @@
 <meta property="og:title" content="AxonFramework-Full — a Maven→Gradle build migration, by Terrence Daniels" />
 <meta
   property="og:description"
-  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — thirty-one real build-system gaps found and fixed, disclosed not smoothed over."
+  content="A deliberate Maven→Gradle build-system migration of Axon Framework 5, converted one file at a time — forty-three real build-system gaps found and fixed, disclosed not smoothed over."
 />
 
 <meta name="twitter:card" content="summary" />
@@ -235,7 +235,7 @@
       <strong>one file at a time</strong>, each one individually inspected against the Maven source rather than run
       through an automated converter. Build-logic conventions are done, and <code>test-logging</code>,
       <code>common</code>, and <code>update</code> are all fully converted — every gap found along the way,
-      thirty-one so far, is disclosed in this repo's own build log, not smoothed over. Still early — 11 of 14
+      forty-three so far, is disclosed in this repo's own build log, not smoothed over. Still early — 11 of 14
       reactor modules haven't started converting at all.
     </p>
     <div class="hero-actions">
@@ -248,7 +248,7 @@
   </div>
   <div class="stamp" aria-hidden="true">
     <div class="stamp-inner">
-      <span class="n">31</span>
+      <span class="n">43</span>
       <span class="l">REAL GAPS<br />FOUND &amp; FIXED</span>
     </div>
   </div>
@@ -260,7 +260,7 @@
       <div class="manifest-cell"><span class="v">3 of 14</span><span class="k">reactor modules fully converted</span></div>
       <div class="manifest-cell"><span class="v">301</span><span class="k">commits, 29 days</span></div>
       <div class="manifest-cell"><span class="v">3</span><span class="k">build-logic convention plugins done</span></div>
-      <div class="manifest-cell"><span class="v">31</span><span class="k">real gaps found &amp; fixed</span></div>
+      <div class="manifest-cell"><span class="v">43</span><span class="k">real gaps found &amp; fixed</span></div>
       <div class="manifest-cell"><span class="v">144 of 144</span><span class="k">common source files converted</span></div>
       <div class="manifest-cell"><span class="v">8</span><span class="k">public surfaces kept in sync</span></div>
     </div>
@@ -335,7 +335,7 @@
   </section>
 
   <section>
-    <h2>Thirty-one real gaps, found and fixed</h2>
+    <h2>Forty-three real gaps, found and fixed</h2>
     <p class="h2-sub">
       Found by running a real build, reading a live API doc, or auditing already-converted files a second time —
       not by assuming the first pass was right
@@ -355,13 +355,22 @@
       attempt turned out wrong, caught only by testing it against a real, disposable database instance. Six more
       turned up finishing <code>common</code>'s last few files: missing-<code>@Nullable</code> gaps, a
       message-polarity bug, and a wrong exception type, all found by cross-checking a file against the interface
-      or sibling it implements rather than reading it in isolation. The remaining seven turned up from a
+      or sibling it implements rather than reading it in isolation. Seven more turned up from a
       deliberate retroactive pass: once <code>common</code> reached 144 of 144 files, a second, independent audit
       re-checked every one of them against a DRY/SOLID charter this fork adopted partway through — not because
-      any of them were wrong when first converted, but because the charter itself came later. All seven are the
+      any of them were wrong when first converted, but because the charter itself came later. All seven were the
       same class of gap as everything above: a javadoc claim that didn't match its own implementation, a
       copy-pasted error message with the polarity backwards, and five places where a value can genuinely be
-      <code>null</code> but the type didn't say so.
+      <code>null</code> but the type didn't say so. Ten turned up converting the entire <code>update</code>
+      module, 27 of 27 files: a dead parameter silently discarding real vulnerability data, a duplicated
+      classpath scan next to a record built straight from an unchecked <code>Properties</code> lookup, a
+      singleton whose own field could be reassigned by any caller, an interface-wide nullness gap repeated across
+      three implementations, two more javadoc claims that didn't match their own implementation, and a
+      thread-safety gap confirmed identical in the real upstream source. The final two turned up from a second
+      comprehensive drift sweep of this fork as a whole, re-checking both modules together rather than trusting
+      either one's own individual completion as final: one more missing-<code>@Nullable</code> gap in
+      <code>common</code>, and one more copy-pasted error message, this time naming the wrong algorithm instead of
+      the wrong polarity.
     </p>
     <div class="ledger">
       <div class="item">
@@ -828,9 +837,203 @@
           <div class="meta"><span class="tag">low · nullness contract, four files</span></div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">32</div>
+        <div>
+          <div class="file">UpdateCheckResponse.parseUpdate() silently discarded real vulnerability data</div>
+          <div class="desc">
+            The private helper's <code>vulnerabilities</code> parameter was passed in from its one call site but
+            never referenced anywhere in the method body — only <code>upgrades</code> was actually used, meaning
+            any vulnerability data reaching this method was silently dropped rather than recorded. Found while
+            converting the <code>update</code> module's first real source file, not assumed correct just because
+            it compiled. Removed the dead parameter and confirmed the vulnerability path is populated correctly
+            by its own dedicated <code>parseVulnerability</code> method instead.
+          </div>
+          <div class="meta"><span class="tag">medium · dead parameter, silent data loss</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">33</div>
+        <div>
+          <div class="file">AxonVersionDetector ran the same classpath scan twice and silently violated its own record's contract</div>
+          <div class="desc">
+            <code>detectAxonModules()</code>'s outer loop iterated over every known group ID calling
+            <code>getResources("META-INF/maven/")</code> — a fixed string that doesn't depend on the group ID at
+            all, so the identical classpath scan ran once per group ID, duplicating every URL before any
+            filtering happened. Separately, the method that maps a scanned entry to an <code>Artifact</code> (a
+            record whose <code>groupId</code>/<code>artifactId</code>/<code>version</code> fields are all
+            non-nullable) built one straight from <code>Properties.getProperty(key)</code>, which returns
+            <code>null</code> on a missing key — silently constructing an invalid record instead of being caught
+            and skipped like every other malformed-input path in the same file. Pulled the scan outside the loop
+            entirely, and added a validation check that throws rather than building the record with a null field.
+          </div>
+          <div class="meta"><span class="tag">medium · functional bug, nullness contract</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">34</div>
+        <div>
+          <div class="file">DefaultUsagePropertyProvider.INSTANCE could be reassigned by any caller</div>
+          <div class="desc">
+            Declared <code>public static</code> but not <code>final</code>, despite the class's own javadoc
+            describing it as "implemented as a singleton" — any external caller could reassign the field and
+            break that contract outright, not just a theoretical risk given the field's visibility. Added
+            <code>final</code>.
+          </div>
+          <div class="meta"><span class="tag">low · contract violation</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">35</div>
+        <div>
+          <div class="file">UsagePropertyProvider and three of its implementations dropped the interface's own @Nullable</div>
+          <div class="desc">
+            <code>getDisabled()</code>'s javadoc documents a <code>null</code> return, but the interface's own
+            signature was bare <code>Boolean</code> — and <code>CommandLineUsagePropertyProvider</code>,
+            <code>EnvironmentVariableUsagePropertyProvider</code>, and <code>PropertyFileUsagePropertyProvider</code>
+            all repeated the identical gap on their own <code>getDisabled()</code>/<code>getUrl()</code>
+            overrides. <code>EnvironmentVariableUsagePropertyProvider</code> had it a third time on its own
+            nested <code>EnvironmentVariableSupplier.get()</code> functional interface, and
+            <code>PropertyFileUsagePropertyProvider</code> had it twice more on fields that stay
+            <code>null</code> if the home directory can't be resolved or its property file fails to load. Same
+            class of gap as the four <code>Cache</code> implementations above (gap #31), just spread across a
+            different module's interface and its implementations instead of one interface's four adapters. Fixed
+            all of them.
+          </div>
+          <div class="meta"><span class="tag">low · nullness contract, four files</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">36</div>
+        <div>
+          <div class="file">DelayedTask.failureCause — a genuinely nullable field with no @Nullable</div>
+          <div class="desc">
+            The field is only ever assigned inside a failure catch block and stays <code>null</code> otherwise,
+            but carried no <code>@Nullable</code> under this package's own <code>@NullMarked</code> declaration —
+            confirmed present in the real upstream <code>package-info.java</code> too. Added it to both the field
+            and <code>getFailureCause()</code>'s return type.
+          </div>
+          <div class="meta"><span class="tag">low · nullness contract</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">37</div>
+        <div>
+          <div class="file">KotlinVersion's memoized field had no volatile and no @Nullable</div>
+          <div class="desc">
+            The lazily-initialized version field used an unsynchronized check-then-set pattern with no
+            <code>volatile</code> — a genuine visibility gap under the JVM memory model (low-severity here since
+            the detection logic it guards is idempotent and side-effect-free, but the same class of bug static
+            analyzers flag as an unsafe lazy-init pattern). The same field was also declared non-null while being
+            initialized to <code>null</code>. Fixed both, and — since the IDE's null-flow analysis doesn't narrow
+            fields across statements the way it does local variables, because a field could change from another
+            thread between a check and its use — refactored the accessor to read the volatile field into a local
+            variable once rather than re-reading it two or three times.
+          </div>
+          <div class="meta"><span class="tag">medium · thread-safety, nullness contract</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">38</div>
+        <div>
+          <div class="file">MachineId's own javadoc promised a fallback its code didn't actually deliver</div>
+          <div class="desc">
+            The class's own javadoc promises a UUID fallback "if the ID can't be stored or read," but the catch
+            block only logged on failure. The "can't be stored" path was already safe, since the fallback UUID is
+            generated before the write attempt — but "can't be read" (an existing file that throws while being
+            read back) left the field <code>null</code>, contradicting the class's own documented contract.
+            Fixed by falling back to a fresh UUID in the catch block if the field was never set.
+          </div>
+          <div class="meta"><span class="tag">medium · javadoc/implementation mismatch</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">39</div>
+        <div>
+          <div class="file">UpdateCheckerHttpClient's javadoc described an HTTP method the code never sends</div>
+          <div class="desc">
+            The javadoc claimed "if firstRequest is true, it will send a POST request, otherwise a PUT request,"
+            but the code always sends <code>.GET()</code> — the first-request flag only ever sets an
+            <code>X-First-Run</code> header, never the HTTP method. Same class of gap as
+            <code>CollectionUtils.intersect</code> (gap #25): the GET-based implementation is clearly deliberate
+            and working, so the javadoc was corrected to describe reality rather than inventing a POST/PUT
+            implementation that was never actually written.
+          </div>
+          <div class="meta"><span class="tag">low · javadoc/implementation mismatch</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">40</div>
+        <div>
+          <div class="file">UpdateChecker had two more cross-thread fields missing volatile, and one wrong log argument</div>
+          <div class="desc">
+            <code>delayedTask</code> was correctly made <code>volatile</code> during this file's original
+            conversion, with the reasoning for why its two siblings (<code>firstRequest</code>,
+            <code>errorRetryBackoffFactor</code>) didn't need it checked explicitly at the time rather than
+            applied blindly. That reasoning turned out wrong: a second, independent re-audit traced the actual
+            statement order and found both fields are written <em>after</em> the next virtual thread is already
+            started, with no happens-before guarantee the new thread would see them — confirmed identical in the
+            real upstream source, a pre-existing bug this fork's conversion didn't introduce. In the same file, a
+            log statement also passed the whole <code>updateCheckResponse</code> record where
+            <code>.checkInterval()</code> was clearly intended, since the very next line uses
+            <code>.checkInterval()</code> correctly. Fixed both, the same way gap #16 was found — on a second
+            pass, not the first.
+          </div>
+          <div class="meta"><span class="tag">medium · thread-safety, found on a second pass</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">41</div>
+        <div>
+          <div class="file">update's classpath was silently missing a type its own dependency's bytecode references</div>
+          <div class="desc">
+            <code>common</code> declares its JSR-305 dependency <code>compileOnly</code>, deliberately, so it
+            doesn't leak into either module's published artifact — but <code>compileOnly</code> is never
+            transitive, even through <code>update</code>'s <code>api(project(":common"))</code>. <code>common</code>'s
+            compiled bytecode carries real <code>@Nonnull</code>/<code>@Nullable</code> annotations throughout,
+            so <code>update</code>'s classpath was genuinely missing a type its own dependency's class files
+            reference. <code>javac</code> tolerates this; Eclipse's compiler doesn't. Confirmed this exact gap
+            exists in the real upstream Maven source too (<code>common/pom.xml</code> uses <code>provided</code>
+            scope, <code>update/pom.xml</code> never references it either) — <code>update</code> is simply the
+            first real consumer of <code>common</code> anywhere in this build. Fixed by adding the identical
+            <code>compileOnly</code> declaration to <code>update</code> directly — now a standing check for every
+            future module that depends on <code>common</code>.
+          </div>
+          <div class="meta"><span class="tag">high · build-system dependency gap</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">42</div>
+        <div>
+          <div class="file">FutureUtils.ignoreResult() didn't declare what its own javadoc already promised</div>
+          <div class="desc">
+            The method's own javadoc states its return is always <code>null</code>, and its body does return
+            <code>null</code> unconditionally, but the <code>Void</code> return type carried no
+            <code>@Nullable</code> — unlike the sibling <code>joinAndUnwrap</code> overloads (gap #27), which
+            already follow this convention. Found on a second, independent re-audit of already-converted
+            <code>common</code> files run alongside the <code>update</code> module's own re-audit, the same
+            technique that caught gap #16.
+          </div>
+          <div class="meta"><span class="tag">low · nullness contract</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">43</div>
+        <div>
+          <div class="file">Digester.newInstance()'s own error message named the wrong algorithm</div>
+          <div class="desc">
+            The method accepts any algorithm name via its own parameter, but its
+            <code>NoSuchAlgorithmException</code> handler always reported "This environment doesn't support the
+            MD5 hashing algorithm" — even when called with a different algorithm entirely, since nothing outside
+            this fork ever exercises that path with anything but MD5. Fixed to report the actual algorithm that
+            was requested.
+          </div>
+          <div class="meta"><span class="tag">low · message accuracy</span></div>
+        </div>
+      </div>
     </div>
     <div class="note">
-      <strong>Not counted in the 31 above, but part of the same retroactive audit:</strong> three real DRY
+      <strong>Not counted in the 43 above, but part of the same retroactive audit:</strong> three real DRY
       duplications (a type-name ternary copy-pasted across two <code>ComponentDescriptor</code> implementations,
       two near-identical private filter methods in <code>Components</code>, and <code>JdbcSQLErrorCodesResolver</code>
       reimplementing a cause-chain walk <code>ExceptionUtils</code> already provides) and a batch of pure
@@ -838,6 +1041,17 @@
       actual Eclipse-based tooling, sixteen doubled blank lines, one file still using tab indentation). All fixed
       the same session, all verified the same way — but none of them change behavior, so none of them are counted
       as a "gap," matching how the <code>ComponentRegistry</code> javadoc typo above wasn't either.
+    </div>
+    <div class="note">
+      <strong>Not counted in the 43 above, but part of the same discipline:</strong> converting
+      <code>update</code> also turned up a redundant double-call fixed twice (once in this module, once already
+      fixed in <code>common</code>), a renamed <code>ALL_CAPS</code> field that should never have been a
+      constant-style name, and several formatting/modifier-order nits — none of which change behavior, so none
+      are counted. A later, second comprehensive drift sweep of the whole fork also found two more fields that
+      compile-time analysis showed were safe to make <code>final</code> (<code>ClassUtils</code>'s two static
+      fields, <code>MachineId</code>'s single-assignment field) and one more redundant double-call
+      (<code>ExceptionUtils.isExplicitlyNonTransient</code>'s duplicated <code>getCause()</code>) — same
+      reasoning, same exclusion.
     </div>
     <div class="note">
       <strong>Formerly an honest gap, now closed:</strong> the Gradle wrapper (<code>gradlew</code>,
