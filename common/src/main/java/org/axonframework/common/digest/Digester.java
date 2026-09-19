@@ -43,7 +43,9 @@ public final class Digester {
         try {
             return new Digester(MessageDigest.getInstance(algorithm));
         } catch (NoSuchAlgorithmException e) {
-            throw new AxonConfigurationException("This environment doesn't support the MD5 hashing algorithm", e);
+            throw new AxonConfigurationException(
+                    "This environment doesn't support the " + algorithm + " hashing algorithm", e
+            );
         }
     }
 
