@@ -16,6 +16,7 @@
 
 package org.axonframework.common;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +67,7 @@ public final class TypeReflectionUtils {
      * @param searchClass The erased type of the super class to find
      * @return The supertype of {@code type}, whose erased type is {@code searchClass}
      */
-    public static Type getExactSuperType(Type type, Class<?> searchClass) {
+    public static @Nullable Type getExactSuperType(Type type, Class<?> searchClass) {
         if (type instanceof ParameterizedType || type instanceof Class || type instanceof GenericArrayType) {
             Class<?> clazz = erase(type);
 
