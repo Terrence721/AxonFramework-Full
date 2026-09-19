@@ -32,6 +32,19 @@ dependencies {
 
     // Jakarta - default scope, not optional in the Maven source
     api("jakarta.annotation:jakarta.annotation-api:3.0.0")
+
+    // Deliberate divergence from update/pom.xml, which doesn't declare this at all: common's own
+    // compileOnly (Maven: provided) JSR-305 dependency is never transitive, even through an api project
+    // dependency, but common's compiled bytecode is full of real javax.annotation.Nonnull/@Nullable
+    // annotations. javac tolerates resolving update's source against that bytecode without this on the
+    // classpath (it doesn't need to resolve an indirectly-referenced, class-retention annotation type),
+    // but Eclipse's own compiler does not, and correctly reports "cannot resolve javax.annotation.Nonnull"
+    // for any update file that touches an annotated common type. Confirmed this exact gap exists in the
+    // real upstream Maven source too (common/pom.xml has the same provided-scope declaration, update/pom.xml
+    // doesn't reference it either) - not introduced by this fork's conversion, just never surfaced there.
+    // Kept compileOnly here too, matching common's own scope choice, so it doesn't leak into either
+    // module's published artifact.
+    compileOnly("com.google.code.findbugs:jsr305:3.0.2")
 }
 
 tasks.jar {
