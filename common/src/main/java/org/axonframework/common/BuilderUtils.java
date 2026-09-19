@@ -16,6 +16,8 @@
 
 package org.axonframework.common;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -41,7 +43,7 @@ public final class BuilderUtils {
      *                         assertion}
      * @throws AxonConfigurationException if the {@code value} asserts to {@code false} by the {@code assertion}
      */
-    public static <T> void assertThat(T value,
+    public static <T> void assertThat(@Nullable T value,
                                       Predicate<T> assertion,
                                       String exceptionMessage) throws AxonConfigurationException {
         Assert.assertThat(value, assertion, () -> new AxonConfigurationException(exceptionMessage));
@@ -57,7 +59,7 @@ public final class BuilderUtils {
      *                         assertion}
      * @throws AxonConfigurationException if the {@code value} equals {@code null}
      */
-    public static <T> void assertNonNull(T value, String exceptionMessage) throws AxonConfigurationException {
+    public static <T> void assertNonNull(@Nullable T value, String exceptionMessage) throws AxonConfigurationException {
         assertThat(value, Objects::nonNull, exceptionMessage);
     }
 
@@ -112,7 +114,7 @@ public final class BuilderUtils {
      * @param string           the value to assert
      * @param exceptionMessage the message for the exception.
      */
-    public static void assertNonEmpty(String string, String exceptionMessage) {
+    public static void assertNonEmpty(@Nullable String string, String exceptionMessage) {
         assertThat(string, StringUtils::nonEmptyOrNull, exceptionMessage);
     }
 
@@ -124,7 +126,7 @@ public final class BuilderUtils {
      * @param exceptionMessage The message for the exception.
      * @return The given {@code string} when it was not {@code null} or blank.
      */
-    public static String assertNonBlank(String string, String exceptionMessage) {
+    public static String assertNonBlank(@Nullable String string, String exceptionMessage) {
         assertThat(string, e -> e != null && !e.isBlank(), exceptionMessage);
         return string;
     }
