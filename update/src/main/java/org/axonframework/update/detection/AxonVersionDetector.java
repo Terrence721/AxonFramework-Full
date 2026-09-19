@@ -32,6 +32,7 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
@@ -120,15 +121,17 @@ public final class AxonVersionDetector {
             return jarFile.stream()
                           .filter(entry -> entry.getName().startsWith("META-INF/maven/"))
                           .filter(entry -> entry.getName().endsWith("/pom.properties"))
-                          .map(entry -> {
-                              try (InputStream inputStream = jarFile.getInputStream(entry)) {
-                                  return mapToAxonVersion(inputStream);
-                              } catch (IOException e) {
-                                  logger.debug("Failed to read pom.properties from JAR entry: {}", entry.getName(), e);
-                                  return null;
-                              }
-                          })
+                          .map(entry -> mapJarEntryToAxonVersion(jarFile, entry))
                           .toList();
+        }
+    }
+
+    private static @Nullable Artifact mapJarEntryToAxonVersion(JarFile jarFile, JarEntry entry) {
+        try (InputStream inputStream = jarFile.getInputStream(entry)) {
+            return mapToAxonVersion(inputStream);
+        } catch (IOException e) {
+            logger.debug("Failed to read pom.properties from JAR entry: {}", entry.getName(), e);
+            return null;
         }
     }
 
