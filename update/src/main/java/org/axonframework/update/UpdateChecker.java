@@ -63,9 +63,9 @@ public class UpdateChecker implements Runnable {
     private final UsagePropertyProvider usagePropertyProvider;
     private final MachineId machineId;
 
-    private boolean firstRequest = true;
+    private volatile boolean firstRequest = true;
     private final AtomicBoolean started = new AtomicBoolean(false);
-    private int errorRetryBackoffFactor = 1;
+    private volatile int errorRetryBackoffFactor = 1;
     private volatile @Nullable DelayedTask delayedTask;
 
     /**
@@ -128,7 +128,7 @@ public class UpdateChecker implements Runnable {
             reporter.report(requestBody, updateCheckResponse);
 
             logger.debug("Axoniq will check library update and vulnerabilities again in {} seconds.",
-                         updateCheckResponse);
+                         updateCheckResponse.checkInterval());
             delayedTask = DelayedTask.of(this, updateCheckResponse.checkInterval() * 1000L);
             errorRetryBackoffFactor = 1; // Reset backoff factor on a successful report
             firstRequest = false;
