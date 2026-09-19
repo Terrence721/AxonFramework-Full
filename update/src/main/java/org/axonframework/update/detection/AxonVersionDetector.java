@@ -114,7 +114,8 @@ public final class AxonVersionDetector {
     private static List<@Nullable Artifact> extractVersionFromJar(URL url) throws IOException {
         // The URL format for JAR files is typically "file:/path/to/jarfile.jar!/META-INF/maven/...".
         // We need to extract the path to the JAR file, so we remove the "file:" prefix and everything after the "!" character.
-        String jarFilePath = url.getPath().substring(5, url.getPath().indexOf("!"));
+        String path = url.getPath();
+        String jarFilePath = path.substring(5, path.indexOf("!"));
         try (JarFile jarFile = new JarFile(new File(jarFilePath))) {
             return jarFile.stream()
                           .filter(entry -> entry.getName().startsWith("META-INF/maven/"))
