@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -67,9 +68,7 @@ public class WeakReferenceCache implements Cache {
         @SuppressWarnings("unchecked")
         final V returnValue = entry == null ? null : (V) entry.get();
         if (returnValue != null) {
-            for (EntryListener adapter : adapters) {
-                adapter.onEntryRead(key, returnValue);
-            }
+            notifyListeners(adapter -> adapter.onEntryRead(key, returnValue));
         }
         return returnValue;
     }
@@ -82,13 +81,9 @@ public class WeakReferenceCache implements Cache {
 
         purgeItems();
         if (cache.put(key, new Entry(key, value)) != null) {
-            for (EntryListener adapter : adapters) {
-                adapter.onEntryUpdated(key, value);
-            }
+            notifyListeners(adapter -> adapter.onEntryUpdated(key, value));
         } else {
-            for (EntryListener adapter : adapters) {
-                adapter.onEntryCreated(key, value);
-            }
+            notifyListeners(adapter -> adapter.onEntryCreated(key, value));
         }
     }
 
@@ -99,9 +94,7 @@ public class WeakReferenceCache implements Cache {
         }
         purgeItems();
         if (cache.putIfAbsent(key, new Entry(key, value)) == null) {
-            for (EntryListener adapter : adapters) {
-                adapter.onEntryCreated(key, value);
-            }
+            notifyListeners(adapter -> adapter.onEntryCreated(key, value));
             return true;
         }
         return false;
@@ -121,18 +114,14 @@ public class WeakReferenceCache implements Cache {
             throw new IllegalArgumentException("Value Supplier of Cache produced a null value for key [" + key + "]!");
         }
         cache.put(key, new Entry(key, newValue));
-        for (EntryListener adapter : adapters) {
-            adapter.onEntryCreated(key, newValue);
-        }
+        notifyListeners(adapter -> adapter.onEntryCreated(key, newValue));
         return newValue;
     }
 
     @Override
     public boolean remove(Object key) {
         if (cache.remove(key) != null) {
-            for (EntryListener adapter : adapters) {
-                adapter.onEntryRemoved(key);
-            }
+            notifyListeners(adapter -> adapter.onEntryRemoved(key));
             return true;
         }
         return false;
@@ -143,9 +132,7 @@ public class WeakReferenceCache implements Cache {
         Set<Object> keys = new HashSet<>(cache.keySet());
         keys.forEach(key -> {
             cache.remove(key);
-            for (EntryListener adapter : adapters) {
-                adapter.onEntryRemoved(key);
-            }
+            notifyListeners(adapter -> adapter.onEntryRemoved(key));
         });
     }
 
@@ -161,10 +148,9 @@ public class WeakReferenceCache implements Cache {
     private void purgeItems() {
         Entry purgedEntry;
         while ((purgedEntry = (Entry) referenceQueue.poll()) != null) {
-            if (cache.remove(purgedEntry.getKey()) != null) {
-                for (EntryListener adapter : adapters) {
-                    adapter.onEntryExpired(purgedEntry.getKey());
-                }
+            Object purgedKey = purgedEntry.getKey();
+            if (cache.remove(purgedKey) != null) {
+                notifyListeners(adapter -> adapter.onEntryExpired(purgedKey));
             }
         }
     }
@@ -180,17 +166,19 @@ public class WeakReferenceCache implements Cache {
             @SuppressWarnings("unchecked")
             V value = update.apply((V) currentValue);
             if (value != null) {
-                for (EntryListener adapter : adapters) {
-                    adapter.onEntryUpdated(key, value);
-                }
+                notifyListeners(adapter -> adapter.onEntryUpdated(key, value));
                 return new Entry(k, value);
             } else {
-                for (EntryListener adapter : adapters) {
-                    adapter.onEntryRemoved(key);
-                }
+                notifyListeners(adapter -> adapter.onEntryRemoved(key));
                 return null;
             }
         });
+    }
+
+    private void notifyListeners(Consumer<EntryListener> notification) {
+        for (EntryListener adapter : adapters) {
+            notification.accept(adapter);
+        }
     }
 
     private class Entry extends WeakReference<Object> {
