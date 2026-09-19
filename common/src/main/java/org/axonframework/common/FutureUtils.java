@@ -59,7 +59,7 @@ public final class FutureUtils {
      * @return {@code null}, as that's the only valid value for {@link Void}.
      */
     @SuppressWarnings("UnusedReturnValue")
-    public static <T> Void ignoreResult(@SuppressWarnings("unused") T toIgnore) {
+    public static <T> @Nullable Void ignoreResult(@SuppressWarnings("unused") T toIgnore) {
         return null;
     }
 
