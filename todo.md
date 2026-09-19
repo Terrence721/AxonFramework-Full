@@ -1,6 +1,6 @@
 # 📝 TODO
 
-Last updated: September 15, 2026
+Last updated: September 19, 2026
 
 A living list of what's done and what's left on this build. This is a Maven-to-Gradle build-system migration of
 Axon Framework 5 — the Maven reactor is being converted **one file
@@ -293,6 +293,80 @@ checking further) and let Eclipse's own incremental builder recreate them clean.
 processes alive at once (worse than the usual 2-process duplication above) — the two symptoms likely share a cause
 (multiple processes racing to write the same output path), but the `bin/`-deletion fix doesn't require solving the
 process duplication first; it resolves the immediate blocker on its own every time it's been tried.
+
+### Full 3-agent drift sweep: doc drift, repo settings, and 10 code-quality findings, all fixed (2026-09-15/19)
+
+User asked for "a full, complete, and comprehensive sweep of this repo/project for drift" — clarified via
+`AskUserQuestion` into three scopes (documentation drift, repo/build health, code-quality DRY/SOLID re-audit), with
+the user choosing all three. Each ran as its own background research agent to keep findings-gathering out of the
+main context.
+
+**Documentation drift (11 stale spots across 9 surfaces, all fixed):** the root cause was `update` module's real
+progress (17 of 27 by the time of the sweep) never propagating past a same-day `todo.md` edit — every other
+surface still said "7 of 27": `README.md`, `docs/portfolio.html` (four separate mentions), both progress diagrams,
+the wiki's `⭐-Module-Status.md`, the GitHub profile README, the portfolio landing page, and GitHub Project board
+issue #16's title and body. Also caught: a stale commit/day count (271 commits/day 25, not 253/19), a
+self-contradicting arithmetic error in this file itself ("152 `common` files" vs. its own "144 of 144" claim two
+rows up — real number is 149, 144 converted + 5 net-new from the SOLID redesign), and a now-factually-false line in
+`README.md` ("changes nothing about the framework's actual code at all," false since `common` finished). Fixed
+across every surface: local repo files in one commit, the wiki via clone/edit/push, the profile README and landing
+page via the established clone-and-edit-with-line-endings-preserved technique, and issue #16 via `gh issue edit`.
+
+**Repo/build health (1 real, live finding):** GitHub's "Automatic Dependency Submission" workflow (a
+platform-managed dynamic workflow, not a committed file) had reverted back to firing on every push — the exact
+toggle already documented above as deliberately disabled for being permanently broken on JDK-version grounds and
+redundant with this repo's own `dependency-submission.yml`. Confirmed (again) no working API route exists to
+disable it (`PUT .../actions/workflows/.../disable` returns a hard 422) — genuinely UI-only. Re-disabled via
+Settings → Code security and analysis → Advanced Security → "Automatic dependency submission," confirmed by
+screenshot after an initial wrong-page mixup (the Security tab's "Overview" page doesn't have this toggle at all).
+Real verification needed a live test since the Actions API's own `state` field for this kind of workflow reports
+`"active"` regardless of the toggle: pushed a real commit after the toggle change and confirmed via
+`gh api .../actions/workflows/.../runs` that no new run fired — the disable genuinely took effect.
+
+**Code-quality DRY/SOLID re-audit (10 real findings + 1 more found along the way, all fixed):** scoped to
+`common/` (re-audit, since 2026-09-07 already fixed 22 findings there) and every converted `update/` file. Each
+committed individually, one file at a time, per the user's explicit sequencing choice (doc drift → repo settings →
+code quality) and cadence choice (standard one-file-at-a-time review, not a blanket batch like 2026-09-07's sweep
+even though the shape of the task was similar):
+
+- `common/property/{DirectlyAccessedProperty,MethodAccessedProperty}.java` — both override
+  `Property<T>.getValue()` (interface declares `@Nullable`) without repeating it; both genuinely return null
+  (`Field.get()`/`Method.invoke()` on a null-valued/void-returning target).
+- `common/TypeReflectionUtils.java` — `getExactSuperType`'s own javadoc documents a null return, the method
+  returns null twice, but the signature (and the whole file) had no `@Nullable` at all.
+- `common/ObjectUtils.java` — three `getOrDefault`-family methods null-checked an un-annotated `instance`
+  parameter; the file self-contradicted (`sameInstanceSupplier`'s `AtomicReference<@Nullable T>` fed a nullable
+  value into one of the "non-null" overloads). A related, not-originally-flagged gap found while fixing a
+  different file the same day: the 3-arg `getOrDefault(instance, valueProvider, defaultValue)` overload's
+  `defaultValue`/return type also needed `@Nullable` — `WeakReferenceCache.computeIfAbsent` calls it with a `null`
+  literal as a safe-navigation idiom.
+- `common/CollectionUtils.java` — `merge()`'s own javadoc documents that even its *return* can be null "even if
+  that one is null as well," and `asCollection()` null-checks its parameter — neither annotated.
+- `common/BuilderUtils.java` — `assertThat`/`assertNonNull`/`assertNonEmpty`/`assertNonBlank` all validate for
+  null without `@Nullable`, inconsistent with the sibling `Assert.java`'s already-correct equivalent.
+- DRY: `common/caching/WeakReferenceCache.java` — the identical listener-notification loop
+  (`for (EntryListener adapter : adapters) { adapter.onEntryX(...); }`) was repeated 10 times, differing only in
+  the callback. Extracted one `notifyListeners(Consumer<EntryListener>)` helper. One real compile error surfaced
+  during the extraction: `purgeItems()`'s loop variable gets reassigned each iteration, which a lambda can't
+  capture — fixed by capturing the key into a fresh local before the lambda.
+- DRY: `common/caching/{EhCacheAdapter,JCacheAdapter}.java` — both had a structurally identical
+  `computeIfPresent` + private `replaceOrRemove` pair, differing only in the underlying vendor cache calls.
+  Verified those vendor-specific bits were each already equivalent to calling the class's own `get()`/`remove()`
+  overrides, so the whole algorithm generalizes exactly into `AbstractCacheAdapter` — unified there, leaving each
+  subclass to implement only a single abstract `replace(key, oldValue, newValue)` method. `NoCache`, the fourth
+  `Cache` implementation, doesn't extend this base class and is unaffected.
+- DRY (minor): `update/api/Artifact.java`'s `shortGroupId()` — three near-identical check-exact-length/else-
+  substring blocks for the three known group-ID prefixes, extracted into one loop over a `(prefix, shortCode)`
+  table. Also removes three magic numbers (and their matching substring offsets) in favor of computing them from
+  `prefix.length()`.
+- `update/detection/AxonVersionDetector.java` — `extractVersionFromJar`'s one-liner called `url.getPath()` twice;
+  captured once into a local instead.
+- DRY: `update/configuration/HierarchicalUsagePropertyProvider.java` — `getDisabled()`/`getUrl()` shared an
+  identical `.stream().map().filter().findFirst().orElse()` pipeline, differing only in the method reference and
+  default value; extracted into one shared `firstNonNull()` helper.
+
+Every finding was cross-checked against the real upstream Maven source before fixing — most were confirmed
+pre-existing there too, not introduced by this fork's own conversion.
 
 ## Still to do
 
