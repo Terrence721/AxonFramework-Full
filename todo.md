@@ -30,7 +30,7 @@ for live status, or [Milestones](https://github.com/Terrence721/AxonFramework-Fu
 | Central Portal publishing | Wired via `com.gradleup.nmcp`'s settings plugin — Sonatype has no official Gradle plugin for this. `USER_MANAGED` release type: nothing reaches Maven Central without a manual release step |
 | `test-logging` module | First real subproject. Published (`org.axonframework:axon-test-logging`). Fixed a real circular-dependency trap along the way — the shared `testImplementation(project(":test-logging"))` line would otherwise make this module depend on itself |
 | `common` module — **COMPLETE (2026-09-07)** | **144 of 144 `src/main/java` files converted, one at a time, every one held for individual review before commit.** `build.gradle.kts` skeleton, all 30 top-level files, and every subpackage — `annotation`, `caching`, `digest`, `function`, `io`, `jdbc`, `jpa`, `lifecycle`, `lock`, `property`, `tx`, `nullability`, `util`, `infra` (6/6), and `configuration` (37/37, the largest and most interdependent subpackage — one 12-file circular closure plus three 2-file circular pairs, see "Accepted exception" below) — are done. Resource files 2 of 2. See the `Oracle11Utils` → `Oracle23aiUtils` row below for the one file that isn't a byte-identical conversion. This is the first fully-completed reactor module beyond `test-logging` — see "Still to do" below for what's next |
-| `update` module — **IN PROGRESS, 17 of 27 `src/main/java` files** | Three of five subpackages complete: `api/` (7/7 — `Artifact`, `ArtifactAvailableUpgrade`, `DetectedVulnerability`, `DetectedVulnerabilitySeverity`, `UpdateCheckRequest`, `UpdateCheckResponse`, `package-info`), `common/` (2/2 — `DelayedTask`, `package-info`), `configuration/` (7/7 — `UsagePropertyProvider` and its four implementations, `HierarchicalUsagePropertyProvider`, `package-info`). `detection/` started, 1 of 5 (`AxonVersionDetector`). Real findings along the way: a dead parameter in `UpdateCheckResponse.parseUpdate`, several missing `@Nullable` overrides (the same "interface declares it, implementation doesn't repeat it" class of bug already found repeatedly in `common`), a mutable `public static` singleton field (`DefaultUsagePropertyProvider.INSTANCE`) made `final`, a redundant duplicate-call bug in `AxonVersionDetector` (`getFile()` called twice where one would do), a real classpath-scan bug (`AxonVersionDetector` looped over group IDs calling an identical, group-id-independent `getResources()` each time, duplicating work), and a `Properties.getProperty()`-into-non-nullable-record gap that could have silently violated `Artifact`'s own non-null contract. One DRY extraction: a shared `parseNullableBoolean()` helper replacing duplicated null-check-then-parse logic in two sibling provider classes |
+| `update` module — **COMPLETE (2026-09-19)** | **27 of 27 `src/main/java` files converted, one at a time.** All five subpackages done: `api/` (7/7), `common/` (2/2), `configuration/` (7/7), `detection/` (5/5 — `AxonVersionDetector`, `KotlinVersion`, `MachineId`, `TestEnvironmentDetector`, `package-info`), plus the five top-level classes (`UpdateCheckerReporter`, `LoggingUpdateCheckerReporter`, `UpdateCheckerHttpClient`, `UpdateChecker`, `UpdateCheckerConfigurationEnhancer`) and the root `package-info`. This is the second fully-completed reactor module beyond `common`. Real findings across the whole module: a dead parameter in `UpdateCheckResponse.parseUpdate`; several missing `@Nullable` overrides (the same "interface declares it, implementation doesn't repeat it" class of bug already found repeatedly in `common`); a mutable `public static` singleton field (`DefaultUsagePropertyProvider.INSTANCE`) made `final`; a real classpath-scan bug in `AxonVersionDetector` (looped over group IDs calling an identical, group-id-independent `getResources()` each time); a `Properties.getProperty()`-into-non-nullable-record gap that could have silently violated `Artifact`'s own non-null contract; a genuine contract violation in `MachineId` (its own javadoc promised a UUID fallback "if the ID can't be stored or read," but an existing-but-unreadable file left the field `null`), fixed by redesigning `initialize()` as a pure function the constructor assigns directly; a real thread-visibility gap in `KotlinVersion`/`UpdateChecker` (a lazily-initialized/cross-thread field read without `volatile` — fixed using the standard "capture into a local, narrow, write back" idiom, verified via real happens-before analysis rather than added reflexively); a real javadoc/code mismatch in `UpdateCheckerHttpClient` (documented POST/PUT behavior that was never actually implemented — the code always sends GET); and a copy-paste naming artifact in `LoggingUpdateCheckerReporter` (lambda parameters named "upgrade" while iterating vulnerabilities/libraries). DRY extractions: a shared `parseNullableBoolean()` helper, a shared `firstNonNull()` helper, and `Artifact.shortGroupId()`'s three near-identical blocks collapsed into one loop. Also found and fixed a real, root-cause Gradle dependency gap along the way — `common`'s JSR-305 annotation dependency is `compileOnly` (never transitive), so `update` needed the same declaration added to its own `build.gradle.kts` to fully resolve `common`'s annotated bytecode; confirmed this exact gap exists in the real upstream Maven source too, not introduced by this fork (see the dedicated section above for the full story) |
 | `axon-<name>` artifactId fix | Real bug found while setting up `common`: `base.archivesName` doesn't propagate to `MavenPublication.artifactId` — a second, separate default that also needed overriding. Fixed once in `axonframework.published-conventions.gradle.kts` for every module; retroactively fixes `test-logging`, which had been generating a POM with `<artifactId>test-logging</artifactId>` instead of `axon-test-logging` |
 | Javadoc doclint gap | Real gap found converting `common`'s first real source: Gradle's javadoc task had no doclint suppression, unlike upstream's own root `pom.xml` (`<doclint>none</doclint>`). Axon's source uses self-closing `<p/>` tags throughout, which JDK 25's stricter javadoc rejects outright — confirmed by a real build failure. Fixed centrally in `axonframework.published-conventions.gradle.kts` |
 | CI workflow | `.github/workflows/build.yml` — JDK 25 (Temurin) + `gradle/actions/setup-gradle@v6`, running `./gradlew build` on push to `main` and on pull requests. Originally used `gradle-version: '9.2.0'` before the wrapper existed — first real run that way caught a real bug: the shorthand `"9.2"` fails with `"Error: Gradle version 9.2 does not exist"`, needs the exact release string. Now that the wrapper is committed (see "Gradle wrapper bootstrap"), the pinned version lives there instead and `gradle-version:` was removed. No dedicated `quality.yml`-style workflow beyond this (see item 8 below) — README badges added 2026-08-25 point at this real `Build` workflow and CodeQL directly rather than a workflow that doesn't exist. Every push since is checked against a real `gh run list` result before being called done — see "Resolved: local Gradle/Kotlin build flakiness" below for why this mattered more than usual on this machine |
@@ -420,15 +420,15 @@ scope is visible as a whole, not just as bare module names.
 2. ~~**Leaf modules**~~ — done: `test-logging` and `common` (144 of 144 `src/main/java` files, one at a time in
    dependency order — see the "Done" table above for subpackage-level detail). **`test` is not actually a leaf**
    despite this grouping's name — see its own row under Phase 3 below, since it depends on `eventsourcing`.
-3. **Core domain modules — [Phase 3: Core Domain Modules](https://github.com/Terrence721/AxonFramework-Full/milestone/6)**
-   (~1,035 main source files across these seven modules combined — the bulk of what's left). Real build order,
-   confirmed from actual `pom.xml` dependency lists: `update` → `conversion` → `messaging` → `modelling` →
+3. ~~**`update`**~~ — done: 27 of 27 `src/main/java` files (see the "At a glance" table above for
+   subpackage-level detail). A phone-home-style update/vulnerability checker: detects the running Axon version,
+   JVM/Kotlin environment, and a machine identifier, then can query for available upgrades and known CVEs.
+   Depended only on `common` — the first real consumer-module dependency on it anywhere in this build, which is
+   how the JSR-305 `compileOnly` gap (see the dedicated section above) was found.
+4. **Remaining core domain modules — [Phase 3: Core Domain Modules](https://github.com/Terrence721/AxonFramework-Full/milestone/6)**
+   (~1,008 main source files across these six modules combined — the bulk of what's left). Real build order,
+   confirmed from actual `pom.xml` dependency lists: `conversion` → `messaging` → `modelling` →
    `eventsourcing` → `test`; `migration` has zero reactor dependencies and can land independently, any time.
-   - **`update`** (real artifact `axon-update`, [issue #16](https://github.com/Terrence721/AxonFramework-Full/issues/16))
-     — **in progress, 17 of 27 main files** (see the "At a glance" table above for subpackage-level detail). A
-     phone-home-style update/vulnerability checker: detects the running Axon version, JVM/Kotlin environment, and a
-     machine identifier, then can query for available upgrades and known CVEs. Depends only on `common`. Smallest
-     and simplest of the seven.
    - **`conversion`** (`axon-conversion`, [issue #15](https://github.com/Terrence721/AxonFramework-Full/issues/15))
      — 39 main files. Payload (de)serialization — pluggable `Converter` abstractions with Jackson 2, Jackson 3, and
      Avro implementations, replacing AF4's `Serializer`. Depends only on `common`. Publishes a test-jar.
@@ -455,7 +455,7 @@ scope is visible as a whole, not just as bare module names.
      consumer codebase toward AF5 (class/package renames, coordinate swaps, config property renames). Zero
      dependencies on any other module in this reactor, so it's the one item in Phase 3 that could be picked up
      out of order.
-4. **`extensions` sub-reactor — [Phase 4: Extensions Sub-Reactor](https://github.com/Terrence721/AxonFramework-Full/milestone/7)**
+5. **`extensions` sub-reactor — [Phase 4: Extensions Sub-Reactor](https://github.com/Terrence721/AxonFramework-Full/milestone/7)**
    — optional integrations layered on top of Phase 3, four families:
    - **`kotlin`** (`axon-kotlin` + `axon-kotlin-test`, [issue #22](https://github.com/Terrence721/AxonFramework-Full/issues/22))
      — 11 files total. Kotlin DSL/extension-function wrappers over the Java gateway and configuration API, plus a
@@ -475,7 +475,7 @@ scope is visible as a whole, not just as bare module names.
      source), and an `@AxonSpringBootTest` annotation with an auto-configured fixture bean. The only module family
      in the whole reactor that legitimately depends on Spring at compile scope — it doesn't carry the
      banned-Spring enforcer rule every core module does.
-5. **Aggregation & verification — [Phase 5: Aggregation & Verification](https://github.com/Terrence721/AxonFramework-Full/milestone/8)**
+6. **Aggregation & verification — [Phase 5: Aggregation & Verification](https://github.com/Terrence721/AxonFramework-Full/milestone/8)**
    — cross-module checks that only become meaningful once Phases 3–4 exist:
    - **`integrationtests`** (`axon-integrationtests`, [issue #26](https://github.com/Terrence721/AxonFramework-Full/issues/26))
      — 0 main files, 126 test files. Cross-module black-box integration suite, no production code by design.
@@ -488,7 +488,7 @@ scope is visible as a whole, not just as bare module names.
    - **JaCoCo coverage aggregation** (`build/coverage-report` equivalent, [issue #28](https://github.com/Terrence721/AxonFramework-Full/issues/28))
      — upstream's `coverage` Maven profile aggregates JaCoCo reports reactor-wide; no Gradle equivalent exists yet,
      deferred until enough real code exists under test for it to mean anything.
-6. **Publishing — [Phase 6: Publishing (BOM & Parent POMs)](https://github.com/Terrence721/AxonFramework-Full/milestone/9)**
+7. **Publishing — [Phase 6: Publishing (BOM & Parent POMs)](https://github.com/Terrence721/AxonFramework-Full/milestone/9)**
    — Central Portal publishing (`com.gradleup.nmcp`) and signing are already wired; still open:
    - **`build/parent` full implementation** ([issue #29](https://github.com/Terrence721/AxonFramework-Full/issues/29))
      — the root `axon` POM-only publication (the aggregator artifact itself) and `axon-parent`'s own POM-only
@@ -500,7 +500,7 @@ scope is visible as a whole, not just as bare module names.
      Gradle's `java-platform` plugin. Manages 14 artifacts total; effectively the checklist for "is this fork
      functionally complete for publishing purposes" — once every artifactId it lists has a real Gradle equivalent,
      this is the last thing left to do.
-7. ~~**Gradle wrapper bootstrap**~~ — done 2026-08-25: `gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar`,
+8. ~~**Gradle wrapper bootstrap**~~ — done 2026-08-25: `gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar`,
    and `gradle-wrapper.properties` (pinned to 9.2.0, with an explicit `distributionSha256Sum` sourced from
    Gradle's own distribution server — not just the bare default the `wrapper` task generates) are committed.
    Real gap caught before committing: `gradlew` staged with git file mode `100644` (non-executable) instead of
@@ -511,7 +511,7 @@ scope is visible as a whole, not just as bare module names.
    explicit `gradle-version:`, so the wrapper is actually the thing enforcing the pinned version now, not CI
    config duplicating it. Triggered by a real CodeQL default-setup diagnostic ("Required Gradle version not
    specified... may use an incompatible version"), not found proactively.
-8. ~~**CI workflows**~~ — done, scoped minimal: `.github/workflows/build.yml` runs `./gradlew build` on push/PR
+9. ~~**CI workflows**~~ — done, scoped minimal: `.github/workflows/build.yml` runs `./gradlew build` on push/PR
    via `gradle/actions/setup-gradle`, with an explicit `permissions: contents: read` block. No dedicated
    `quality.yml`-style workflow like this user's other portfolio forks run (checkstyle/tests as their own named
    job) — there's barely any actual code for one to analyze until later phases land; `build.yml` covers the same
