@@ -44,7 +44,7 @@ public class MachineId {
      * Creates a new instance of {@code MachineId}.
      */
     public MachineId() {
-        this.initialize();
+        this.machineId = initialize();
     }
 
     /**
@@ -56,29 +56,26 @@ public class MachineId {
         return machineId;
     }
 
-    private void initialize() {
+    private String initialize() {
         try {
             File file = getFile();
             if (file == null) {
                 logger.debug("Could not determine user home directory. Machine ID will not be stored.");
-                machineId = UUID.randomUUID().toString();
-                return;
+                return UUID.randomUUID().toString();
             }
             if (file.exists()) {
-                machineId = new String(Files.readAllBytes(file.toPath()));
-                return;
+                return new String(Files.readAllBytes(file.toPath()));
             }
             File parentDir = file.getParentFile();
             if (!parentDir.exists() && !parentDir.mkdirs()) {
                 throw new IOException("Failed to create parent directory: " + parentDir.getAbsolutePath());
             }
-            machineId = UUID.randomUUID().toString();
-            Files.writeString(file.toPath(), machineId);
+            String newMachineId = UUID.randomUUID().toString();
+            Files.writeString(file.toPath(), newMachineId);
+            return newMachineId;
         } catch (Exception e) {
             logger.debug("Failed to initialize machine id", e);
-            if (machineId == null) {
-                machineId = UUID.randomUUID().toString();
-            }
+            return UUID.randomUUID().toString();
         }
     }
 
