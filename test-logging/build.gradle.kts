@@ -40,9 +40,9 @@ dependencies {
         exclude(group = "javax.jms", module = "jms")
     }
 
-    // Force patched Guava for transitive dependency (log4j-core-test -> maven-core).
-    constraints {
-        api("com.google.guava:guava:33.8.0-jre")
-    }
+    // Guava: enforce a patched version for the transitive dependency pulled by
+    // log4j-core-test -> maven-core, and declare it directly so dependency scanners
+    // (Dependabot) register the upgraded version.
+    api("com.google.guava:guava:33.8.0-jre")
 }
 
