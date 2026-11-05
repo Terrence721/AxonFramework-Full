@@ -42,7 +42,7 @@ dependencies {
 
     // Force patched Guava for transitive dependency (log4j-core-test -> maven-core).
     constraints {
-        api("com.google.guava:guava:33.7.2-jre")
+        api("com.google.guava:guava:33.8.0-jre")
     }
 }
 
