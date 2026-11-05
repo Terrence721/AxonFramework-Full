@@ -39,4 +39,10 @@ dependencies {
         exclude(group = "javax.mail", module = "mail")
         exclude(group = "javax.jms", module = "jms")
     }
+
+    // Force patched Guava for transitive dependency (log4j-core-test -> maven-core).
+    constraints {
+        api("com.google.guava:guava:33.7.2-jre")
+    }
 }
+
