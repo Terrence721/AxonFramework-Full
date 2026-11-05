@@ -32,6 +32,10 @@ dependencies {
     api("org.apache.logging.log4j:log4j-core-test:2.26.1") {
         // Unused Spring Test integration; keeps this module's own dependency tree clean.
         exclude(group = "org.springframework", module = "spring-test")
+        // maven-core is only used for Maven-log4j integration which this module doesn't exercise;
+        // excluding it removes a Dependabot-flagged vulnerable transitive (Guava), since the
+        // dependency graph scanner didn't honor the version constraint above.
+        exclude(group = "org.apache.maven", module = "maven-core")
     }
     api("org.apache.logging.log4j:log4j-core:2.26.1") {
         exclude(group = "com.sun.jdmk", module = "jmxtools")
@@ -40,9 +44,5 @@ dependencies {
         exclude(group = "javax.jms", module = "jms")
     }
 
-    // Guava: enforce a patched version for the transitive dependency pulled by
-    // log4j-core-test -> maven-core, and declare it directly so dependency scanners
-    // (Dependabot) register the upgraded version.
-    api("com.google.guava:guava:33.8.0-jre")
 }
 
