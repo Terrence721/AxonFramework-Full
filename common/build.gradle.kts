@@ -42,7 +42,7 @@ dependencies {
     // source, so they propagate to consumers there too - api, not implementation. jsr310 is
     // optional -> implementation. Platform import matches how junit-bom is already handled in
     // axonframework.java-conventions.gradle.kts.
-    api(platform("com.fasterxml.jackson:jackson-bom:2.22.1"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.22.2"))
     api("com.fasterxml.jackson.core:jackson-databind")
     api("com.fasterxml.jackson.core:jackson-core")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
