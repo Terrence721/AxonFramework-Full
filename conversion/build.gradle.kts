@@ -41,7 +41,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
     // Conversion - Jackson 3 (default scope in Maven)
-    api(platform("tools.jackson:jackson-bom:3.2.2"))
+    api(platform("tools.jackson:jackson-bom:3.2.3"))
     api("tools.jackson.core:jackson-databind")
     api("tools.jackson.core:jackson-core")
 

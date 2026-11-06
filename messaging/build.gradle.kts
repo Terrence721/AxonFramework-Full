@@ -36,7 +36,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
     // Jackson 3 (optional in Maven)
-    implementation(platform("tools.jackson:jackson-bom:3.2.2"))
+    implementation(platform("tools.jackson:jackson-bom:3.2.3"))
     implementation("tools.jackson.core:jackson-databind")
     implementation("tools.jackson.core:jackson-core")
 
