@@ -430,8 +430,13 @@ scope is visible as a whole, not just as bare module names.
    confirmed from actual `pom.xml` dependency lists: `conversion` → `messaging` → `modelling` →
    `eventsourcing` → `test`; `migration` has zero reactor dependencies and can land independently, any time.
    - **`conversion`** (`axon-conversion`, [issue #15](https://github.com/Terrence721/AxonFramework-Full/issues/15))
-     — 39 main files. Payload (de)serialization — pluggable `Converter` abstractions with Jackson 2, Jackson 3, and
-     Avro implementations, replacing AF4's `Serializer`. Depends only on `common`. Publishes a test-jar.
+     — 39 main source files **migrated (2026-09-19+)**, plus `META-INF/services/org.axonframework.conversion.ContentTypeConverter`
+     resource. Main `:conversion:compileJava` is green. The module's 25 test sources + architecture test are
+     intentionally **deferred** to a separate pass (tracked on the project board as "conversion: migrate test
+     sources") so they are not blocked by this item; main-source migration is not a dependency of `messaging`
+     (only the main artifact matters for downstream). Payload (de)serialization — pluggable `Converter`
+     abstractions with Jackson 2, Jackson 3, and Avro implementations, replacing AF4's `Serializer`. Depends only
+     on `common`. Publishes a test-jar (test-jar packaging itself still deferred, matching `common`).
    - **`messaging`** (`axon-messaging`, [issue #17](https://github.com/Terrence721/AxonFramework-Full/issues/17))
      — **534 main files, the largest module in the entire reactor**, larger than `common`'s full 144. The core
      pub/sub and command/event/query bus infrastructure: message types, buses/gateways, interceptors,
