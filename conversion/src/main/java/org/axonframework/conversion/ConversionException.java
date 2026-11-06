@@ -24,8 +24,6 @@ import org.axonframework.common.AxonNonTransientException;
  * Exception indicating that a conversion is required between two formats, but there is no converter capable of doing
  * the conversion.
  *
- * @author Allard Buijze
- * @since 2.0.0
  */
 public class ConversionException extends AxonNonTransientException {
 

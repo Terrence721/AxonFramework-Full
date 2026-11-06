@@ -4,6 +4,7 @@
     "java.import.gradle.enabled": true,
     "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx6G -Xms100m",
     "cSpell.words": [
+        "axonframework",
         "gradlew",
         "println",
         "unioned"
