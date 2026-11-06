@@ -5,8 +5,27 @@
     "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx6G -Xms100m",
     "cSpell.words": [
         "axonframework",
+        "databind",
+        "Dcoverage",
+        "Dexamples",
+        "ehcache",
+        "eventsourcing",
+        "fasterxml",
+        "findbugs",
+        "foojay",
+        "getenv",
+        "gradleup",
         "gradlew",
+        "integrationtests",
+        "javax",
+        "jobrunr",
+        "kagkarlsson",
+        "nmcp",
         "println",
-        "unioned"
+        "projectreactor",
+        "reactivestreams",
+        "Sonatype",
+        "unioned",
+        "upcaster"
     ]
 }
