@@ -493,6 +493,17 @@ scope is visible as a whole, not just as bare module names.
    - **JaCoCo coverage aggregation** (`build/coverage-report` equivalent, [issue #28](https://github.com/Terrence721/AxonFramework-Full/issues/28))
      — upstream's `coverage` Maven profile aggregates JaCoCo reports reactor-wide; no Gradle equivalent exists yet,
      deferred until enough real code exists under test for it to mean anything.
+9. **Frontend reference clients / demo consumers** — documented, illustrative examples of how a UI (React/Vue/Angular storefront or admin
+   dashboard, React Native/Flutter mobile app, support or operations console) talks to an Axon-backed backend, so the migration work
+   has something concrete to demonstrate against once `messaging` + `modelling` + `eventsourcing` are usable:
+   - A command flow example: REST/gRPC controller → `CommandBus.dispatch` → aggregate emits events → read model projection
+   - A query flow example: UI calls `QueryGateway` / `QueryUpdateEmitter` for live order/payment status
+   - Real-time subscription updates pushed to the UI (SSE/WebSocket over Axon's query updates)
+   - Audit/replay timeline screens driven by stored events (time-travel of a case/order)
+   - Error surfaces: `RemoteHandlingException`, `MessageTypeNotResolvedException`, scheduling retries, reconciliation after partial failures
+   - Packaging notes: frontend is a *separate* artifact; keep it out of the published Java reactor, document the contract versions (command/query names and versions) explicitly.
+   Tracked on the project board as "Frontend reference clients / demo consumers".
+
 7. **Publishing — [Phase 6: Publishing (BOM & Parent POMs)](https://github.com/Terrence721/AxonFramework-Full/milestone/9)**
    — Central Portal publishing (`com.gradleup.nmcp`) and signing are already wired; still open:
    - **`build/parent` full implementation** ([issue #29](https://github.com/Terrence721/AxonFramework-Full/issues/29))
