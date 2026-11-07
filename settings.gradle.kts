@@ -78,7 +78,7 @@ dependencyResolutionManagement {
 // which broke the wrapper task and the IDE's Gradle sync alike. Uncomment each line as that
 // module is converted, per the bottom-up migration order in todo.md's "Still to do" section.
 // include("build:parent")
-// include("axon-framework-bom")
+include("axon-framework-bom")
 
 include("common")
 include("conversion")
