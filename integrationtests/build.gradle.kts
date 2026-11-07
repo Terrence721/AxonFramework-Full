@@ -33,7 +33,7 @@ dependencies {
     implementation("org.hsqldb:hsqldb:2.7.4")
     implementation("com.mysql:mysql-connector-j:9.6.0")
     implementation("com.oracle.database.jdbc:ojdbc11:23.26.0.0.0")
-    implementation("com.mchange:c3p0:0.12.0")
+    implementation("com.mchange:c3p0:0.14.0")
 
     // Other runtime/test utilities common across Axon
     implementation("org.awaitility:awaitility:4.3.0")
