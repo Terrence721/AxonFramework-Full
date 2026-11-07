@@ -13,6 +13,7 @@ import org.axonframework.messaging.eventhandling.SimpleEventBus;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class EventPublicationSmokeTest {
     @Test
@@ -26,5 +27,7 @@ class EventPublicationSmokeTest {
                 null,
                 List.of(new GenericEventMessage(new MessageType("test", "Event", MessageType.DEFAULT_VERSION), "payload", Map.of()))
         ).join());
+
+        assertNotNull(store.latestToken(null).join());
     }
 }
