@@ -10,6 +10,7 @@ dependencies {
     api(project(":modelling"))
     api(project(":eventsourcing"))
     api(project(":test"))
+    api(project(":update"))
     api(project(":test-logging"))
 
     // Additional module families
