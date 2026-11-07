@@ -41,3 +41,20 @@ tasks.register("cleanLogs") {
         }
     }
 }
+
+plugins {
+    id("maven-publish")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            artifactId = "axon"
+            pom {
+                name.set("Axon Framework")
+                description.set("Axon Framework - root aggregator POM-only publication.")
+                packaging = "pom"
+            }
+        }
+    }
+}
