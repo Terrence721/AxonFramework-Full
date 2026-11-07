@@ -457,6 +457,7 @@ scope is visible as a whole, not just as bare module names.
      core module, so it's genuinely last among the seven, confirming it was never a real leaf module.
      **Deferred note (2026-11-07):** axon-test module skeleton + build wiring to be created first; main sources and
      test cases deferred to a later pass.
+     **Needs tracking:** create axon-test module and wire dependencies (depends on eventsourcing) before publishing aggregation.
    - **`migration`** (`axon-migration`, [issue #21](https://github.com/Terrence721/AxonFramework-Full/issues/21))
      — 21 main files. **Not runtime code** — a library of OpenRewrite recipes that mechanically rewrite an AF4
      consumer codebase toward AF5 (class/package renames, coordinate swaps, config property renames). Zero
