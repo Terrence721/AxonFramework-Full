@@ -17,9 +17,11 @@
 package org.axonframework.eventsourcing.eventstore;
 
 import org.axonframework.messaging.eventstreaming.EventCriteria;
+import org.axonframework.messaging.eventstreaming.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppendConditionTest {
@@ -43,5 +45,22 @@ class AppendConditionTest {
         AppendCondition condition = AppendCondition.none();
 
         assertEquals(ConsistencyMarker.ORIGIN, condition.withMarker(ConsistencyMarker.ORIGIN).consistencyMarker());
+    }
+    @Test
+    void orCriteriaAddsRequestedTagCriteria() {
+        AppendCondition condition = AppendCondition.withCriteria(EventCriteria.havingTags(new Tag("type", "value")));
+
+        AppendCondition merged = condition.orCriteria(EventCriteria.havingAnyTag());
+
+        assertNotNull(merged);
+    }
+
+    @Test
+    void replaceCriteriaReplacesCriteria() {
+        AppendCondition condition = AppendCondition.withCriteria(EventCriteria.havingAnyTag());
+
+        AppendCondition replaced = condition.replaceCriteria(EventCriteria.havingAnyTag());
+
+        assertEquals(EventCriteria.havingAnyTag(), replaced.criteria());
     }
 }
