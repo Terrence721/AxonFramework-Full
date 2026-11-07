@@ -35,7 +35,7 @@ import org.axonframework.messaging.eventhandling.EventMessage;
  *
  * @since 5.0.0
  * @deprecated in favor of {@link org.axonframework.modelling.repository.EntityNotFoundException}, which more broadly
- * serves any {@link org.axonframework.modelling.repository.Repository} being unable to find <b>or</b>> recreate an
+ * serves any {@link org.axonframework.modelling.repository.Repository} being unable to find <b>or</b> recreate an
  * entity
  */
 @Deprecated(forRemoval = true, since = "5.3.0")
