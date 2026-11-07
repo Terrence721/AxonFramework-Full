@@ -95,7 +95,7 @@ public final class TracingSnapshotStore implements SnapshotStore {
 
     @Override
     public void describeTo(ComponentDescriptor descriptor) {
-        descriptor.describeWrapperOf(descriptor);
+        descriptor.describeWrapperOf(delegate);
         descriptor.describeProperty("spanFactory", spanFactory);
     }
 }
