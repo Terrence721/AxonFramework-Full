@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MetadataTest {
@@ -30,5 +31,22 @@ class MetadataTest {
         assertTrue(metadata.isEmpty());
         assertFalse(metadata.containsKey("key"));
         assertEquals(null, metadata.get("key"));
+    }
+
+    @Test
+    void fromCreatesNewMetadataWithEntries() {
+        Metadata metadata = Metadata.from(java.util.Map.of("a", "1"));
+
+        assertEquals("1", metadata.get("a"));
+        assertEquals(1, metadata.size());
+    }
+
+    @Test
+    void andReturnsNewMetadataWithoutMutatingOriginal() {
+        Metadata original = Metadata.from(java.util.Map.of("a", "1"));
+        Metadata updated = original.and("b", "2");
+
+        assertEquals("2", updated.get("b"));
+        assertFalse(original.containsKey("b"));
     }
 }
