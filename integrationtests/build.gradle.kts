@@ -10,11 +10,18 @@ dependencies {
     api(project(":modelling"))
     api(project(":eventsourcing"))
     api(project(":test"))
+    api(project(":update"))
     api(project(":test-logging"))
 
     // Additional module families
     api(project(":reactor"))
+    api(project(":spring"))
+    api(project(":kotlin"))
     api(project(":migration"))
+    api(project(":metrics-micrometer"))
+
+    // Reactive
+    implementation("io.projectreactor:reactor-core:3.8.6")
 
     // Jackson
     implementation(platform("com.fasterxml.jackson:jackson-bom:2.22.3"))
