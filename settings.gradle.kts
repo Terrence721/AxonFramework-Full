@@ -104,3 +104,7 @@ if (providers.gradleProperty("examples").isPresent) {
 if (providers.gradleProperty("coverage").isPresent) {
     include("build:coverage-report")
 }
+
+include("metrics-dropwizard")
+
+include("metrics-micrometer")
