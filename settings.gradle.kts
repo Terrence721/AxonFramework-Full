@@ -83,7 +83,7 @@ dependencyResolutionManagement {
 include("common")
 include("conversion")
 // include("extensions")
-// include("eventsourcing")
+include("eventsourcing")
 include("messaging")
 // include("migration")
 include("modelling")
