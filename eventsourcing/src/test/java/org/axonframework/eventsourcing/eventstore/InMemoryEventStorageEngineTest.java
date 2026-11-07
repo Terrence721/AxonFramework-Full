@@ -33,6 +33,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InMemoryEventStorageEngineTest {
 
@@ -48,6 +49,6 @@ class InMemoryEventStorageEngineTest {
 
         MessageStream<EventMessage> source = engine.source(
                 SourcingCondition.conditionFor(Position.START, EventCriteria.havingAnyTag()), null);
-        assertNotNull(source.next().orElse(null));
+        assertEquals("payload", source.next().get().message().payload());
     }
 }
