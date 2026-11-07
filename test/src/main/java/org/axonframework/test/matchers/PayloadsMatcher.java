@@ -48,7 +48,7 @@ public class PayloadsMatcher extends BaseMatcher<List<? extends Message>> {
             return false;
         }
         List<Object> payloads = new ArrayList<>();
-        for (Object listItem : (List) item) {
+        for (Object listItem : (List<?>) item) {
             if (Message.class.isInstance(listItem)) {
                 payloads.add(((Message) listItem).payload());
             } else {

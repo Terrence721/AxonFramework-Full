@@ -56,7 +56,7 @@ import java.util.Optional;
                            }
                            if (providerClass != null && providerClass != AxonTestFixtureProvider.class) {
                                validateValueUsage(element);
-                               return Optional.of(instantiate((Class<? extends AxonTestFixtureProvider>) providerClass));
+                               return Optional.of(instantiate(providerClass.asSubclass(AxonTestFixtureProvider.class)));
                            }
                            return getAxonTestFixtureProvider(testInstance, testClass);
                        })

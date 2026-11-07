@@ -48,7 +48,7 @@ public abstract class ListMatcher<T> extends BaseMatcher<List<T>>  {
     @SuppressWarnings({"unchecked"})
     @Override
     public boolean matches(Object item) {
-        return List.class.isInstance(item) && matchesList((List) item);
+        return List.class.isInstance(item) && matchesList((List<T>) item);
     }
 
     /**

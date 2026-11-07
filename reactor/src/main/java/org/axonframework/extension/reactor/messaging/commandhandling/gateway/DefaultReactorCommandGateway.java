@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+//noinspection SpellCheckingInspection
 package org.axonframework.extension.reactor.messaging.commandhandling.gateway;
 
 import org.axonframework.common.infra.ComponentDescriptor;
@@ -35,8 +36,8 @@ import java.util.Objects;
  * Default implementation of {@link ReactorCommandGateway}.
  * <p>
  * Builds a recursive interceptor chain (same pattern as Axon Framework's
- * {@link org.axonframework.messaging.commandhandling.interception.InterceptingCommandBus InterceptingCommandBus}). The
- * entire chain runs inside the Reactor subscription, so interceptors have access to Reactor context such as
+ * InterceptingCommandBus). The entire chain runs inside the Reactor subscription, so interceptors have access to
+ * Reactor context such as
  * {@code ReactiveSecurityContextHolder}.
  * <p>
  * Flow:
@@ -128,6 +129,7 @@ public class DefaultReactorCommandGateway implements ReactorCommandGateway {
         descriptor.describeProperty("messageTypeResolver", messageTypeResolver);
     }
 
+    @SuppressWarnings("unchecked")
     private static ReactorMessageDispatchInterceptorChain<CommandMessage> buildChain(
             List<ReactorMessageDispatchInterceptor<? super CommandMessage>> interceptors
     ) {
@@ -135,10 +137,9 @@ public class DefaultReactorCommandGateway implements ReactorCommandGateway {
         for (int i = interceptors.size() - 1; i >= 0; i--) {
             // Safe cast: each interceptor in the list can handle CommandMessage,
             // because they accept "CommandMessage or a supertype of CommandMessage".
-            //noinspection rawtypes,unchecked
-            var interceptor = (ReactorMessageDispatchInterceptor) interceptors.get(i);
+            ReactorMessageDispatchInterceptor<CommandMessage> interceptor =
+                    (ReactorMessageDispatchInterceptor<CommandMessage>) interceptors.get(i);
             var next = chain;
-            //noinspection unchecked
             chain = (message, ctx) -> interceptor.interceptOnDispatch(message, ctx, next);
         }
         return chain;
