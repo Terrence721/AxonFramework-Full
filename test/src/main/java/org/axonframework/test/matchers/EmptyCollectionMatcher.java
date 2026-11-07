@@ -43,7 +43,7 @@ public class EmptyCollectionMatcher<T> extends BaseMatcher<List<T>> {
 
     @Override
     public boolean matches(Object item) {
-        return item instanceof Collection && ((Collection) item).isEmpty();
+        return item instanceof Collection<?> && ((Collection<?>) item).isEmpty();
     }
 
     @Override

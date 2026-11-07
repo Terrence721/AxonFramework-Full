@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// cspell:ignore springboot autoconfig
 package org.axonframework.extension.springboot.autoconfig;
 
 import org.apache.avro.Schema;
@@ -87,7 +88,7 @@ public class AvroSchemaStoreAutoConfiguration {
         return schemaLoader
                 .stream()
                 .map(loader -> loader.load(packagesToScan))
-                .flatMap(List::stream)
+                .flatMap(schemas -> schemas.stream())
                 .collect(Collectors.toSet());
     }
 

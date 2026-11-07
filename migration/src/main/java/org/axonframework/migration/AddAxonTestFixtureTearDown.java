@@ -26,8 +26,10 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.kotlin.tree.K;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Adds {@code @AfterEach void tearDown() { <fixture>.stop(); }} to test
@@ -86,11 +88,13 @@ public class AddAxonTestFixtureTearDown extends Recipe {
     private static final String TEAR_DOWN_METHOD_NAME = "tearDown";
 
     @Override
+    @NonNull
     public String getDisplayName() {
         return "Add @AfterEach tearDown() that stops the AxonTestFixture";
     }
 
     @Override
+    @NonNull
     public String getDescription() {
         return "Adds an `@AfterEach tearDown()` method calling `stop()` on the "
                 + "`AxonTestFixture` field, when the test class has such a "
@@ -102,20 +106,17 @@ public class AddAxonTestFixtureTearDown extends Recipe {
     }
 
     @Override
+    @NonNull
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
-                J.ClassDeclaration c = super.visitClassDeclaration(cd, ctx);
+            public J.@NonNull ClassDeclaration visitClassDeclaration(J.@NonNull ClassDeclaration cd, @NonNull ExecutionContext ctx) {
+                J.@NonNull ClassDeclaration c = super.visitClassDeclaration(cd, ctx);
 
                 // Kotlin needs KotlinTemplate; out of scope for this recipe.
                 if (getCursor().firstEnclosing(SourceFile.class) instanceof K.CompilationUnit) {
                     return c;
                 }
-                if (c.getBody() == null) {
-                    return c;
-                }
-
                 String fieldName = findAxonTestFixtureFieldName(c);
                 if (fieldName == null) {
                     return c;
@@ -132,8 +133,7 @@ public class AddAxonTestFixtureTearDown extends Recipe {
                                         + "    " + fieldName + ".stop();\n"
                                         + "}\n")
                         .imports(JUNIT_AFTER_EACH)
-                        .javaParser(JavaParser.fromJavaVersion()
-                                              .classpath(JavaParser.runtimeClasspath()))
+                        .javaParser(JavaParser.fromJavaVersion())
                         .build();
 
                 c = template.apply(getCursor(), c.getBody().getCoordinates().lastStatement());
@@ -176,7 +176,7 @@ public class AddAxonTestFixtureTearDown extends Recipe {
                 return null;
             }
 
-            private boolean isAxonTestFixtureType(org.openrewrite.java.tree.TypeTree typeExpr) {
+            private boolean isAxonTestFixtureType(TypeTree typeExpr) {
                 JavaType.FullyQualified resolved = TypeUtils.asFullyQualified(typeExpr.getType());
                 if (resolved != null) {
                     return AF5_AXON_TEST_FIXTURE.equals(resolved.getFullyQualifiedName());
