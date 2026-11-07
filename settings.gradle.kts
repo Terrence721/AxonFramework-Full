@@ -95,7 +95,7 @@ include("update")
 
 include("integrationtests")
 
-// include("docs:_samples")
+include("docs:_samples")
 
 // Maven profile-gated modules (activated via -Dexamples / -Dcoverage property presence).
 // Gradle equivalent: only include when the matching -P property is passed on the command line.
