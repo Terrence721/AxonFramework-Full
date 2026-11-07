@@ -485,6 +485,8 @@ scope is visible as a whole, not just as bare module names.
    - **`integrationtests`** (`axon-integrationtests`, [issue #26](https://github.com/Terrence721/AxonFramework-Full/issues/26))
      — 0 main files, 126 test files. Cross-module black-box integration suite, no production code by design.
      Widest database-driver surface of any module (Oracle, MySQL, HSQLDB, c3p0) for cross-store coverage.
+     **Deferred note (2026-11-07):** integration-test migration is explicitly deferred until the core domain tests
+     (axon-test) are migrated; only main-source equivalence/publishing has been completed so far.
    - **`docs/_samples`** (`axon-docs-samples`, [issue #27](https://github.com/Terrence721/AxonFramework-Full/issues/27))
      — a compile-only guard with no source of its own; it pulls in `.java` files that physically live in sibling
      Antora documentation directories and just compiles them, to guarantee every documented code sample still
