@@ -16,8 +16,8 @@
 
 package org.axonframework.common;
 
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.axonframework.common.ReflectionUtils.declaringClass;
 
@@ -36,9 +36,7 @@ import static org.axonframework.common.ReflectionUtils.declaringClass;
 public final class IdentifierValidator {
 
     private static final IdentifierValidator INSTANCE = new IdentifierValidator();
-    private static final Object NULL = new Object();
-
-    private final Map<Class<?>, Object> whiteList = new WeakHashMap<>();
+    private final Set<Class<?>> whiteList = ConcurrentHashMap.newKeySet();
 
     private IdentifierValidator() {
         // Singleton, prevent construction
@@ -60,12 +58,13 @@ public final class IdentifierValidator {
      * @return {@code true} if the identifier is valid, {@code false} otherwise
      */
     public boolean isValidIdentifier(Class<?> identifierType) {
-        if (!whiteList.containsKey(identifierType)) {
-            if (Object.class.equals(declaringClass(identifierType, "toString"))) {
-                return false;
-            }
-            whiteList.put(identifierType, NULL);
+        if (whiteList.contains(identifierType)) {
+            return true;
         }
+        if (Object.class.equals(declaringClass(identifierType, "toString"))) {
+            return false;
+        }
+        whiteList.add(identifierType);
         return true;
     }
 }
