@@ -93,7 +93,7 @@ include("modelling")
 include("test-logging")
 include("update")
 
-// include("integrationtests")
+include("integrationtests")
 
 // include("docs:_samples")
 
