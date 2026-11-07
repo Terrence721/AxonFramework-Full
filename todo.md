@@ -455,6 +455,8 @@ scope is visible as a whole, not just as bare module names.
      `AxonTestFixture` API application developers use in their own test suites, successor to AF4's
      `AggregateTestFixture`/`SagaTestFixture`. Depends on `eventsourcing` — the deepest single dependency of any
      core module, so it's genuinely last among the seven, confirming it was never a real leaf module.
+     **Deferred note (2026-11-07):** axon-test module skeleton + build wiring to be created first; main sources and
+     test cases deferred to a later pass.
    - **`migration`** (`axon-migration`, [issue #21](https://github.com/Terrence721/AxonFramework-Full/issues/21))
      — 21 main files. **Not runtime code** — a library of OpenRewrite recipes that mechanically rewrite an AF4
      consumer codebase toward AF5 (class/package renames, coordinate swaps, config property renames). Zero
