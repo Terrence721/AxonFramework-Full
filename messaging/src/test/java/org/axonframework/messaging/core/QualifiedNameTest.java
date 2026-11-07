@@ -19,6 +19,7 @@ package org.axonframework.messaging.core;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class QualifiedNameTest {
     @Test
@@ -26,5 +27,22 @@ class QualifiedNameTest {
         QualifiedName name = new QualifiedName("org", "event");
         assertEquals("org", name.namespace());
         assertEquals("event", name.localName());
+    }
+
+    @Test
+    void singleNameHasNoNamespace() {
+        QualifiedName name = new QualifiedName("entity");
+
+        assertNull(name.namespace());
+        assertEquals("entity", name.localName());
+        assertEquals("entity", name.toString());
+    }
+
+    @Test
+    void createdFromAClassUsesItsPackageName() {
+        QualifiedName name = new QualifiedName(String.class);
+
+        assertEquals("java.lang", name.namespace());
+        assertEquals("String", name.localName());
     }
 }

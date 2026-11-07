@@ -22,11 +22,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MessageTypeTest {
     @Test
-    void constructorWithQualifiedNameString() {
+    void constructorWithQualifiedParts() {
         MessageType type = new MessageType("org", "event", MessageType.DEFAULT_VERSION);
 
         assertEquals("org", type.qualifiedName().namespace());
         assertEquals("event", type.qualifiedName().localName());
         assertEquals(MessageType.DEFAULT_VERSION, type.version());
+    }
+
+    @Test
+    void constructorFromClassUsesClassNameAndVersion() {
+        MessageType type = new MessageType(String.class, "1.0");
+
+        assertEquals("java.lang", type.qualifiedName().namespace());
+        assertEquals("String", type.qualifiedName().localName());
+        assertEquals("1.0", type.version());
     }
 }
