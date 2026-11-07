@@ -14,6 +14,7 @@ dependencies {
 
     // Additional module families
     api(project(":reactor"))
+    api(project(":spring"))
     api(project(":kotlin"))
     api(project(":migration"))
     api(project(":metrics-micrometer"))
