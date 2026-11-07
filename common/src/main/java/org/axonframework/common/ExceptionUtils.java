@@ -17,6 +17,8 @@
 package org.axonframework.common;
 
 import java.util.Optional;
+
+import org.jspecify.annotations.Nullable;
 import java.util.function.Predicate;
 
 /**
@@ -73,11 +75,13 @@ public final class ExceptionUtils {
      * @param failure the exception that occurred while processing a message
      * @return {@code true} if the exception is clearly non-transient
      */
-    public static boolean isExplicitlyNonTransient(Throwable failure) {
+    public static boolean isExplicitlyNonTransient(@Nullable Throwable failure) {
+        if (failure == null) {
+            return false;
+        }
         if (failure instanceof AxonNonTransientException) {
             return true;
         }
-        Throwable cause = failure.getCause();
-        return cause != null && isExplicitlyNonTransient(cause);
+        return isExplicitlyNonTransient(failure.getCause());
     }
 }
