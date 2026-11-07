@@ -57,8 +57,7 @@ public class JsonNodeToByteArrayConverter implements ContentTypeConverter<JsonNo
     }
 
     @Override
-    @Nullable
-    public byte[] convert(@Nullable JsonNode input) {
+    public byte @Nullable [] convert(@Nullable JsonNode input) {
         try {
             return objectMapper.writeValueAsBytes(input);
         } catch (JacksonException e) {

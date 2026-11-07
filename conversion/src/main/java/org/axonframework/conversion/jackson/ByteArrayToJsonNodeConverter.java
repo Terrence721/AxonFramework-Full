@@ -56,7 +56,7 @@ public class ByteArrayToJsonNodeConverter implements ContentTypeConverter<byte[]
 
     @Override
     @Nullable
-    public JsonNode convert(@Nullable byte[] input) {
+    public JsonNode convert(byte @Nullable [] input) {
         if (input == null) {
             return null;
         }
