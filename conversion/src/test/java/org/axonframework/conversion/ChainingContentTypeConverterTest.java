@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.axonframework.conversion.converter.StringToByteArrayConverter;
 
 class ChainingContentTypeConverterTest {
 
@@ -51,5 +52,14 @@ class ChainingContentTypeConverterTest {
         ChainingContentTypeConverter converter = new ChainingContentTypeConverter();
 
         assertEquals("value", converter.convert("value", String.class));
+    }
+
+    @Test
+    void registerConverterMakesConversionAvailable() {
+        ChainingContentTypeConverter converter = new ChainingContentTypeConverter();
+
+        converter.registerConverter(new StringToByteArrayConverter());
+
+        assertTrue(converter.canConvert(String.class, byte[].class));
     }
 }

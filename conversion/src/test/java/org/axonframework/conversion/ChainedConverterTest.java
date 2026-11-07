@@ -17,9 +17,14 @@
 package org.axonframework.conversion;
 
 import org.junit.jupiter.api.Test;
+import java.util.Collection;
+
 import org.jspecify.annotations.Nullable;
+import org.axonframework.conversion.converter.StringToByteArrayConverter;
+import org.axonframework.conversion.converter.ByteArrayToStringConverter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ChainedConverterTest {
 
@@ -45,5 +50,18 @@ class ChainedConverterTest {
         ChainedConverter<String, String> converter = new ChainedConverter<>(java.util.List.of(pass));
 
         assertEquals("value", converter.convert("value"));
+    }
+
+    @Test
+    void calculateChainConnectsRegisteredCandidates() {
+        Collection<ContentTypeConverter<?, ?>> candidates =
+                java.util.List.of(new StringToByteArrayConverter(),
+                        new ByteArrayToStringConverter());
+
+        ChainedConverter<String, String> converter =
+                ChainedConverter.calculateChain(String.class, String.class, candidates);
+
+        assertEquals("value", converter.convert("value"));
+        assertTrue(ChainedConverter.canConvert(String.class, String.class, (java.util.List) candidates));
     }
 }
