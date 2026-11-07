@@ -109,3 +109,11 @@ if (providers.gradleProperty("coverage").isPresent) {
 include("metrics-dropwizard")
 
 include("metrics-micrometer")
+
+include("spring")
+
+include("spring-boot-autoconfigure")
+
+include("spring-boot-starter")
+
+include("spring-boot-starter-test")
