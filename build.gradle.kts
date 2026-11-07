@@ -1,3 +1,7 @@
+plugins {
+    id("maven-publish")
+}
+
 // Removes every untracked .log file in the repo, found via git ls-files rather than a
 // hand-maintained list of directories/filenames to skip - respects .gitignore automatically,
 // and stays correct for any future .log file without this task needing changes.
@@ -40,10 +44,6 @@ tasks.register("cleanLogs") {
             }
         }
     }
-}
-
-plugins {
-    id("maven-publish")
 }
 
 publishing {
