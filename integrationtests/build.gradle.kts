@@ -14,7 +14,9 @@ dependencies {
 
     // Additional module families
     api(project(":reactor"))
+    api(project(":kotlin"))
     api(project(":migration"))
+    api(project(":metrics-micrometer"))
 
     // Jackson
     implementation(platform("com.fasterxml.jackson:jackson-bom:2.22.3"))
