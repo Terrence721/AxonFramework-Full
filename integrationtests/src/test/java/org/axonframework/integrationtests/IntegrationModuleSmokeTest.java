@@ -1,6 +1,5 @@
 package org.axonframework.integrationtests;
 
-import org.axonframework.messaging.core.Metadata;
 import org.axonframework.messaging.eventhandling.EventBus;
 import org.axonframework.messaging.eventhandling.SimpleEventBus;
 import org.axonframework.eventsourcing.eventstore.EventStore;
@@ -15,11 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class IntegrationModuleSmokeTest {
     @Test
     void modulesCanBeLoadedTogether() {
-        Metadata metadata = Metadata.emptyInstance();
         EventBus eventBus = new SimpleEventBus();
         EventStore eventStore = new StorageEngineBackedEventStore(new InMemoryEventStorageEngine(), eventBus, new MetadataBasedTagResolver("integrationtests"));
 
         assertNotNull(eventStore);
-        assertNotNull(metadata);
     }
 }
