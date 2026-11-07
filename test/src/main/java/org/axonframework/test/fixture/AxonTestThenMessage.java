@@ -104,7 +104,7 @@ abstract class AxonTestThenMessage<T extends AxonTestPhase.Then.Message<T>>
 
     @Override
     public T events(EventMessage... expectedEvents) {
-        this.events(Stream.of(expectedEvents).map(Message::payload).toArray());
+        this.events(Stream.of(expectedEvents).map(event -> event.payload()).toArray());
 
         var publishedEvents = recordings.eventSink().recorded();
         Iterator<EventMessage> iterator = publishedEvents.iterator();
@@ -286,8 +286,8 @@ abstract class AxonTestThenMessage<T extends AxonTestPhase.Then.Message<T>>
         return self();
     }
 
+    @SuppressWarnings("unchecked")
     private T self() {
-        //noinspection unchecked
         return (T) this;
     }
 }

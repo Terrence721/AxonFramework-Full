@@ -13,6 +13,7 @@
         "fasterxml",
         "findbugs",
         "foojay",
+        "Fqns",
         "getenv",
         "gradleup",
         "gradlew",

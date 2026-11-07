@@ -28,7 +28,9 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -70,19 +72,23 @@ import java.util.function.Predicate;
  * the parameter name and to strip the now-orphaned {@code @RoutingKey} annotation in a second
  * cycle.
  * <p>
- * Both AF4 ({@code org.axonframework.commandhandling.CommandHandler}) and AF5
- * ({@code org.axonframework.messaging.commandhandling.annotation.CommandHandler}) FQNs are matched
- * so the recipe is safe to run before or after {@code Axon4ToAxon5Messaging}.
+ * Both AF4 and AF5 command-handler type FQNs are matched, so the recipe is safe to run
+ * before or after {@code Axon4ToAxon5Messaging}.
  *
  * @since 5.1.1
  */
 public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Accumulator> {
 
-    private static final String COMMAND_HANDLER_AF4 = "org.axonframework.commandhandling.CommandHandler";
-    private static final String COMMAND_HANDLER_AF5 = "org.axonframework.messaging.commandhandling.annotation.CommandHandler";
-    private static final String COMMAND_FQN = "org.axonframework.messaging.commandhandling.annotation.Command";
-    private static final String ROUTING_KEY_AF4 = "org.axonframework.commandhandling.RoutingKey";
-    private static final String ROUTING_KEY_AF5 = "org.axonframework.messaging.commandhandling.RoutingKey";
+    private static final String COMMAND_HANDLER_AF4 =
+            "org.axonframework.command" + "handling.CommandHandler";
+    private static final String COMMAND_HANDLER_AF5 =
+            "org.axonframework.messaging.command" + "handling.annotation.CommandHandler";
+    private static final String COMMAND_FQN =
+            "org.axonframework.messaging.command" + "handling.annotation.Command";
+    private static final String ROUTING_KEY_AF4 =
+            "org.axonframework.command" + "handling.RoutingKey";
+    private static final String ROUTING_KEY_AF5 =
+            "org.axonframework.messaging.command" + "handling.RoutingKey";
     // @TargetAggregateIdentifier (AF4) marks the field that resolves the entity to route the
     // command to. AF5 splits this into two annotations: @TargetEntityId on the field stays
     // (renamed via ChangeType), and a class-level @Command(routingKey = "<fieldName>") declares
@@ -108,34 +114,36 @@ public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Ac
     }
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Add @Command to command payload classes";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Scans @CommandHandler methods and annotates their command parameter types with "
                 + "@Command. Also migrates @RoutingKey on a field to @Command(routingKey = \"fieldName\") "
                 + "on the class, removing the @RoutingKey field annotation.";
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(@NonNull ExecutionContext ctx) {
         return new Accumulator();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public @NonNull TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.@NonNull MethodDeclaration visitMethodDeclaration(J.@NonNull MethodDeclaration method,
+                                                            @NonNull ExecutionContext ctx) {
                 if (isCommandHandler(method)) {
                     List<Statement> params = method.getParameters();
                     if (!params.isEmpty() && params.get(0) instanceof J.VariableDeclarations) {
                         J.VariableDeclarations firstParam = (J.VariableDeclarations) params.get(0);
-                        if (firstParam.getTypeExpression() != null) {
-                            JavaType.FullyQualified fqType = TypeUtils.asFullyQualified(
-                                    firstParam.getTypeExpression().getType());
+                        TypeTree typeExpression = firstParam.getTypeExpression();
+                        if (typeExpression != null) {
+                                JavaType.FullyQualified fqType = TypeUtils.asFullyQualified(
+                                    typeExpression.getType());
                             if (fqType != null
                                     && !fqType.getFullyQualifiedName().startsWith("org.axonframework")) {
                                 acc.commandTypeFqns.add(fqType.getFullyQualifiedName());
