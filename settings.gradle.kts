@@ -89,7 +89,7 @@ include("reactor")
 include("kotlin")
 include("migration")
 include("modelling")
-// include("test")
+include("test")
 include("test-logging")
 include("update")
 
