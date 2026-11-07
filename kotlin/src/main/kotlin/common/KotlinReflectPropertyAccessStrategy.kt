@@ -66,6 +66,6 @@ class KotlinReflectPropertyAccessStrategy : PropertyAccessStrategy() {
     override fun <T : Any> propertyFor(
         targetClass: Class<out T>,
         property: String
-    ): Property<T> = KotlinReflectProperty(kProperty(targetClass, property)!!)
+    ): Property<T>? = kProperty(targetClass, property)?.let { KotlinReflectProperty(it) }
 
 }
