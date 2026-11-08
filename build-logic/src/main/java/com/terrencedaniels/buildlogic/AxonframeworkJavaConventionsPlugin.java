@@ -154,6 +154,13 @@ public class AxonframeworkJavaConventionsPlugin implements Plugin<Project> {
             project.getTasks().named("test", Test.class).configure(test -> test.setEnabled(false));
         }
 
+        // ArchUnit and SLF4J bridge alignment: spring-boot-starter-logging brings log4j-to-slf4j, while
+        // the test classpath uses log4j-slf4j2-impl as backend. The two mutually exclusive bridges
+        // break ArchUnit test discovery; keep the latter as the canonical test backend.
+        project.getConfigurations().named("testRuntimeClasspath", configuration ->
+                configuration.exclude(Map.of("group", "org.apache.logging.log4j", "module", "log4j-to-slf4j"))
+        );
+
         project.getTasks().named("jar", Jar.class).configure(jar -> {
             // maven-jar-plugin's addDefaultImplementationEntries=true equivalent. Upstream derives
             // Implementation-Vendor from root pom.xml's <organization> (AxonIQ B.V.) - this fork
