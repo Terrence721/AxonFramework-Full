@@ -159,8 +159,9 @@ class AnnotationUtilsTest {
     }
 
     @Test
-    void predicatesWork() throws Exception {
-        Member member = Annotated.class.getDeclaredMethods()[0];
+    void predicatesWork() throws NoSuchMethodException {
+        java.lang.reflect.Method method = Annotated.class.getDeclaredMethod("annotated", String.class);
+        Member member = method;
 
         Predicate<Member> memberPredicate = AnnotationUtils.isAnnotatedWith(Wrapper.class);
         assertTrue(memberPredicate.test(member));
