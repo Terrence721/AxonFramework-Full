@@ -60,6 +60,7 @@ public class AxonframeworkJavaConventionsPlugin implements Plugin<Project> {
     public void apply(Project project) {
         project.getPluginManager().apply("java-library");
         project.getPluginManager().apply("checkstyle");
+        project.getPluginManager().apply("jacoco");
 
         // gradle.properties' group/version only apply to the root project by default - Gradle doesn't
         // propagate them to subprojects on its own, unlike Maven's parent-POM inheritance. Every module
