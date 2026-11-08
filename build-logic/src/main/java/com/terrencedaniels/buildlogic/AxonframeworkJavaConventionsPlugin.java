@@ -132,6 +132,17 @@ public class AxonframeworkJavaConventionsPlugin implements Plugin<Project> {
             dependencies.add("testImplementation", dependencies.project(":test-logging"));
         }
 
+        project.getConfigurations().all(configuration ->
+            configuration.getResolutionStrategy().force(
+                    "org.junit:junit-bom:5.13.4",
+                    "org.junit.jupiter:junit-jupiter:5.13.4",
+                    "org.junit.jupiter:junit-jupiter-api:5.13.4",
+                    "org.junit.jupiter:junit-jupiter-engine:5.13.4",
+                    "org.junit.jupiter:junit-jupiter-params:5.13.4",
+                    "org.junit.platform:junit-platform-commons:1.13.4",
+                    "org.junit.platform:junit-platform-engine:1.13.4",
+                    "org.junit.platform:junit-platform-launcher:1.13.4"));
+
         dependencies.add("mockitoAgent", "org.mockito:mockito-core:5.23.0");
 
         project.getTasks().named("test", Test.class).configure(test -> {
