@@ -163,6 +163,11 @@ public class AxonframeworkJavaConventionsPlugin implements Plugin<Project> {
             configuration.exclude(Map.of("group", "ch.qos.logback", "module", "logback-classic"));
         });
 
+        project.getTasks().named("jacocoTestReport", org.gradle.testing.jacoco.tasks.JacocoReport.class).configure(report -> {
+            report.getReports().getXml().getRequired().set(true);
+            report.getReports().getHtml().getRequired().set(true);
+        });
+
         project.getTasks().named("jar", Jar.class).configure(jar -> {
             // maven-jar-plugin's addDefaultImplementationEntries=true equivalent. Upstream derives
             // Implementation-Vendor from root pom.xml's <organization> (AxonIQ B.V.) - this fork
