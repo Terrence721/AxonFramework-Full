@@ -16,7 +16,7 @@ dependencies {
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.0")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
 }
 
 

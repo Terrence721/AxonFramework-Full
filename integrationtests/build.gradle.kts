@@ -40,7 +40,7 @@ dependencies {
     implementation("org.hamcrest:hamcrest:2.2")
     implementation("com.google.code.findbugs:jsr305:3.0.2")
 
-    implementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
+    implementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:6.1.3")
 }
