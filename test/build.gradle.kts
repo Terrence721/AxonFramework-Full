@@ -12,7 +12,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core")
     implementation("org.slf4j:slf4j-api:2.0.18")
 
-    implementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
+    implementation("org.junit.jupiter:junit-jupiter-api:5.13.4")
 
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
 }

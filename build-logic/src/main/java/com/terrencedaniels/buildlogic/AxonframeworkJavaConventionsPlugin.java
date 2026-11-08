@@ -118,7 +118,7 @@ public class AxonframeworkJavaConventionsPlugin implements Plugin<Project> {
         // consumers of this module's public API - api, not implementation.
         dependencies.add("api", "org.jspecify:jspecify:1.0.1");
 
-        dependencies.add("testImplementation", dependencies.platform("org.junit:junit-bom:6.1.3"));
+        dependencies.add("testImplementation", dependencies.platform("org.junit:junit-bom:5.13.4"));
         dependencies.add("testImplementation", "org.junit.jupiter:junit-jupiter");
         dependencies.add("testImplementation", "org.mockito:mockito-core:5.23.0");
         dependencies.add("testImplementation", "org.mockito:mockito-junit-jupiter:5.23.0");
