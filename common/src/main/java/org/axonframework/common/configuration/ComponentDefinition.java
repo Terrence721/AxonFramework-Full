@@ -175,9 +175,9 @@ public sealed interface ComponentDefinition<C> permits ComponentDefinition.Compo
      * @return A {@code ComponentDefinition} with the start handler defined.
      */
     default ComponentDefinition<C> onStart(int phase, Consumer<C> handler) {
+        Objects.requireNonNull(handler, "The start handler cannot be null.");
         return onStart(phase, (config, component) -> {
-            Objects.requireNonNull(handler, "The start handler cannot be null.")
-                   .accept(component);
+            handler.accept(component);
             return CompletableFuture.completedFuture(null);
         });
     }
@@ -191,9 +191,9 @@ public sealed interface ComponentDefinition<C> permits ComponentDefinition.Compo
      * @return A {@code ComponentDefinition} with the start handler defined.
      */
     default ComponentDefinition<C> onStart(int phase, BiConsumer<Configuration, C> handler) {
+        Objects.requireNonNull(handler, "The start handler cannot be null.");
         return onStart(phase, (config, component) -> {
-            Objects.requireNonNull(handler, "The start handler cannot be null.")
-                   .accept(config, component);
+            handler.accept(config, component);
             return CompletableFuture.completedFuture(null);
         });
     }
@@ -217,9 +217,9 @@ public sealed interface ComponentDefinition<C> permits ComponentDefinition.Compo
      * @return A {@code ComponentDefinition} with the shutdown handler defined.
      */
     default ComponentDefinition<C> onShutdown(int phase, Consumer<C> handler) {
+        Objects.requireNonNull(handler, "The shutdown handler cannot be null.");
         return onShutdown(phase, (config, component) -> {
-            Objects.requireNonNull(handler, "The shutdown handler cannot be null.")
-                   .accept(component);
+            handler.accept(component);
             return CompletableFuture.completedFuture(null);
         });
     }
@@ -233,9 +233,9 @@ public sealed interface ComponentDefinition<C> permits ComponentDefinition.Compo
      * @return A {@code ComponentDefinition} with the shutdown handler defined.
      */
     default ComponentDefinition<C> onShutdown(int phase, BiConsumer<Configuration, C> handler) {
+        Objects.requireNonNull(handler, "The shutdown handler cannot be null.");
         return onShutdown(phase, (config, component) -> {
-            Objects.requireNonNull(handler, "The shutdown handler cannot be null.")
-                   .accept(config, component);
+            handler.accept(config, component);
             return CompletableFuture.completedFuture(null);
         });
     }
