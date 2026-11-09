@@ -67,10 +67,21 @@ public class ShutdownLatch {
         int counter = operationCounter.getAndIncrement();
 
         if (counter == 0 && latch.get() != null) {
-            operationCounter.getAndDecrement();
+            // Shutdown was initiated concurrently. A racing initiateShutdown() may have observed our transient
+            // increment and decided not to complete the latch, so releasing must complete it if we were the last.
+            releaseActivity();
             throw new ShutdownInProgressException();
         }
         return new ActivityHandle();
+    }
+
+    private void releaseActivity() {
+        if (operationCounter.decrementAndGet() <= 0) {
+            CompletableFuture<Void> currentLatch = latch.get();
+            if (currentLatch != null) {
+                currentLatch.complete(null);
+            }
+        }
     }
 
     /**
@@ -139,12 +150,8 @@ public class ShutdownLatch {
          * {@link ShutdownLatch#initiateShutdown()} has been invoked and all activities have ended.
          */
         public void end() {
-            boolean firstInvocation = ended.compareAndSet(false, true);
-            if (firstInvocation && operationCounter.decrementAndGet() <= 0) {
-                CompletableFuture<Void> currentLatch = latch.get();
-                if (currentLatch != null) {
-                    currentLatch.complete(null);
-                }
+            if (ended.compareAndSet(false, true)) {
+                releaseActivity();
             }
         }
 
