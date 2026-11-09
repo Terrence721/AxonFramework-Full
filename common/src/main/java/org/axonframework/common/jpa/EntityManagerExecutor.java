@@ -19,6 +19,7 @@ package org.axonframework.common.jpa;
 import jakarta.persistence.EntityManager;
 import org.axonframework.common.annotation.Internal;
 import org.axonframework.common.function.ThrowingFunction;
+import org.axonframework.common.tx.ResourceSupplierExecutor;
 import org.axonframework.common.tx.TransactionalExecutor;
 
 import java.util.Objects;
@@ -31,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
  */
 @Internal
 public class EntityManagerExecutor implements TransactionalExecutor<EntityManager> {
-    private final EntityManagerProvider provider;
+    private final TransactionalExecutor<EntityManager> delegate;
 
     /**
      * Creates a new instance.
@@ -40,16 +41,12 @@ public class EntityManagerExecutor implements TransactionalExecutor<EntityManage
      * @throws NullPointerException If any argument is {@code null}.
      */
     public EntityManagerExecutor(EntityManagerProvider provider) {
-        this.provider = Objects.requireNonNull(provider, "provider");
+        Objects.requireNonNull(provider, "provider");
+        this.delegate = new ResourceSupplierExecutor<>(provider::getEntityManager);
     }
 
     @Override
     public <R> CompletableFuture<R> apply(ThrowingFunction<EntityManager, R, Exception> function) {
-        try {
-            return CompletableFuture.completedFuture(function.apply(provider.getEntityManager()));
-        }
-        catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        }
+        return delegate.apply(function);
     }
 }

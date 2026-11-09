@@ -18,6 +18,7 @@ package org.axonframework.common.jdbc;
 
 import org.axonframework.common.annotation.Internal;
 import org.axonframework.common.function.ThrowingFunction;
+import org.axonframework.common.tx.ResourceSupplierExecutor;
 import org.axonframework.common.tx.TransactionalExecutor;
 
 import java.sql.Connection;
@@ -31,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
  */
 @Internal
 public class ConnectionExecutor implements TransactionalExecutor<Connection> {
-    private final ConnectionProvider provider;
+    private final TransactionalExecutor<Connection> delegate;
 
     /**
      * Creates a new instance.
@@ -40,16 +41,12 @@ public class ConnectionExecutor implements TransactionalExecutor<Connection> {
      * @throws NullPointerException If any argument is {@code null}.
      */
     public ConnectionExecutor(ConnectionProvider provider) {
-        this.provider = Objects.requireNonNull(provider, "provider");
+        Objects.requireNonNull(provider, "provider");
+        this.delegate = new ResourceSupplierExecutor<>(provider::getConnection);
     }
 
     @Override
     public <R> CompletableFuture<R> apply(ThrowingFunction<Connection, R, Exception> function) {
-        try {
-            return CompletableFuture.completedFuture(function.apply(provider.getConnection()));
-        }
-        catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        }
+        return delegate.apply(function);
     }
 }
