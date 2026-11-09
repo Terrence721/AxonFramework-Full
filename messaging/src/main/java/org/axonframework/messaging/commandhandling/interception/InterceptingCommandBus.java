@@ -87,14 +87,14 @@ public class InterceptingCommandBus implements CommandBus {
             List<MessageHandlerInterceptor<? super CommandMessage>> handlerInterceptors,
             List<MessageDispatchInterceptor<? super CommandMessage>> dispatchInterceptors
     ) {
-        this.delegate = requireNonNull(delegate, "The command bus delegate must be null.");
+        this.delegate = requireNonNull(delegate, "The command bus delegate must not be null.");
         this.handlerInterceptors = new ArrayList<>(
                 requireNonNull(handlerInterceptors, "The handler interceptors must not be null.")
         );
         this.dispatchInterceptors = new ArrayList<>(
                 requireNonNull(dispatchInterceptors, "The dispatch interceptors must not be null.")
         );
-        this.interceptingDispatcher = new InterceptingDispatcher(dispatchInterceptors, this::dispatchCommand);
+        this.interceptingDispatcher = new InterceptingDispatcher(this.dispatchInterceptors, this::dispatchCommand);
     }
 
     @Override
