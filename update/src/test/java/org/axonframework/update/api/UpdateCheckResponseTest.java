@@ -61,6 +61,13 @@ class UpdateCheckResponseTest {
     }
 
     @Test
+    void nonPositiveCheckIntervalFallsBackToTheDefault() {
+        assertEquals(DEFAULT_INTERVAL, UpdateCheckResponse.fromRequest("cd=0").checkInterval());
+        assertEquals(DEFAULT_INTERVAL, UpdateCheckResponse.fromRequest("cd=-30").checkInterval());
+        assertEquals(1, UpdateCheckResponse.fromRequest("cd=1").checkInterval());
+    }
+
+    @Test
     void lastCheckIntervalLineWins() {
         assertEquals(60, UpdateCheckResponse.fromRequest("cd=3600\ncd=60").checkInterval());
     }
