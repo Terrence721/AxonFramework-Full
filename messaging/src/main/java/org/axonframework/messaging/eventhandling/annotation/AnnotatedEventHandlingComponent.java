@@ -85,6 +85,8 @@ public class AnnotatedEventHandlingComponent<T> implements EventHandlingComponen
                                            MessageTypeResolver messageTypeResolver,
                                            EventConverter converter) {
         this.target = requireNonNull(annotatedEventHandler, "The Annotated Event Handler may not be null.");
+        this.messageTypeResolver = requireNonNull(messageTypeResolver, "The MessageTypeResolver may not be null.");
+        this.converter = requireNonNull(converter, "The EventConverter may not be null.");
         this.handlingComponent = SimpleEventHandlingComponent.create(
                 "AnnotatedEventHandlingComponent[%s]".formatted(annotatedEventHandler.getClass().getName())
         );
@@ -93,8 +95,6 @@ public class AnnotatedEventHandlingComponent<T> implements EventHandlingComponen
         this.model = AnnotatedHandlerInspector.inspectType(
                 clazz, messageTypeResolver, parameterResolverFactory, handlerDefinition
         );
-        this.messageTypeResolver = requireNonNull(messageTypeResolver, "The MessageTypeResolver may not be null.");
-        this.converter = requireNonNull(converter, "The EventConverter may not be null.");
 
         initializeEventHandlersBasedOnModel();
         initializeResetHandlersBasedOnModel();
