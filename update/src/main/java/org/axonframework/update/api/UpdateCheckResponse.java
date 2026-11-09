@@ -161,7 +161,9 @@ public record UpdateCheckResponse(
 
     private static int parseCheckInterval(String value) {
         try {
-            return Integer.parseInt(value);
+            int interval = Integer.parseInt(value);
+            // A non-positive interval would make the checker poll the server continuously (or fail to schedule).
+            return interval > 0 ? interval : 86400;
         } catch (NumberFormatException ignored) {
             return 86400; // Default to 24 hours, in case request didn't work
         }
