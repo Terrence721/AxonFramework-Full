@@ -153,8 +153,8 @@ public final class AxonVersionDetector {
         if (file.isDirectory()) {
             List<File> filesToCheck = scanDirectoryForPomProperties(file);
             for (File pomFile : filesToCheck) {
-                try {
-                    Artifact version = mapToAxonVersion(Files.newInputStream(pomFile.toPath()));
+                try (InputStream inputStream = Files.newInputStream(pomFile.toPath())) {
+                    Artifact version = mapToAxonVersion(inputStream);
                     foundVersions.add(version);
                 } catch (Exception e) {
                     logger.debug("Unexpected error while processing pom.properties file: {}",
