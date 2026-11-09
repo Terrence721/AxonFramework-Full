@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -46,6 +47,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 /**
  * Simple implementation of the {@link EventHandlingComponent}, {@link EventHandlerRegistry}, and
@@ -122,11 +124,16 @@ public class SimpleEventHandlingComponent implements
                     new NoHandlerForEventException(name, SimpleEventHandlingComponent.class.getName())
             );
         }
-        MessageStream<Message> result = MessageStream.empty();
+        return handleWithAll(handlers, handler -> handler.handle(event, context));
+    }
 
-        for (var handler : handlers) {
-            var handlerResult = handler.handle(event, context);
-            result = result.concatWith(handlerResult);
+    private static <H> MessageStream.Empty<Message> handleWithAll(
+            Collection<H> handlers,
+            Function<H, MessageStream<Message>> invoker
+    ) {
+        MessageStream<Message> result = MessageStream.empty();
+        for (H handler : handlers) {
+            result = result.concatWith(invoker.apply(handler));
         }
         return result.ignoreEntries().cast();
     }
@@ -213,38 +220,26 @@ public class SimpleEventHandlingComponent implements
 
     @Override
     public MessageStream.Empty<Message> handle(ResetContext resetContext, ProcessingContext context) {
-        MessageStream<Message> result = MessageStream.empty();
-
-        for (ResetHandler handler : resetHandlers) {
-            MessageStream<Message> handlerResult = handler.handle(resetContext, context);
-            result = result.concatWith(handlerResult);
-        }
-
-        return result.ignoreEntries().cast();
+        return handleWithAll(resetHandlers, handler -> handler.handle(resetContext, context));
     }
 
     @Override
     public SimpleEventHandlingComponent subscribe(ResetHandler resetHandler) {
-        resetHandlers.add(resetHandler);
+        resetHandlers.add(Objects.requireNonNull(resetHandler, "The reset handler cannot be null."));
         return this;
     }
 
     @Override
     public MessageStream.Empty<Message> handle(ReplayStatusChanged statusChange,
                                                ProcessingContext context) {
-        MessageStream<Message> result = MessageStream.empty();
-
-        for (ReplayStatusChangedHandler handler : replayStatusChangedHandlers) {
-            MessageStream<Message> handlerResult = handler.handle(statusChange, context);
-            result = result.concatWith(handlerResult);
-        }
-
-        return result.ignoreEntries().cast();
+        return handleWithAll(replayStatusChangedHandlers, handler -> handler.handle(statusChange, context));
     }
 
     @Override
     public SimpleEventHandlingComponent subscribe(ReplayStatusChangedHandler replayStatusChangedHandler) {
-        replayStatusChangedHandlers.add(replayStatusChangedHandler);
+        replayStatusChangedHandlers.add(Objects.requireNonNull(
+                replayStatusChangedHandler, "The replay status changed handler cannot be null."
+        ));
         return this;
     }
 
