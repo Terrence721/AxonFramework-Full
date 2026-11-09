@@ -110,7 +110,8 @@ public class AvroUtil {
             }
             return ByteBuffer.wrap(fingerprintBytes).order(ByteOrder.LITTLE_ENDIAN).getLong();
         } catch (IOException e) {
-            throw new AvroRuntimeException("Could not read fingerprint from byte array");
+            // The header checks above throw IOException subclasses, so keep the cause to preserve their details
+            throw new AvroRuntimeException("Could not read fingerprint from byte array", e);
         }
     }
 
@@ -127,12 +128,14 @@ public class AvroUtil {
                 throw new BadHeaderException("Could not read header bytes, end of stream reached.");
             }
             byte[] payloadBytes = new byte[singleObjectEncodedBytes.length - AVRO_HEADER_LENGTH];
-            if (bis.read(payloadBytes) != payloadBytes.length) {
+            // An empty payload is valid (e.g. a record without fields), but reading zero bytes at the end of the
+            // stream reports -1
+            if (payloadBytes.length > 0 && bis.read(payloadBytes) != payloadBytes.length) {
                 throw new AvroRuntimeException("Could not read payload from byte array - Insufficient payload bytes.");
             }
             return payloadBytes;
         } catch (IOException e) {
-            throw new AvroRuntimeException("Could not read payload from byte array");
+            throw new AvroRuntimeException("Could not read payload from byte array", e);
         }
     }
 
