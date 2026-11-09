@@ -8,7 +8,7 @@ dependencies {
     implementation("org.springframework:spring-messaging:6.2.19")
     implementation("org.springframework:spring-orm:6.2.19")
     implementation("org.springframework:spring-context-support:6.2.19")
-    implementation(platform("org.springframework.data:spring-data-bom:2025.0.7"))
+    implementation(platform("org.springframework.data:spring-data-bom:2025.0.13"))
     implementation("org.springframework.data:spring-data-commons")
     implementation("org.springframework.security:spring-security-core:6.5.11")
     implementation("org.springframework.security:spring-security-config:6.5.11")
