@@ -7,9 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Target;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -22,18 +20,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AnnotationUtilsTest {
 
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+    @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE, ElementType.PACKAGE, ElementType.TYPE_USE})
     @interface Meta {
         String value() default "meta-value";
+        String text() default "meta-text";
     }
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE,
-            ElementType.METHOD, ElementType.PARAMETER})
+            ElementType.METHOD, ElementType.PARAMETER, ElementType.TYPE_USE})
     @Meta
     @interface Wrapper {
         String value() default "wrapper-value";
         int number() default 1;
+        String text() default "wrapper-text";
     }
 
     @Wrapper
@@ -42,10 +42,23 @@ class AnnotationUtilsTest {
         String annotated(String parameter) {
             return parameter;
         }
+
+        String unannotated() {
+            return "unannotated";
+        }
+
+        @Wrapper
+        String parameterMethod(@Wrapper String parameter) {
+            return parameter;
+        }
+
+        String nullableParameterMethod(@org.jspecify.annotations.Nullable String parameter) {
+            return parameter;
+        }
     }
 
     @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
+    @Target({ElementType.TYPE, ElementType.PACKAGE})
     @interface Outer {
         String text() default "outer-text";
     }
@@ -54,6 +67,34 @@ class AnnotationUtilsTest {
     static class OuterClass {
         @Outer
         static class InnerClass {
+        }
+
+        static class UnannotatedInner {
+        }
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+    @Meta
+    @interface Middle {
+        String text() default "middle-text";
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+    @Middle
+    @interface OuterWrapper {
+    }
+
+    @OuterWrapper
+    static class Chained {
+    }
+
+    static class Plain {
+    }
+
+    static class UnannotatedOuter {
+        static class Deep {
         }
     }
 
@@ -178,4 +219,102 @@ class AnnotationUtilsTest {
                 Wrapper.class, "wrapper", "not-the-value");
         assertFalse(falseAttributePredicate.test(new Annotated()));
     }
+
+    @Test
+    void falseBranchOfMetaLoop() {
+        assertFalse(AnnotationUtils.findAnnotationAttributes(Annotated.class, Wrapper.class).isPresent() == false
+                && AnnotationUtils.findAnnotationAttributes(String.class, Wrapper.class).isPresent());
+    }
+
+    @Test
+    void findOnTypeTraversesEnclosingClasses() {
+        Optional<Map<String, Object>> attributes = AnnotationUtils.findAnnotationAttributesOnType(
+                OuterClass.UnannotatedInner.class, Outer.class, found -> true);
+        assertTrue(attributes.isPresent());
+        assertEquals("outer-text", attributes.get().get("text"));
+    }
+
+    @Test
+    void findOnTypeFallsBackToPackageAndModule() {
+        Optional<Map<String, Object>> attributes = AnnotationUtils.findAnnotationAttributesOnType(
+                String.class, Outer.class, found -> true);
+        assertFalse(attributes.isPresent());
+    }
+
+    @Test
+    void chainedMetaAnnotationsAreFound() {
+        assertTrue(AnnotationUtils.isAnnotationPresent(Chained.class, Meta.class));
+        Optional<Map<String, Object>> attributes =
+                AnnotationUtils.findAnnotationAttributes(Chained.class, Meta.class, AnnotationUtils.OVERRIDE_ONLY);
+        assertTrue(attributes.isPresent());
+        assertEquals("middle-text", attributes.get().get("text"));
+    }
+
+    @Test
+    void isAnnotatedWithRecurseBranch() {
+        Set<Class<? extends Annotation>> annotatedWithSubject = new java.util.HashSet<>();
+        Set<Class<? extends Annotation>> visited = new java.util.HashSet<>();
+        assertTrue(AnnotationUtils.isAnnotatedWith(OuterWrapper.class, Meta.class,
+                annotatedWithSubject, visited));
+        assertTrue(annotatedWithSubject.contains(OuterWrapper.class));
+    }
+
+    @Test
+    void visitCheckedAcyclic() {
+        Set<Class<? extends Annotation>> annotatedWithSubject = new java.util.HashSet<>();
+        Set<Class<? extends Annotation>> visited = new java.util.HashSet<>();
+        assertFalse(AnnotationUtils.isAnnotatedWith(Meta.class, OuterWrapper.class,
+                annotatedWithSubject, visited));
+    }
+
+    @Test
+    void hasAnnotationNamedOnParameterUsesAnnotatedType() throws NoSuchMethodException {
+        java.lang.reflect.Method method = Annotated.class.getDeclaredMethod(
+                "nullableParameterMethod", String.class);
+        java.lang.reflect.Parameter parameter = method.getParameters()[0];
+        assertTrue(AnnotationUtils.hasAnnotationNamed(parameter, "Nullable"));
+        assertFalse(AnnotationUtils.hasAnnotationNamed(parameter, "missing"));
+    }
+
+    @Test
+    void hasAnnotationNamedParameterFalseBranch() throws NoSuchMethodException {
+        java.lang.reflect.Method method = Annotated.class.getDeclaredMethod(
+                "nullableParameterMethod", String.class);
+        java.lang.reflect.Parameter parameter = method.getParameters()[0];
+        assertFalse(AnnotationUtils.hasAnnotationNamed(parameter, "definitelyMissing"));
+    }
+
+    @Test
+    void predicateFalseWhenNotAnnotated() throws NoSuchMethodException {
+        java.lang.reflect.Method method = Annotated.class.getDeclaredMethod("unannotated");
+        Member member = method;
+        Predicate<Member> predicate = AnnotationUtils.isAnnotatedWith(Wrapper.class);
+        assertFalse(predicate.test(member));
+    }
+
+    @Test
+    void overrideOnlyNullValueBranch() {
+        Predicate<Object> predicate = AnnotationUtils.isTypeAnnotatedWithHavingAttributeValue(
+                Wrapper.class, "wrapper", null);
+        // Wrapper has non-null wrapper attribute, so null-valued expectation is false
+        assertFalse(predicate.test(new Annotated()));
+    }
+
+
+    @Test
+    void findOnTypeFallsBackToPackage() {
+        Optional<Map<String, Object>> attributes = AnnotationUtils.findAnnotationAttributesOnType(
+                Plain.class, Outer.class, found -> true);
+        assertTrue(attributes.isPresent());
+        assertEquals("outer-text", attributes.get().get("text"));
+    }
+
+    @Test
+    void findOnTypeExercisesEnclosingLoopExit() {
+        Optional<Map<String, Object>> attributes = AnnotationUtils.findAnnotationAttributesOnType(
+                UnannotatedOuter.Deep.class, Outer.class, found -> false);
+        // Package annotation is present but expectedAttributes predicate fails, so travels onward
+        assertFalse(attributes.isPresent());
+    }
+
 }

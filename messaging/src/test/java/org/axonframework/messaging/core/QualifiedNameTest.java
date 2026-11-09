@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class QualifiedNameTest {
     @Test
@@ -45,4 +46,58 @@ class QualifiedNameTest {
         assertEquals("java.lang", name.namespace());
         assertEquals("String", name.localName());
     }
+
+
+    @Test
+    void nullNameThrows() {
+        assertThrows(NullPointerException.class, () -> new QualifiedName((String) null));
+    }
+
+    @Test
+    void blankNameThrows() {
+        assertThrows(IllegalArgumentException.class, () -> new QualifiedName("   "));
+    }
+
+    @Test
+    void hashNameThrows() {
+        assertThrows(IllegalArgumentException.class, () -> new QualifiedName("a#b"));
+    }
+
+    @Test
+    void namespaceAndLocalNameNullLocalThrows() {
+        assertThrows(NullPointerException.class, () -> new QualifiedName("ns", null));
+    }
+
+    @Test
+    void namespaceAndLocalNameEmptyLocalThrows() {
+        assertThrows(IllegalArgumentException.class, () -> new QualifiedName("ns", ""));
+    }
+
+    @Test
+    void namespaceAndLocalNameNullNamespaceFallsBack() {
+        assertEquals("local", new QualifiedName(null, "local").name());
+    }
+
+    @Test
+    void namespaceAndLocalNameEmptyNamespaceFallsBack() {
+        assertEquals("local", new QualifiedName("", "local").name());
+    }
+
+    @Test
+    void fromClassAnonymousFallsBackToName() {
+        Runnable anonymous = new Runnable() {
+            @Override
+            public void run() {
+            }
+        };
+        QualifiedName name = new QualifiedName(anonymous.getClass());
+        org.junit.jupiter.api.Assertions.assertNotNull(name.name());
+    }
+
+    @Test
+    void fullName() {
+        QualifiedName name = new QualifiedName("ns.local");
+        assertEquals("ns.local", name.fullName());
+    }
+
 }

@@ -1,74 +1,61 @@
-/*
- * Copyright (c) 2010-2026. Axon Framework
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package org.axonframework.common.configuration;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ComponentsTest {
 
-    static class TestComponent implements Component<String> {
-        @Override
-        public Component.Identifier<String> identifier() {
-            return new Component.Identifier<>(String.class, null);
-        }
+    @Test
+    void putAndRetrieveComponent() {
+        Components components = new Components();
+        Component<String> component = new InstantiatedComponentDefinition<>(
+                new Component.Identifier<>(String.class, "cmp"), "value");
 
-        @Override
-        public String resolve(Configuration configuration) {
-            return "value";
-        }
-
-        @Override
-        public boolean isInstantiated() {
-            return true;
-        }
-
-        @Override
-        public void initLifecycle(Configuration configuration, LifecycleRegistry lifecycleRegistry) {
-        }
-
-        @Override
-        public boolean isInitialized() {
-            return false;
-        }
-
-        @Override
-        public void describeTo(org.axonframework.common.infra.ComponentDescriptor descriptor) {
-        }
+        assertNullReturn(components.put(component));
+        assertEquals(component, components.get(new Component.Identifier<>(String.class, "cmp")).orElse(null));
     }
 
     @Test
-    void putAndGetReturnsRegisteredComponent() {
+    void containsMatchesByTypeWhenNameIsNull() {
         Components components = new Components();
-        TestComponent component = new TestComponent();
+        components.put(new InstantiatedComponentDefinition<>(
+                new Component.Identifier<>(String.class, "cmp"), "value"));
 
-        components.put(component);
-
-        assertTrue(components.get(new Component.Identifier<>(String.class, null)).isPresent());
-        assertEquals(component, components.get(new Component.Identifier<>(String.class, null)).get());
+        assertTrue(components.contains(new Component.Identifier<>(Object.class, null)));
+        assertFalse(components.contains(new Component.Identifier<>(Integer.class, "cmp")));
     }
 
     @Test
-    void containsReturnsTrueAfterPut() {
+    void computeIfAbsentCreatesComponent() {
         Components components = new Components();
-        components.put(new TestComponent());
+        Component.Identifier<String> identifier = new Component.Identifier<>(String.class, "lazy");
 
-        assertTrue(components.contains(new Component.Identifier<>(String.class, null)));
+        Component<String> created = components.computeIfAbsent(identifier, () ->
+                new InstantiatedComponentDefinition<>(identifier, "lazy-value"));
+
+        assertNotNull(created);
+        assertEquals(identifier, created.identifier());
+        assertEquals(created, components.get(identifier).orElse(null));
+    }
+
+    @Test
+    void ambiguousMatchThrows() {
+        Components components = new Components();
+        components.put(new InstantiatedComponentDefinition<>(new Component.Identifier<>(String.class, null), "one"));
+        components.put(new InstantiatedComponentDefinition<>(new Component.Identifier<>(Integer.class, null), 2));
+
+        assertThrows(AmbiguousComponentMatchException.class,
+                () -> components.get(new Component.Identifier<>(Object.class, null)));
+    }
+
+    private static void assertNullReturn(Object value) {
+        org.junit.jupiter.api.Assertions.assertNull(value);
     }
 }

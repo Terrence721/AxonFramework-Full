@@ -1,41 +1,52 @@
-/*
- * Copyright (c) 2010-2026. Axon Framework
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package org.axonframework.common.configuration;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Type;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ComponentIdentifierTest {
 
     @Test
-    void matchesReturnsTrueForSameTypeAndName() {
-        Component.Identifier<Object> left = new Component.Identifier<>(Object.class, "name");
-        Component.Identifier<String> right = new Component.Identifier<>(String.class, "name");
-
-        assertTrue(left.matches(right));
+    void validatesIdentifierInputs() {
+        assertThrows(NullPointerException.class,
+            () -> new org.axonframework.common.configuration.Component.Identifier<String>((Class<String>) null, "name"));
+        assertThrows(IllegalArgumentException.class,
+                () -> new org.axonframework.common.configuration.Component.Identifier<>(String.class, ""));
     }
 
     @Test
-    void matchesReturnsFalseForDifferentName() {
-        Component.Identifier<String> left = new Component.Identifier<>(String.class, "left");
-        Component.Identifier<String> right = new Component.Identifier<>(String.class, "right");
+    void matchesByRawTypeAndName() {
+        org.axonframework.common.configuration.Component.Identifier<Object> first = new org.axonframework.common.configuration.Component.Identifier<>(Object.class, "cmp");
+        org.axonframework.common.configuration.Component.Identifier<String> second = new org.axonframework.common.configuration.Component.Identifier<>(String.class, "cmp");
 
-        assertFalse(left.matches(right));
+        assertTrue(first.matches(second));
+        assertFalse(first.matches(new org.axonframework.common.configuration.Component.Identifier<>(String.class, "other")));
+    }
+
+    @Test
+    void matchesByTypeReference() {
+        org.axonframework.common.TypeReference<java.util.List<String>> typeRef =
+                new org.axonframework.common.TypeReference<java.util.List<String>>() {};
+        org.axonframework.common.configuration.Component.Identifier<java.util.List<String>> first =
+                new org.axonframework.common.configuration.Component.Identifier<java.util.List<String>>(typeRef, "name");
+        org.axonframework.common.configuration.Component.Identifier<java.util.List<String>> second = first;
+
+        assertTrue(first.matchesByTypeRef(second));
+        assertEquals(first.typeAsClass(), java.util.List.class);
+        assertTrue(first.matchesByTypeRef(first));
+    }
+
+    @Test
+    void exposesTypeAsClassAndEquality() {
+        org.axonframework.common.configuration.Component.Identifier<String> first = new org.axonframework.common.configuration.Component.Identifier<>(String.class, "cmp");
+        org.axonframework.common.configuration.Component.Identifier<String> second = new org.axonframework.common.configuration.Component.Identifier<>(String.class, "cmp");
+
+        assertEquals(first, second);
+        assertEquals(first.hashCode(), second.hashCode());
     }
 }
