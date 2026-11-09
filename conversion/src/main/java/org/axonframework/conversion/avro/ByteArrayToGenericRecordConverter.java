@@ -70,6 +70,9 @@ public class ByteArrayToGenericRecordConverter implements ContentTypeConverter<b
 
         long fingerprint = AvroUtil.fingerprint(input);
         Schema writerSchema = schemaStore.findByFingerprint(fingerprint);
+        if (writerSchema == null) {
+            throw AvroUtil.createExceptionNoSchemaFound(GenericRecord.class, fingerprint);
+        }
         GenericDatumReader<GenericRecord> reader =
                 new GenericDatumReader<>(writerSchema, writerSchema, AvroUtil.genericData);
 
