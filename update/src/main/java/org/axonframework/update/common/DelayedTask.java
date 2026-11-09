@@ -38,7 +38,7 @@ public class DelayedTask {
     private volatile boolean started = false;
     private volatile boolean finished = false;
     private volatile boolean failed = false;
-    private @Nullable Exception failureCause = null;
+    private volatile @Nullable Exception failureCause = null;
     private final Thread thread;
 
     private DelayedTask(Runnable runnable, long delay) {
@@ -53,11 +53,12 @@ public class DelayedTask {
                 runnable.run();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                failed = true;
+                // The cause is set before the failure is reported, so isFailed() implies a visible cause
                 failureCause = e;
+                failed = true;
             } catch (Exception e) {
-                failed = true;
                 failureCause = e;
+                failed = true;
             } finally {
                 finished = true;
             }
