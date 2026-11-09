@@ -48,10 +48,11 @@ public record Artifact(
         for (String[] prefixAndShortCode : SHORT_GROUP_ID_PREFIXES) {
             String prefix = prefixAndShortCode[0];
             String shortCode = prefixAndShortCode[1];
-            if (groupId.startsWith(prefix)) {
-                return groupId.length() == prefix.length()
-                        ? shortCode
-                        : shortCode + "." + groupId.substring(prefix.length() + 1);
+            if (groupId.equals(prefix)) {
+                return shortCode;
+            }
+            if (groupId.startsWith(prefix + ".")) {
+                return shortCode + "." + groupId.substring(prefix.length() + 1);
             }
         }
         return groupId;
