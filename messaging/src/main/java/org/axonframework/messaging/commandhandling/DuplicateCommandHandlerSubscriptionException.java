@@ -37,8 +37,8 @@ public class DuplicateCommandHandlerSubscriptionException extends RuntimeExcepti
                                                         CommandHandler initialHandler,
                                                         CommandHandler duplicateHandler) {
         this(String.format("Duplicate subscription for command [%s] detected. "
-                                   + "Registration of handler [%s]  conflicts with previously registered handler [%s].",
-                           name, initialHandler, duplicateHandler));
+                                   + "Registration of handler [%s] conflicts with previously registered handler [%s].",
+                           name, duplicateHandler, initialHandler));
     }
 
     /**

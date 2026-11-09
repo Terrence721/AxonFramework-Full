@@ -37,8 +37,8 @@ public class DuplicateQueryHandlerSubscriptionException extends RuntimeException
                                                       QueryHandler initialHandler,
                                                       QueryHandler duplicateHandler) {
         this(String.format("Duplicate subscription for query handler [%s] detected. "
-                                   + "Registration of handler [%s]  conflicts with previously registered handler [%s].",
-                           name, initialHandler, duplicateHandler));
+                                   + "Registration of handler [%s] conflicts with previously registered handler [%s].",
+                           name, duplicateHandler, initialHandler));
     }
 
     /**
