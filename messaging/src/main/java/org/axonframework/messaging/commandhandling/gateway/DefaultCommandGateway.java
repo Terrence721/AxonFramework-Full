@@ -71,7 +71,7 @@ public class DefaultCommandGateway implements CommandGateway {
     }
 
     @Override
-        public CommandResult send(Object command,
+    public CommandResult send(Object command,
                               Metadata metadata,
                               @Nullable ProcessingContext context) {
         return new FutureCommandResult(commandBus.dispatch(asCommandMessage(command, metadata), context));
@@ -104,8 +104,8 @@ public class DefaultCommandGateway implements CommandGateway {
         }
         return new GenericCommandMessage(
                 commandMessage,
-                commandMessage.routingKey().orElse(routingKeyResolver.getRoutingKey(commandMessage)),
-                commandMessage.priority().orElse(priorityCalculator.determinePriority(commandMessage))
+                commandMessage.routingKey().orElseGet(() -> routingKeyResolver.getRoutingKey(commandMessage)),
+                commandMessage.priority().orElseGet(() -> priorityCalculator.determinePriority(commandMessage))
         );
     }
 
