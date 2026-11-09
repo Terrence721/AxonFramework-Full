@@ -49,15 +49,8 @@ public class MonitoringEventDispatchInterceptor implements MessageDispatchInterc
     public MessageStream<?> interceptOnDispatch(EventMessage message,
                                                 @Nullable ProcessingContext context,
                                                 MessageDispatchInterceptorChain<EventMessage> interceptorChain) {
-        if (context != null && context.isStarted()) {
-            final var monitorCallback = messageMonitor.onMessageIngested(message);
-
-            context.onError(
-                    (ctx, phase, error) -> monitorCallback.reportFailure(error)
-            );
-            context.runOnAfterCommit(
-                    ctx -> monitorCallback.reportSuccess()
-            );
+        if (context != null) {
+            MonitoringSupport.monitorIfStarted(messageMonitor, message, context);
         }
         return interceptorChain.proceed(message, context);
     }

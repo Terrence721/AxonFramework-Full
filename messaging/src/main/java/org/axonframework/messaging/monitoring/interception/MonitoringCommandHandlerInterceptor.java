@@ -52,16 +52,7 @@ public class MonitoringCommandHandlerInterceptor implements MessageHandlerInterc
     public MessageStream<?> interceptOnHandle(CommandMessage message,
                                               ProcessingContext context,
                                               MessageHandlerInterceptorChain<CommandMessage> interceptorChain) {
-        if (context.isStarted()) {
-            final var monitorCallback = messageMonitor.onMessageIngested(message);
-
-            context.onError(
-                    (ctx, phase, error) -> monitorCallback.reportFailure(error)
-            );
-            context.runOnAfterCommit(
-                    ctx -> monitorCallback.reportSuccess()
-            );
-        }
+        MonitoringSupport.monitorIfStarted(messageMonitor, message, context);
         return interceptorChain.proceed(message, context);
     }
 }
