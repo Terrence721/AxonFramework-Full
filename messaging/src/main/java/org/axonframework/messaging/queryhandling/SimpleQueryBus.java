@@ -97,8 +97,14 @@ public class SimpleQueryBus implements QueryBus {
             logger.debug("Dispatching direct-query for query name [{}].",
                          query.type().name());
         }
+        QueryHandler handler;
         try {
-            MessageStream<QueryResponseMessage> responseStream = handle(query, handlerFor(query)).get();
+            handler = handlerFor(query);
+        } catch (NoHandlerForQueryException e) {
+            return MessageStream.failed(e);
+        }
+        try {
+            MessageStream<QueryResponseMessage> responseStream = handle(query, handler).join();
             return containsResponseOrUserException(responseStream)
                     ? responseStream
                     : MessageStream.empty().cast();
@@ -152,6 +158,9 @@ public class SimpleQueryBus implements QueryBus {
                                                                  @Nullable ProcessingContext context,
                                                                  int updateBufferSize) {
         MessageStream<SubscriptionQueryUpdateMessage> updates = subscribeToUpdates(query, updateBufferSize);
+        if (updates.isCompleted() && updates.error().isPresent()) {
+            return updates.cast();
+        }
         MessageStream<QueryResponseMessage> initialResult = query(query, context);
 
         return initialResult.concatWith(updates.cast());
@@ -160,14 +169,13 @@ public class SimpleQueryBus implements QueryBus {
     @Override
     public MessageStream<SubscriptionQueryUpdateMessage> subscribeToUpdates(QueryMessage query,
                                                                             int updateBufferSize) {
-        if (hasHandlerFor(query.identifier())) {
-            throw new SubscriptionQueryAlreadyRegisteredException(query.identifier());
-        }
         QueueMessageStream<SubscriptionQueryUpdateMessage> output = new QueueMessageStream<>(new ArrayBlockingQueue<>(
                 updateBufferSize));
-        QueueMessageStream<SubscriptionQueryUpdateMessage> previous = updateHandlers.put(query, output);
-        if (previous != null) {
-            previous.close();
+        synchronized (updateHandlers) {
+            if (hasHandlerFor(query.identifier())) {
+                return MessageStream.failed(new SubscriptionQueryAlreadyRegisteredException(query.identifier()));
+            }
+            updateHandlers.put(query, output);
         }
 
         return output.onClose(() -> updateHandlers.remove(query, output));
