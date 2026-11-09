@@ -298,8 +298,17 @@ class PessimisticLockFactoryTest {
 
         assertThrows(IllegalArgumentException.class, () -> builder.acquireAttempts(0));
         assertThrows(IllegalArgumentException.class, () -> builder.acquireAttempts(-2));
-        assertDoesNotThrow(() -> builder.acquireAttempts(-1));
         assertDoesNotThrow(() -> builder.acquireAttempts(1));
+    }
+
+    @Test
+    void builderRejectsMinusOneAcquireAttemptsWithClearMessage() {
+        PessimisticLockFactory.Builder builder = PessimisticLockFactory.builder();
+
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> builder.acquireAttempts(-1));
+
+        assertEquals("acquireAttempts needs to be a positive integer, but was '-1'", exception.getMessage());
     }
 
     @Test

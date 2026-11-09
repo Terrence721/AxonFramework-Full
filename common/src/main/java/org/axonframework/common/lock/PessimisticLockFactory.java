@@ -173,8 +173,8 @@ public class PessimisticLockFactory implements LockFactory {
          */
         public Builder acquireAttempts(int acquireAttempts) {
             Assert.isTrue(
-                    acquireAttempts > 0 || acquireAttempts == -1,
-                    () -> "acquireAttempts needs to be a positive integer or -1, but was '" + acquireAttempts + "'"
+                    acquireAttempts > 0,
+                    () -> "acquireAttempts needs to be a positive integer, but was '" + acquireAttempts + "'"
             );
             this.acquireAttempts = acquireAttempts;
             return this;
