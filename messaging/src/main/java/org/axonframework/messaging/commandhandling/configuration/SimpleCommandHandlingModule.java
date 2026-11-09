@@ -91,7 +91,7 @@ class SimpleCommandHandlingModule extends BaseModule<SimpleCommandHandlingModule
     public CommandHandlerPhase intercepted(
             ComponentBuilder<MessageHandlerInterceptor<? super CommandMessage>> interceptorBuilder
     ) {
-        interceptorBuilders.add(requireNonNull(interceptorBuilder, "interceptorBuilder must not be null"));
+        interceptorBuilders.add(requireNonNull(interceptorBuilder, "The interceptor builder cannot be null."));
         return this;
     }
 
