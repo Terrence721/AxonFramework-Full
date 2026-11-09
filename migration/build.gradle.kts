@@ -21,6 +21,10 @@ plugins {
 dependencies {
     implementation(platform("org.openrewrite.recipe:rewrite-recipe-bom:3.37.0"))
 
+    // rewrite-recipe-bom pins jackson-bom 2.21.5, affected by CVE-2026-89407 and other Jackson
+    // advisories fixed in 2.21.7+. Align with the 2.22.x line the rest of the build already resolves.
+    implementation(platform("com.fasterxml.jackson:jackson-bom:2.22.3"))
+
     implementation("org.openrewrite:rewrite-java")
     implementation("org.openrewrite:rewrite-kotlin")
     implementation("org.openrewrite:rewrite-maven")
