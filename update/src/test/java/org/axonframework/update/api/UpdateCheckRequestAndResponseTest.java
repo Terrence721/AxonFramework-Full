@@ -17,8 +17,6 @@ class UpdateCheckRequestAndResponseTest {
         );
 
         String query = request.toQueryString();
-        System.out.println("QUERY=" + query);
-        System.out.println("UA=" + request.toUserAgent());
         assertTrue(query.contains("os=Linux%3B"));
         assertEquals("ext.foo", new Artifact("org.axonframework.extensions.foo", "something", "1.0.0").shortGroupId());
         assertEquals("fw", new Artifact("org.axonframework", "something", "1.0.0").shortGroupId());
@@ -26,7 +24,6 @@ class UpdateCheckRequestAndResponseTest {
         assertEquals("com.example", new Artifact("com.example", "something", "1.0.0").shortGroupId());
 
         org.junit.jupiter.api.Assertions.assertTrue(request.toUserAgent().contains("Java 21"));
-//assertEquals...
     }
 
     @Test
