@@ -59,6 +59,6 @@ public abstract class DelegatingEventBus implements EventBus {
 
     @Override
     public void describeTo(ComponentDescriptor descriptor) {
-        delegate.describeTo(descriptor);
+        descriptor.describeWrapperOf(delegate);
     }
 }
