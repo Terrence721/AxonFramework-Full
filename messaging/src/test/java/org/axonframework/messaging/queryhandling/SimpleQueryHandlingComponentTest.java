@@ -69,6 +69,13 @@ class SimpleQueryHandlingComponentTest {
     }
 
     @Test
+    void handleRejectsANullQuery() {
+        NullPointerException error =
+                assertThrows(NullPointerException.class, () -> testSubject.handle(null, null));
+        assertEquals("The query message cannot be null.", error.getMessage());
+    }
+
+    @Test
     void handlesQueryWithSubscribedHandler() {
         QueryResponseMessage expected = response("handler");
         testSubject.subscribe(QUERY_NAME, (message, context) -> MessageStream.fromItems(expected));

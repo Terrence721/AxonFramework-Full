@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * A simple implementation of the {@link QueryHandlingComponent} interface, allowing for easy registration of
  * {@link QueryHandler QueryHandlers} and other {@link QueryHandlingComponent QueryHandlingComponents}.
@@ -85,7 +87,7 @@ public class SimpleQueryHandlingComponent implements
     @Override
     public MessageStream<QueryResponseMessage> handle(QueryMessage query,
                                                       ProcessingContext context) {
-        QualifiedName handlerName = query.type().qualifiedName();
+        QualifiedName handlerName = requireNonNull(query, "The query message cannot be null.").type().qualifiedName();
         Optional<QueryHandlingComponent> optionalSubHandler =
                 subComponents.stream()
                              .filter(subComponent -> subComponent.supportedQueries().contains(handlerName))
