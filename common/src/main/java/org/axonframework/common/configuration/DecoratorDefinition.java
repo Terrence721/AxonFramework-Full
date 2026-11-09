@@ -137,9 +137,9 @@ public sealed interface DecoratorDefinition<C, D extends C> permits DecoratorDef
      * @return This {@code DecoratorDefinition} for fluent API.
      */
     default DecoratorDefinition<C, D> onStart(int phase, Consumer<D> handler) {
+        Objects.requireNonNull(handler, "The start handler cannot be null.");
         return onStart(phase, (config, component) -> {
-            Objects.requireNonNull(handler, "The start handler cannot be null.")
-                   .accept(component);
+            handler.accept(component);
             return CompletableFuture.completedFuture(null);
         });
     }
@@ -167,9 +167,9 @@ public sealed interface DecoratorDefinition<C, D extends C> permits DecoratorDef
      * @return This {@code DecoratorDefinition} for fluent API.
      */
     default DecoratorDefinition<C, D> onShutdown(int phase, Consumer<D> handler) {
+        Objects.requireNonNull(handler, "The shutdown handler cannot be null.");
         return onShutdown(phase, (config, component) -> {
-            Objects.requireNonNull(handler, "The shutdown handler cannot be null.")
-                   .accept(component);
+            handler.accept(component);
             return CompletableFuture.completedFuture(null);
         });
     }
