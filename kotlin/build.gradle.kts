@@ -1,6 +1,6 @@
 plugins {
     id("axonframework.published-conventions")
-    id("org.jetbrains.kotlin.jvm") version "2.3.0"
+    id("org.jetbrains.kotlin.jvm") version "2.4.20"
 }
 
 dependencies {
@@ -9,13 +9,13 @@ dependencies {
     api(project(":eventsourcing"))
     implementation(project(":reactor"))
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.4.20")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.4.20")
     implementation("io.projectreactor:reactor-core:3.8.6")
 
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.0")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.4.20")
     testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
 }
 
