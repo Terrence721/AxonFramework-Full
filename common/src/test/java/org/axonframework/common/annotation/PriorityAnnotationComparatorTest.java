@@ -19,6 +19,8 @@ package org.axonframework.common.annotation;
 import org.axonframework.common.Priority;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PriorityAnnotationComparatorTest {
@@ -36,5 +38,28 @@ class PriorityAnnotationComparatorTest {
         PriorityAnnotationComparator<Object> comparator = PriorityAnnotationComparator.getInstance();
 
         assertTrue(comparator.compare(new HighPriority(), new LowPriority()) < 0);
+        assertTrue(comparator.compare(new LowPriority(), new HighPriority()) > 0);
+        assertEquals(0, comparator.compare(new HighPriority(), new HighPriority()));
+    }
+
+    @Test
+    void singletonInstance() {
+        PriorityAnnotationComparator<Object> first = PriorityAnnotationComparator.getInstance();
+        PriorityAnnotationComparator<Object> second = PriorityAnnotationComparator.getInstance();
+        assertSame(first, second);
+    }
+
+    @Test
+    void neutralPriorityWhenAnnotationAbsent() {
+        PriorityAnnotationComparator<Object> comparator = PriorityAnnotationComparator.getInstance();
+
+        assertEquals(0, comparator.compare(new Object(), new Object()));
+    }
+
+    @Test
+    void lowPriorityComesAfterNeutral() {
+        PriorityAnnotationComparator<Object> comparator = PriorityAnnotationComparator.getInstance();
+
+        assertTrue(comparator.compare(new Object(), new LowPriority()) < 0);
     }
 }

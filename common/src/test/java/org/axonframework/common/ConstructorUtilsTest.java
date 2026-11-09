@@ -1,49 +1,71 @@
-/*
- * Copyright (c) 2010-2026. Axon Framework
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package org.axonframework.common;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ConstructorUtilsTest {
 
-    static class ValueHolder {
+    static class NoArg {
+        public NoArg() {
+        }
+    }
+
+    static class WithArg {
         final String value;
 
-        ValueHolder() {
+        public WithArg() {
             this.value = "default";
         }
 
-        ValueHolder(String value) {
+        public WithArg(String value) {
             this.value = value;
         }
     }
 
-    @Test
-    void getConstructorFunctionWithZeroArgumentsCreatesDefaultInstance() {
-        assertEquals("default", ConstructorUtils.getConstructorFunctionWithZeroArguments(ValueHolder.class).get().value);
+    static class NoConstructor {
+        private NoConstructor() {
+        }
+    }
+
+    static class ArgOnlyMismatch {
+        public ArgOnlyMismatch(int value) {
+        }
     }
 
     @Test
-    void factoryForTypeWithOptionalArgumentUsesArgumentConstructor() {
-        assertEquals("provided",
-                ConstructorUtils.factoryForTypeWithOptionalArgument(ValueHolder.class, String.class)
-                        .apply("provided")
-                        .value);
+    void zeroArgConstructorFactory() {
+        Supplier<NoArg> factory = ConstructorUtils.getConstructorFunctionWithZeroArguments(NoArg.class);
+        assertNotNull(factory.get());
     }
+
+    @Test
+    void zeroArgConstructorFactoryThrowsWhenMissing() {
+        assertThrows(IllegalArgumentException.class,
+                () -> ConstructorUtils.getConstructorFunctionWithZeroArguments(Runnable.class));
+    }
+
+    @Test
+    void factoryWithOptionalArgumentUsesArgWhenProvided() {
+        Function<String, WithArg> factory = ConstructorUtils.factoryForTypeWithOptionalArgument(WithArg.class, String.class);
+        assertEquals("hello", factory.apply("hello").value);
+    }
+
+    @Test
+    void factoryWithOptionalArgumentFallsBackToZeroArg() {
+        Function<Object, WithArg> factory = ConstructorUtils.factoryForTypeWithOptionalArgument(WithArg.class, Integer.class);
+        assertEquals("default", factory.apply("ignored").value);
+    }
+
+    @Test
+    void factoryThrowsWhenNoSuitableConstructor() {
+        assertThrows(IllegalArgumentException.class,
+                () -> ConstructorUtils.factoryForTypeWithOptionalArgument(ArgOnlyMismatch.class, String.class));
+    }
+
 }

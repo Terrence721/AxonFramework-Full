@@ -21,7 +21,9 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -55,5 +57,30 @@ class CollectionUtilsTest {
         List<String> result = CollectionUtils.intersect(List.of("a", "b", "c"), List.of("c", "a"), ArrayList::new);
 
         assertEquals(List.of("a", "c"), result);
+    }
+
+    @Test
+    void mergeCombinesNonEmptyCollections() {
+        List<String> result = CollectionUtils.merge(List.of("a"), List.of("b"), ArrayList::new);
+
+        assertEquals(List.of("a", "b"), result);
+    }
+
+    @Test
+    void asCollectionHandlesNullStreamIterableAndObject() {
+        assertEquals(List.of(), CollectionUtils.asCollection(null));
+        assertEquals(List.of("a", "b"), CollectionUtils.asCollection(List.of("a", "b").stream()));
+        assertEquals(List.of("x"), CollectionUtils.asCollection("x"));
+    }
+
+    @Test
+    void mapWithAddsNewEntryToCopiedMap() {
+        Map<String, Integer> base = new HashMap<>();
+        base.put("a", 1);
+
+        Map<String, Integer> result = CollectionUtils.mapWith(base, "b", 2);
+
+        assertEquals(Map.of("a", 1, "b", 2), result);
+        assertEquals(Map.of("a", 1), base);
     }
 }
