@@ -201,12 +201,18 @@ public class DefaultQueryGateway implements QueryGateway {
     }
 
     private QueryMessage asQueryMessage(Object query) {
-        if (query instanceof QueryMessage queryMessage) {
-            return queryMessage;
+        QueryMessage queryMessage;
+        if (query instanceof QueryMessage message) {
+            queryMessage = message;
+        } else {
+            queryMessage = query instanceof Message message
+                    ? new GenericQueryMessage(message)
+                    : new GenericQueryMessage(resolveTypeFor(query), query);
         }
-        return query instanceof Message message
-                ? new GenericQueryMessage(message)
-                : new GenericQueryMessage(resolveTypeFor(query), query);
+        // A priority set on the query itself takes precedence over the calculated one.
+        return queryMessage.priority().isPresent()
+                ? queryMessage
+                : new GenericQueryMessage(queryMessage, priorityCalculator.determinePriority(queryMessage));
     }
 
     private QueryMessage asQueryMessage(Object query, Metadata metadata) {
@@ -222,5 +228,6 @@ public class DefaultQueryGateway implements QueryGateway {
         descriptor.describeProperty("queryBus", queryBus);
         descriptor.describeProperty("messageTypeResolver", messageTypeResolver);
         descriptor.describeProperty("priorityCalculator", priorityCalculator);
+        descriptor.describeProperty("converter", converter);
     }
 }
