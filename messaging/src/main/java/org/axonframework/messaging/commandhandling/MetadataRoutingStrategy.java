@@ -19,6 +19,8 @@ package org.axonframework.messaging.commandhandling;
 import org.axonframework.common.AxonConfigurationException;
 import org.axonframework.messaging.core.Metadata;
 
+import java.util.Objects;
+
 /**
  * A {@link RoutingStrategy} implementation that uses the value in the {@link Metadata} of a
  * {@link CommandMessage} assigned to a given key.
@@ -40,7 +42,7 @@ public class MetadataRoutingStrategy implements RoutingStrategy {
      * @param metadataKey The key in the {@link Metadata} to use for routing.
      */
     public MetadataRoutingStrategy(String metadataKey) {
-        this.metadataKey = metadataKey;
+        this.metadataKey = Objects.requireNonNull(metadataKey, "The metadataKey must not be null.");
     }
 
     @Override
