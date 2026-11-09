@@ -52,7 +52,7 @@ public class ConvertingCommandGateway implements CommandGateway {
     }
 
     @Override
-        public CommandResult send(Object command,
+    public CommandResult send(Object command,
                               Metadata metadata,
                               @Nullable ProcessingContext context) {
         return new ConvertingCommandResult(converter, delegate.send(command, metadata, context));
@@ -94,7 +94,8 @@ public class ConvertingCommandGateway implements CommandGateway {
             delegate.getResultMessage()
                     .whenComplete((message, e) -> {
                         if (e == null) {
-                            successHandler.accept(message.payloadAs(resultType, commandConverter), message);
+                            R payload = message == null ? null : message.payloadAs(resultType, commandConverter);
+                            successHandler.accept(payload, message);
                         }
                     });
             return this;
