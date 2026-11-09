@@ -30,7 +30,7 @@ import java.util.function.UnaryOperator;
  */
 public abstract class AbstractCacheAdapter<L> implements Cache {
 
-    private final ConcurrentMap<EntryListener, L> registeredAdapters =
+    private final ConcurrentMap<EntryListener, Registration> registeredListeners =
             new ConcurrentHashMap<>();
 
     /**
@@ -44,18 +44,16 @@ public abstract class AbstractCacheAdapter<L> implements Cache {
 
     @Override
     public Registration registerCacheEntryListener(EntryListener entryListener) {
-        L adapter = createListenerAdapter(entryListener);
-        Registration registration
-                = registeredAdapters.putIfAbsent(entryListener, adapter) == null ? doRegisterListener(adapter) : null;
+        // Registering the same listener again shares the existing underlying registration, so that cancelling
+        // through any of the returned handles deregisters it exactly once.
+        registeredListeners.computeIfAbsent(entryListener, listener -> doRegisterListener(createListenerAdapter(listener)));
         return () -> {
-            L removedAdapter = registeredAdapters.remove(entryListener);
-            if (removedAdapter != null) {
-                if (registration != null) {
-                    registration.cancel();
-                }
-                return true;
+            Registration underlying = registeredListeners.remove(entryListener);
+            if (underlying == null) {
+                return false;
             }
-            return false;
+            underlying.cancel();
+            return true;
         };
     }
 
