@@ -25,7 +25,9 @@ import org.axonframework.messaging.core.unitofwork.ProcessingContext;
 import org.axonframework.messaging.core.unitofwork.SimpleUnitOfWorkFactory;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -74,5 +76,23 @@ public final class TracingTestContexts {
                 .create()
                 .executeWithResult(context -> CompletableFuture.completedFuture(action.apply(context)))
                 .join();
+    }
+
+    /**
+     * Runs the given {@code action} inside a started unit of work that then fails with the given {@code error}, and
+     * returns once the unit of work completed.
+     */
+    public static void inFailingContext(Consumer<ProcessingContext> action, Throwable error) {
+        try {
+            new SimpleUnitOfWorkFactory(APPLICATION_CONTEXT)
+                    .create()
+                    .executeWithResult(context -> {
+                        action.accept(context);
+                        return CompletableFuture.failedFuture(error);
+                    })
+                    .join();
+        } catch (CompletionException expected) {
+            // The unit of work is meant to fail
+        }
     }
 }
