@@ -18,6 +18,7 @@ package org.axonframework.messaging.queryhandling.tracing;
 
 import org.axonframework.messaging.tracing.Span;
 import org.axonframework.messaging.tracing.SpanFactory;
+import org.axonframework.common.FutureUtils;
 import org.axonframework.common.annotation.Internal;
 import org.axonframework.common.infra.ComponentDescriptor;
 import org.axonframework.messaging.core.MessageStream;
@@ -32,6 +33,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -175,24 +177,49 @@ public final class TracingQueryBus implements QueryBus {
     public CompletableFuture<Void> emitUpdate(Predicate<QueryMessage> filter,
                                               Supplier<SubscriptionQueryUpdateMessage> updateSupplier,
                                               @Nullable ProcessingContext context) {
+        return emitUpdateAndCount(filter, updateSupplier, context).thenApply(FutureUtils::ignoreResult);
+    }
+
+    @Override
+    public CompletableFuture<OptionalInt> emitUpdateAndCount(Predicate<QueryMessage> filter,
+                                                             Supplier<SubscriptionQueryUpdateMessage> updateSupplier,
+                                                             @Nullable ProcessingContext context) {
         Span span = spanFactory.createInternalSpan(EMIT_UPDATE_SPAN, context);
-        return span.branchAsync(context, scoped -> delegate.emitUpdate(filter, updateSupplier, scoped));
+        return span.branchAsync(context, scoped -> delegate.emitUpdateAndCount(filter, updateSupplier, scoped));
     }
 
     @Override
     public CompletableFuture<Void> completeSubscriptions(Predicate<QueryMessage> filter,
                                                          @Nullable ProcessingContext context) {
+        return completeSubscriptionsAndCount(filter, context).thenApply(FutureUtils::ignoreResult);
+    }
+
+    @Override
+    public CompletableFuture<OptionalInt> completeSubscriptionsAndCount(Predicate<QueryMessage> filter,
+                                                                        @Nullable ProcessingContext context) {
         Span span = spanFactory.createInternalSpan(COMPLETE_SUBSCRIPTIONS_SPAN, context);
-        return span.branchAsync(context, scoped -> delegate.completeSubscriptions(filter, scoped));
+        return span.branchAsync(context, scoped -> delegate.completeSubscriptionsAndCount(filter, scoped));
     }
 
     @Override
     public CompletableFuture<Void> completeSubscriptionsExceptionally(Predicate<QueryMessage> filter,
                                                                       Throwable cause,
                                                                       @Nullable ProcessingContext context) {
+        return completeSubscriptionsExceptionallyAndCount(filter, cause, context)
+                .thenApply(FutureUtils::ignoreResult);
+    }
+
+    @Override
+    public CompletableFuture<OptionalInt> completeSubscriptionsExceptionallyAndCount(
+            Predicate<QueryMessage> filter,
+            Throwable cause,
+            @Nullable ProcessingContext context
+    ) {
         Span span = spanFactory.createInternalSpan(COMPLETE_SUBSCRIPTIONS_EXCEPTIONALLY_SPAN, context);
-        return span.branchAsync(context,
-                                scoped -> delegate.completeSubscriptionsExceptionally(filter, cause, scoped));
+        return span.branchAsync(
+                context,
+                scoped -> delegate.completeSubscriptionsExceptionallyAndCount(filter, cause, scoped)
+        );
     }
 
     @Override
