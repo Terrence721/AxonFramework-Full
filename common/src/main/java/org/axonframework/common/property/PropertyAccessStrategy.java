@@ -19,6 +19,7 @@ package org.axonframework.common.property;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -112,7 +113,8 @@ public abstract class PropertyAccessStrategy implements Comparable<PropertyAcces
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        // Must agree with equals(), which treats strategies of the same class and priority as equal
+        return Objects.hash(getClass().getName(), getPriority());
     }
 
     /**
