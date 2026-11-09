@@ -49,15 +49,8 @@ public class MonitoringSubscriptionQueryUpdateDispatchInterceptor implements Mes
     public MessageStream<?> interceptOnDispatch(SubscriptionQueryUpdateMessage message,
                                                 @Nullable ProcessingContext context,
                                                 MessageDispatchInterceptorChain<SubscriptionQueryUpdateMessage> interceptorChain) {
-        if (context != null && context.isStarted()) {
-            final var monitorCallback = messageMonitor.onMessageIngested(message);
-
-            context.onError(
-                    (ctx, phase, error) -> monitorCallback.reportFailure(error)
-            );
-            context.runOnAfterCommit(
-                    ctx -> monitorCallback.reportSuccess()
-            );
+        if (context != null) {
+            MonitoringSupport.monitorIfStarted(messageMonitor, message, context);
         }
         return interceptorChain.proceed(message, context);
     }
