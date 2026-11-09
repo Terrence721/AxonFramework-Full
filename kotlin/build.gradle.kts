@@ -20,6 +20,18 @@ dependencies {
 }
 
 
+// The Kotlin Gradle plugin's internal publishing-validation configuration pins Bouncy Castle 1.80,
+// which has known CVEs (Dependabot alerts #4, #6, #27, #28). Force the patched version; this
+// configuration is not used for compilation or the published artifacts.
+configurations.matching { it.name == "kotlinBouncyCastleConfiguration" }.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.bouncycastle") {
+            useVersion("1.85")
+            because("Fixes Bouncy Castle CVEs present in 1.80 (kotlinBouncyCastleConfiguration)")
+        }
+    }
+}
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25)
 }
