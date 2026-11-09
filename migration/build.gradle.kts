@@ -29,4 +29,13 @@ dependencies {
     implementation("org.openrewrite:rewrite-properties")
     implementation("org.openrewrite.recipe:rewrite-migrate-java")
     implementation("org.openrewrite.recipe:rewrite-spring")
+
+    // OpenRewrite's rewrite-core pulls in micrometer-core 1.9.17, which is affected by CVE-2026-40984
+    // (HTTP server instrumentation DoS; no 1.9.x fix exists). Align with the version used by
+    // :metrics-micrometer, which is unaffected.
+    constraints {
+        implementation("io.micrometer:micrometer-core:1.17.2") {
+            because("CVE-2026-40984: rewrite-core's transitive micrometer-core 1.9.17 is vulnerable")
+        }
+    }
 }
