@@ -103,7 +103,8 @@ public interface CommandResult {
         requireNonNull(successHandler, "The success handler must not be null.");
         getResultMessage().whenComplete((r, e) -> {
             if (e == null) {
-                successHandler.accept(resultType.cast(r.payload()), r);
+                Object payload = r == null ? null : r.payload();
+                successHandler.accept(resultType.cast(payload), r);
             }
         });
         return this;
