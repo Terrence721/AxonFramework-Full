@@ -132,6 +132,51 @@ class AbstractCacheAdapterTest {
         assertEquals(List.of("adapter-1", "adapter-2"), testSubject.registered);
     }
 
+    @Test
+    void registeringSameListenerTwiceRegistersUnderlyingOnlyOnce() {
+        Cache.EntryListener listener = new Cache.EntryListenerAdapter();
+
+        testSubject.registerCacheEntryListener(listener);
+        testSubject.registerCacheEntryListener(listener);
+
+        assertEquals(List.of("adapter-1"), testSubject.registered);
+    }
+
+    @Test
+    void cancellingDuplicateRegistrationFirstDeregistersUnderlyingExactlyOnce() {
+        Cache.EntryListener listener = new Cache.EntryListenerAdapter();
+        Registration first = testSubject.registerCacheEntryListener(listener);
+        Registration second = testSubject.registerCacheEntryListener(listener);
+
+        assertTrue(second.cancel());
+        assertFalse(first.cancel());
+
+        assertEquals(List.of("adapter-1"), testSubject.cancelled);
+    }
+
+    @Test
+    void cancellingOriginalRegistrationFirstDeregistersUnderlyingExactlyOnce() {
+        Cache.EntryListener listener = new Cache.EntryListenerAdapter();
+        Registration first = testSubject.registerCacheEntryListener(listener);
+        Registration second = testSubject.registerCacheEntryListener(listener);
+
+        assertTrue(first.cancel());
+        assertFalse(second.cancel());
+
+        assertEquals(List.of("adapter-1"), testSubject.cancelled);
+    }
+
+    @Test
+    void listenerCanBeRegisteredAgainAfterDuplicateRegistrationsWereCancelled() {
+        Cache.EntryListener listener = new Cache.EntryListenerAdapter();
+        testSubject.registerCacheEntryListener(listener);
+        testSubject.registerCacheEntryListener(listener).cancel();
+
+        testSubject.registerCacheEntryListener(listener);
+
+        assertEquals(List.of("adapter-1", "adapter-2"), testSubject.registered);
+    }
+
     private static final class FakeAdapter extends AbstractCacheAdapter<String> {
 
         private final Map<Object, Object> store = new ConcurrentHashMap<>();
