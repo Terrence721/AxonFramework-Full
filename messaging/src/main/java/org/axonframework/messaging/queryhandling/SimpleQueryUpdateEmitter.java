@@ -261,11 +261,9 @@ public class SimpleQueryUpdateEmitter implements QueryUpdateEmitter {
 
     private <Q> Predicate<QueryMessage> queryTypeFilter(Class<Q> queryType,
                                                         Predicate<? super Q> filter) {
-        return message -> {
-            QualifiedName queryName = messageTypeResolver.resolveOrThrow(queryType).qualifiedName();
-            return queryName.equals(message.type().qualifiedName())
-                    && filter.test(message.payloadAs(queryType, converter));
-        };
+        QualifiedName queryName = messageTypeResolver.resolveOrThrow(queryType).qualifiedName();
+        return message -> queryName.equals(message.type().qualifiedName())
+                && filter.test(message.payloadAs(queryType, converter));
     }
 
     @Override
