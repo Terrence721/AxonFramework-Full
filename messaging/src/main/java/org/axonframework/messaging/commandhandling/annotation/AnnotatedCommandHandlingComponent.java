@@ -79,6 +79,8 @@ public class AnnotatedCommandHandlingComponent<T> implements CommandHandlingComp
                                              MessageTypeResolver messageTypeResolver,
                                              MessageConverter converter) {
         this.target = requireNonNull(annotatedCommandHandler, "The Annotated Command Handler may not be null.");
+        this.messageTypeResolver = requireNonNull(messageTypeResolver, "The MessageTypeResolver may not be null.");
+        this.converter = requireNonNull(converter, "The MessageConverter may not be null.");
         this.handlingComponent = SimpleCommandHandlingComponent.create(
                 "AnnotatedCommandHandlingComponent[%s]".formatted(annotatedCommandHandler.getClass().getName())
         );
@@ -87,8 +89,6 @@ public class AnnotatedCommandHandlingComponent<T> implements CommandHandlingComp
         this.model = AnnotatedHandlerInspector.inspectType(
                 clazz, messageTypeResolver, parameterResolverFactory, handlerDefinition
         );
-        this.messageTypeResolver = requireNonNull(messageTypeResolver, "The MessageTypeResolver may not be null.");
-        this.converter = requireNonNull(converter, "The MessageConverter may not be null.");
 
         initializeHandlersBasedOnModel();
     }
