@@ -49,4 +49,41 @@ class BuilderUtilsTest {
     void assertStrictPositiveThrowsForZero() {
         assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertStrictPositive(0, "x"));
     }
+
+    @Test
+    void assertPositiveAllowsZeroAndThrowsForNegative() {
+        BuilderUtils.assertPositive(0, "x");
+        BuilderUtils.assertPositive(1L, "x");
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertPositive(-1, "x"));
+    }
+
+    @Test
+    void assertStrictPositiveAllowsPositiveLongAndThrowsForZero() {
+        BuilderUtils.assertStrictPositive(1L, "x");
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertStrictPositive(0L, "x"));
+    }
+
+    @Test
+    void assertNonNullReturnsValueAndThrowsWhenNull() {
+        BuilderUtils.assertNonNull("value", "x");
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonNull(null, "x"));
+    }
+
+    @Test
+    void assertThatPassesAndThrows() {
+        BuilderUtils.assertThat(1, value -> value > 0, "x");
+        assertThrows(AxonConfigurationException.class,
+                () -> BuilderUtils.assertThat(0, value -> value > 0, "x"));
+    }
+
+    @Test
+    void assertNonEmptyReturnsNoExceptionWhenPopulated() {
+        BuilderUtils.assertNonEmpty("value", "x");
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonEmpty(null, "x"));
+    }
+
+    @Test
+    void assertNonBlankThrowsForNull() {
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonBlank(null, "x"));
+    }
 }
