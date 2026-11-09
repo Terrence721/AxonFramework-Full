@@ -72,7 +72,16 @@ public final class TracingTestContexts {
      * completed.
      */
     public static <R> R inStartedContext(Function<ProcessingContext, R> action) {
-        return new SimpleUnitOfWorkFactory(APPLICATION_CONTEXT)
+        return inStartedContext(APPLICATION_CONTEXT, action);
+    }
+
+    /**
+     * Runs the given {@code action} inside a started unit of work that resolves components from the given
+     * {@code applicationContext}, and returns its result once the unit of work completed.
+     */
+    public static <R> R inStartedContext(ApplicationContext applicationContext,
+                                         Function<ProcessingContext, R> action) {
+        return new SimpleUnitOfWorkFactory(applicationContext)
                 .create()
                 .executeWithResult(context -> CompletableFuture.completedFuture(action.apply(context)))
                 .join();
