@@ -2,6 +2,9 @@
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.compile.nullAnalysis.mode": "automatic",
     "java.import.gradle.enabled": true,
+    "java.test.config": {
+        "vmArgs": ["-javaagent:${workspaceFolder}/build/mockito-agent/mockito-agent.jar"]
+    },
     "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx6G -Xms100m",
     "cSpell.words": [
         "axonframework",

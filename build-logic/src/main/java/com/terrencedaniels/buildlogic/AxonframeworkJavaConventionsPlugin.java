@@ -22,6 +22,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.quality.CheckstyleExtension;
+import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.testing.Test;
@@ -145,7 +146,22 @@ public class AxonframeworkJavaConventionsPlugin implements Plugin<Project> {
 
         dependencies.add("mockitoAgent", "org.mockito:mockito-core:5.23.0");
 
+        // IDE test runners ignore the test task's jvmArgs, so a copy of the agent at a fixed, version-independent
+        // path lets .vscode/settings.json (java.test.config) attach it too. Registered once on the root project.
+        Project root = project.getRootProject();
+        if (!root.getTasks().getNames().contains("copyMockitoAgent")) {
+            Configuration rootAgent = root.getConfigurations().detachedConfiguration(
+                    root.getDependencies().create("org.mockito:mockito-core:5.23.0"));
+            rootAgent.setTransitive(false);
+            root.getTasks().register("copyMockitoAgent", Copy.class, copy -> {
+                copy.from(rootAgent);
+                copy.into(root.getLayout().getBuildDirectory().dir("mockito-agent"));
+                copy.rename(name -> "mockito-agent.jar");
+            });
+        }
+
         project.getTasks().named("test", Test.class).configure(test -> {
+            test.dependsOn(root.getTasks().named("copyMockitoAgent"));
             test.useJUnitPlatform();
             test.systemProperty("java.awt.headless", "true");
             test.jvmArgs("-javaagent:" + mockitoAgent.getAsPath());
