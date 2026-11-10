@@ -371,7 +371,7 @@ public abstract class AbstractMessageStream<M extends Message> implements Messag
         }
 
         switch (initialFetchResult) {
-            case FetchResult.Value(Entry<M> ignored) -> throw new IllegalArgumentException("Value fetchResult not supported during initialization");
+            case FetchResult.Value(Entry<M> _) -> throw new IllegalArgumentException("Value fetchResult not supported during initialization");
             case FetchResult.Error(Throwable throwable) -> completeExceptionally(throwable);
             case FetchResult.Completed() -> complete();
             case FetchResult.NotReady() -> awaitingData = true;

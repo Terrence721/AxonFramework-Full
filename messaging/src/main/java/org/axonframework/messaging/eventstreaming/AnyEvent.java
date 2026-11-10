@@ -29,7 +29,7 @@ import java.util.Set;
  *
  * @since 5.0.0
  */
-final class AnyEvent implements EventCriteria, EventTypeRestrictableEventCriteria {
+final class AnyEvent implements EventTypeRestrictableEventCriteria {
 
     /**
      * Default instance of the {@link AnyEvent}.

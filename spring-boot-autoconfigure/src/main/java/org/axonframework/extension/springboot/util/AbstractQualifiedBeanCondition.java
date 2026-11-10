@@ -77,7 +77,7 @@ public abstract class AbstractQualifiedBeanCondition extends SpringBootCondition
             qualifierMatch = true;
         }
         String[] qualifiers = qualifier.split(",");
-        Class conditionalClass;
+        Class<?> conditionalClass;
         try {
             conditionalClass = Class.forName(beanType);
         } catch (ClassNotFoundException e) {

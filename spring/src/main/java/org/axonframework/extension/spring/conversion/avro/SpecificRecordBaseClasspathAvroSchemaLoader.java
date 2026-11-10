@@ -54,7 +54,7 @@ public class SpecificRecordBaseClasspathAvroSchemaLoader implements ClasspathAvr
     public List<Schema> load(List<String> packageNames) {
         return packageNames.stream()
                            .map(this::scan)
-                           .flatMap(List::stream)
+                           .flatMap(schemas -> schemas.stream())
                            .collect(Collectors.toList());
     }
 

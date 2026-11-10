@@ -295,8 +295,9 @@ public abstract class HandlerExecutionException extends AxonException {
             return Optional.empty();
         }
         if (type instanceof Class<?> clazz && clazz.isInstance(details)) {
-            //noinspection unchecked
-            return Optional.of((R) details);
+            @SuppressWarnings("unchecked")
+            R typedDetails = (R) details;
+            return Optional.of(typedDetails);
         }
         if (converter == null) {
             throw new ConversionException(

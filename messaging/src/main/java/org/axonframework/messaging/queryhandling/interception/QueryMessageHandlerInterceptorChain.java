@@ -74,10 +74,12 @@ public class QueryMessageHandlerInterceptorChain implements MessageHandlerInterc
     ) implements QueryHandler, MessageHandlerInterceptorChain<QueryMessage> {
 
         @Override
+        @SuppressWarnings("unchecked")
         public MessageStream<QueryResponseMessage> handle(QueryMessage query,
                                                           ProcessingContext context) {
-            // noinspection unchecked,rawtypes
-            return interceptor.interceptOnHandle(query, context, (MessageHandlerInterceptorChain) this);
+            MessageHandlerInterceptor<QueryMessage> queryInterceptor =
+                    (MessageHandlerInterceptor<QueryMessage>) interceptor;
+            return (MessageStream<QueryResponseMessage>) queryInterceptor.interceptOnHandle(query, context, this);
         }
 
         @Override

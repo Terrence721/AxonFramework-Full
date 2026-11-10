@@ -41,7 +41,6 @@ import org.axonframework.messaging.eventhandling.replay.ResetContext;
 import org.axonframework.messaging.eventhandling.replay.ResetHandler;
 import org.axonframework.messaging.core.sequencing.SequencingPolicy;
 
-import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
@@ -117,7 +116,7 @@ public class AnnotatedEventHandlingComponent<T> implements EventHandlingComponen
     private void registerHandler(MessageHandlingMember<? super T> handler) {
         Class<?> payloadType = handler.payloadType();
         QualifiedName qualifiedName = handler.unwrap(EventHandlingMember.class)
-                                             .map(EventHandlingMember::eventName)
+                                             .map(eventHandlingMember -> eventHandlingMember.eventName())
                                              // Filter empty Strings to  fall back to the MessageTypeResolver
                                              .filter(StringUtils::nonEmpty)
                                              .map(QualifiedName::new)
@@ -154,9 +153,12 @@ public class AnnotatedEventHandlingComponent<T> implements EventHandlingComponen
                 .orElse(interceptedHandler);
     }
 
-    private Optional<SequencingPolicy> whenCustomSequencingPolicyOn(MessageHandlingMember<? super T> handler) {
+    @SuppressWarnings("unchecked")
+    private Optional<SequencingPolicy<? super EventMessage>> whenCustomSequencingPolicyOn(
+            MessageHandlingMember<? super T> handler
+    ) {
         return handler.unwrap(MethodSequencingPolicyEventHandlerDefinition.SequencingPolicyEventMessageHandlingMember.class)
-                      .map(MethodSequencingPolicyEventHandlerDefinition.SequencingPolicyEventMessageHandlingMember::sequencingPolicy);
+                      .map(member -> member.sequencingPolicy());
     }
 
     @Override
@@ -221,7 +223,7 @@ public class AnnotatedEventHandlingComponent<T> implements EventHandlingComponen
         return model.getAllHandlers()
                     .values()
                     .stream()
-                    .flatMap(Collection::stream)
+                    .flatMap(handlers -> handlers.stream())
                     .anyMatch(AnnotatedEventHandlingComponent::supportsReplay);
     }
 

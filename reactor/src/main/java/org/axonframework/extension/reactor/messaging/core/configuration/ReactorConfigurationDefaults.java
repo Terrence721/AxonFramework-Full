@@ -94,9 +94,7 @@ public class ReactorConfigurationDefaults implements ConfigurationEnhancer {
     private ReactorQueryGateway defaultReactorQueryGateway(Configuration config) {
         return new DefaultReactorQueryGateway(
                 config.getComponent(QueryGateway.class),
-                config.getComponent(MessageTypeResolver.class),
-                config.getComponent(ReactorDispatchInterceptorRegistry.class)
-                      .queryInterceptors(config, ReactorQueryGateway.class, null)
+                config.getComponent(MessageTypeResolver.class)
         );
     }
 }

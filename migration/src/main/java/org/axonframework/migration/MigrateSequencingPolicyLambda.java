@@ -26,6 +26,7 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Rewrites single-argument {@code SequencingPolicy} lambdas to the AF5 two-argument shape with an
@@ -59,12 +60,12 @@ public class MigrateSequencingPolicyLambda extends Recipe {
     private static final String OPTIONAL_FQN = "java.util.Optional";
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Migrate SequencingPolicy lambdas to the AF5 two-arg, Optional-returning shape";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Rewrites single-argument `SequencingPolicy` lambdas (`e -> body`) to the AF5 shape "
                 + "`(e, ctx) -> Optional.ofNullable(body)`. The AF5 `SequencingPolicy.sequenceIdentifierFor` "
                 + "method takes both a message and a `ProcessingContext`, and returns `Optional<Object>` "
@@ -75,10 +76,10 @@ public class MigrateSequencingPolicyLambda extends Recipe {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
+    public @NonNull TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.Lambda visitLambda(J.Lambda lambda, ExecutionContext ctx) {
+            public J.@NonNull Lambda visitLambda(J.@NonNull Lambda lambda, @NonNull ExecutionContext ctx) {
                 J.Lambda l = super.visitLambda(lambda, ctx);
 
                 if (!isSequencingPolicy(l.getType())) {
@@ -110,12 +111,13 @@ public class MigrateSequencingPolicyLambda extends Recipe {
                 // contextSensitive() — required when templating a lambda. Without it,
                 // OpenRewrite cannot type-attribute the resulting lambda against the
                 // surrounding functional-interface target type.
-                return JavaTemplate.builder(template)
+                J.Lambda result = JavaTemplate.builder(template)
                         .contextSensitive()
                         .imports(OPTIONAL_FQN)
-                        .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
+                        .javaParser(JavaParser.fromJavaVersion())
                         .build()
                         .apply(getCursor(), l.getCoordinates().replace(), originalBody);
+                return result != null ? result : l;
             }
 
             private boolean isSequencingPolicy(JavaType type) {

@@ -44,7 +44,7 @@ public abstract class TrackingTokenUtils {
     public static TrackingToken lowerBound(Collection<@Nullable TrackingToken> tokens) {
         return tokens.stream()
                      .filter(Objects::nonNull)
-                     .reduce(TrackingToken::lowerBound)
+                     .reduce((left, right) -> left.lowerBound(right))
                      .orElse(TrackingToken.FIRST);
     }
 
@@ -59,7 +59,7 @@ public abstract class TrackingTokenUtils {
     public static TrackingToken upperBound(Collection<@Nullable TrackingToken> tokens) {
         return tokens.stream()
                      .filter(Objects::nonNull)
-                     .reduce(TrackingToken::upperBound)
+                     .reduce((left, right) -> left.upperBound(right))
                      .orElse(null);
     }
 

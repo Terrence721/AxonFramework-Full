@@ -91,9 +91,8 @@ public class InboundEventMessageChannelAdapter implements MessageHandler, Subscr
      *
      * @param message The message containing the event to publish
      */
-    @SuppressWarnings({"unchecked"})
     @Override
-    public void handleMessage(Message message) {
+    public void handleMessage(Message<?> message) {
         List<? extends EventMessage> messages = singletonList(transformMessage(message));
         for (BiFunction<List<? extends EventMessage>, ProcessingContext, CompletableFuture<?>> messageProcessor : messageProcessors) {
             messageProcessor.apply(messages, null);
@@ -107,7 +106,7 @@ public class InboundEventMessageChannelAdapter implements MessageHandler, Subscr
      * @param message the Spring message to convert to an event
      * @return an EventMessage from given Spring message
      */
-    protected EventMessage transformMessage(Message message) {
+    protected EventMessage transformMessage(Message<?> message) {
         return eventMessageConverter.convertFromInboundMessage(message);
     }
 }

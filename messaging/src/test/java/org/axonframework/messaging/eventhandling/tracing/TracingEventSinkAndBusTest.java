@@ -42,8 +42,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class TracingEventSinkAndBusTest {
 
-    private static final MessageType TYPE = new MessageType("test.event");
-
     private final RecordingSpanFactory spanFactory = new RecordingSpanFactory();
     private final SimpleEventBus delegate = new SimpleEventBus();
     private final List<EventMessage> received = new ArrayList<>();
@@ -106,7 +104,7 @@ class TracingEventSinkAndBusTest {
         sink.publish(null, List.of(first, second)).join();
 
         assertEquals(List.of(first.identifier(), second.identifier()),
-                     received.stream().map(EventMessage::identifier).toList());
+                     List.of(received.get(0).identifier(), received.get(1).identifier()));
     }
 
     @Test

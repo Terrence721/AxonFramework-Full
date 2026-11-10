@@ -266,8 +266,9 @@ public class AggregateBasedJpaEventStorageEngine implements EventStorageEngine {
                                                           .toList();
 
         return aggregateSources.stream()
-                               .map(AggregateSource::source)
-                               .reduce(MessageStream.empty().cast(), MessageStream::concatWith)
+                               .map(aggregateSource -> requireNonNull(aggregateSource).source())
+                               .reduce(MessageStream.empty().cast(),
+                                       (first, second) -> first.concatWith(second))
                                .onComplete(() -> endOfStreams.complete(null))
                                .concatWith(MessageStream.fromFuture(
                                        endOfStreams.thenApply(event -> TerminalEventMessage.INSTANCE),
@@ -332,10 +333,10 @@ public class AggregateBasedJpaEventStorageEngine implements EventStorageEngine {
     }
 
     private static ConsistencyMarker combineAggregateMarkers(Stream<AggregateSource> resultStream) {
-        return resultStream.map(AggregateSource::markerReference)
-                           .map(AtomicReference::get)
+        return resultStream.map(aggregateSource -> aggregateSource.markerReference())
+                           .map(markerReference -> markerReference.get())
                            .map(marker -> (ConsistencyMarker) marker)
-                           .reduce(ConsistencyMarker::upperBound)
+                           .reduce((a, b) -> Objects.requireNonNull(a).upperBound(Objects.requireNonNull(b)))
                            .orElseThrow();
     }
 

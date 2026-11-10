@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Calculates capacity by tracking, within the configured time window, the average message processing time
@@ -172,8 +173,7 @@ public class CapacityMonitor implements MessageMonitor<Message> {
                                                       Clock clock) {
         String key = meterNamePrefix + tags.stream()
                                            .map(tag -> tag.getKey() + tag.getValue())
-                                           .reduce(String::concat)
-                                           .orElse("");
+                                           .collect(Collectors.joining());
         timeWindowedDurationMeasurementsMap.putIfAbsent(key, new SlidingTimeWindowReservoir(window, timeUnit, clock));
         return timeWindowedDurationMeasurementsMap.get(key);
     }
@@ -212,7 +212,7 @@ public class CapacityMonitor implements MessageMonitor<Message> {
     }
 
     private double calculateCapacity(SlidingTimeWindowReservoir timeWindowedDurationMeasurements) {
-        long totalProcessTime = timeWindowedDurationMeasurements.getMeasurements().stream().reduce(0L, Long::sum);
+        long totalProcessTime = timeWindowedDurationMeasurements.getMeasurements().stream().mapToLong(value -> value).sum();
         return (double) totalProcessTime / timeUnit.toNanos(window);
     }
 }

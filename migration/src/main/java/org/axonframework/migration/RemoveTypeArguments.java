@@ -18,6 +18,7 @@ package org.axonframework.migration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
@@ -44,23 +45,25 @@ public class RemoveTypeArguments extends Recipe {
     @Option(displayName = "Fully-qualified type name",
             description = "The type whose type arguments should be stripped wherever it appears parameterized.",
             example = "org.axonframework.messaging.eventhandling.EventMessage")
-    private final String fullyQualifiedTypeName;
+    private final @NonNull String fullyQualifiedTypeName;
 
     @JsonCreator
-    public RemoveTypeArguments(@JsonProperty("fullyQualifiedTypeName") String fullyQualifiedTypeName) {
+    public RemoveTypeArguments(@JsonProperty("fullyQualifiedTypeName") @NonNull String fullyQualifiedTypeName) {
         this.fullyQualifiedTypeName = fullyQualifiedTypeName;
     }
 
-    public String getFullyQualifiedTypeName() {
+    public @NonNull String getFullyQualifiedTypeName() {
         return fullyQualifiedTypeName;
     }
 
     @Override
+    @NonNull
     public String getDisplayName() {
         return "Remove type arguments from a specific type";
     }
 
     @Override
+    @NonNull
     public String getDescription() {
         return "Removes the generic type arguments (`<...>`) from any usage of the configured "
                 + "fully-qualified type. Preserves the underlying type reference and its surrounding "
@@ -68,12 +71,14 @@ public class RemoveTypeArguments extends Recipe {
     }
 
     @Override
+    @NonNull
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.ParameterizedType visitParameterizedType(J.ParameterizedType type, ExecutionContext ctx) {
+            public J.@NonNull ParameterizedType visitParameterizedType(J.@NonNull ParameterizedType type, @NonNull ExecutionContext ctx) {
                 J.ParameterizedType pt = super.visitParameterizedType(type, ctx);
-                if (pt.getTypeParameters() == null || pt.getTypeParameters().isEmpty()) {
+                var typeParameters = pt.getTypeParameters();
+                if (typeParameters == null || typeParameters.isEmpty()) {
                     return pt;
                 }
                 if (TypeUtils.isOfClassType(pt.getClazz().getType(), fullyQualifiedTypeName)) {

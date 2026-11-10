@@ -25,16 +25,20 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TextComment;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.kotlin.KotlinTemplate;
 import org.openrewrite.kotlin.tree.K;
 import org.openrewrite.marker.Markers;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -54,7 +58,7 @@ import java.util.Map;
  *   <li><b>Edit</b> – for every {@code @EventSourced} annotation without a {@code tagKey} attribute,
  *       generates {@code @EventSourced(tagKey = "<EntitySimpleName>", idType = <ResolvedType>.class)}.
  *       If no {@code @AggregateIdentifier} field was discovered for the enclosing class, falls back
- *       to {@code Object.class} with a {@code TODO(axon4to5):} comment so the developer notices and
+ *       to {@code Object.class} with a migration reminder so the developer notices and
  *       supplies the correct type manually.</li>
  * </ol>
  * <p>
@@ -91,12 +95,12 @@ public class ConfigureEventSourcedAnnotation
     }
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Add explicit tagKey and idType to @EventSourced";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Adds explicit tagKey = \"<EntitySimpleName>\" and idType = <ResolvedType>.class to "
                 + "@EventSourced annotations that have no tagKey set. The tagKey is derived from "
                 + "the class simple name (matching the AF5 default). The idType is deduced from the "
@@ -106,33 +110,39 @@ public class ConfigureEventSourcedAnnotation
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(@NonNull ExecutionContext ctx) {
         return new Accumulator();
     }
 
     @Override
+    @NonNull
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVar,
-                                                                    ExecutionContext ctx) {
+            public J.@NonNull VariableDeclarations visitVariableDeclarations(J.@NonNull VariableDeclarations multiVar,
+                                                                             @NonNull ExecutionContext ctx) {
                 J.VariableDeclarations vd = super.visitVariableDeclarations(multiVar, ctx);
                 if (!hasAggregateIdentifier(vd)) {
                     return vd;
                 }
-                if (vd.getTypeExpression() == null) {
+                TypeTree typeExpression = vd.getTypeExpression();
+                if (typeExpression == null) {
                     return vd;
                 }
                 JavaType.FullyQualified fieldType =
-                        TypeUtils.asFullyQualified(vd.getTypeExpression().getType());
+                    TypeUtils.asFullyQualified(typeExpression.getType());
                 if (fieldType == null) {
                     return vd;
                 }
                 J.ClassDeclaration cd = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                if (cd == null || cd.getType() == null) {
+                if (cd == null) {
                     return vd;
                 }
-                acc.idTypesByClass.put(cd.getType().getFullyQualifiedName(),
+                JavaType.FullyQualified classType = cd.getType();
+                if (classType == null) {
+                    return vd;
+                }
+                acc.idTypesByClass.put(classType.getFullyQualifiedName(),
                                        fieldType.getFullyQualifiedName());
                 return vd;
             }
@@ -140,11 +150,11 @@ public class ConfigureEventSourcedAnnotation
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public @NonNull TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
         return new JavaIsoVisitor<>() {
 
             @Override
-            public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
+            public J.@NonNull Annotation visitAnnotation(J.@NonNull Annotation annotation, @NonNull ExecutionContext ctx) {
                 J.Annotation ann = super.visitAnnotation(annotation, ctx);
 
                 if (!isEventSourced(ann)) {
@@ -157,7 +167,7 @@ public class ConfigureEventSourcedAnnotation
                 // AF4 `@Aggregate(snapshotTriggerDefinition = "…")` survives the
                 // `ChangeType` rename as `@EventSourced(snapshotTriggerDefinition = "…")`,
                 // but AF5 `@EventSourced` has no such attribute. The replace below would
-                // silently drop it; capture the value so we can emit a TODO comment that
+                // silently drop it; capture the value so we can emit a migration reminder that
                 // preserves the intent for a human reviewer.
                 String snapshotTriggerSource = findArgumentSource(ann, "snapshotTriggerDefinition");
 
@@ -168,8 +178,9 @@ public class ConfigureEventSourcedAnnotation
 
                 String tagKey = cd.getSimpleName();
                 String idTypeFqn = null;
-                if (cd.getType() != null) {
-                    String classFqn = cd.getType().getFullyQualifiedName();
+                JavaType.FullyQualified classType = cd.getType();
+                if (classType != null) {
+                    String classFqn = classType.getFullyQualifiedName();
                     idTypeFqn = acc.idTypesByClass.get(classFqn);
                     if (idTypeFqn == null) {
                         // Fallback: consume the cross-recipe map populated by
@@ -203,10 +214,10 @@ public class ConfigureEventSourcedAnnotation
                     idTypeImport = idTypeFqn.startsWith("java.lang.") ? null : idTypeFqn;
                 }
 
-                String newAnnotationText = "@EventSourced(tagKey = \"" + tagKey
+                @NonNull String newAnnotationText = "@EventSourced(tagKey = \"" + tagKey
                         + "\", idType = " + idTypeExpr + ")";
 
-                J.Annotation result = kotlin
+                J.@NonNull Annotation result = kotlin
                         ? applyKotlinTemplate(newAnnotationText, idTypeImport, ann)
                         : applyJavaTemplate(newAnnotationText, idTypeImport, ann);
 
@@ -221,21 +232,26 @@ public class ConfigureEventSourcedAnnotation
                 return result;
             }
 
-            private J.Annotation applyJavaTemplate(String annotationText,
-                                                    @Nullable String idTypeImport,
-                                                    J.Annotation target) {
+            private J.@NonNull Annotation applyJavaTemplate(@NonNull String annotationText,
+                                                             @Nullable String idTypeImport,
+                                                             J.Annotation target) {
+                java.util.@NonNull List<java.nio.file.Path> runtimeClasspath =
+                        new java.util.ArrayList<java.nio.file.Path>(JavaParser.runtimeClasspath());
+                JavaParser.@NonNull Builder<? extends JavaParser, ?> parserBuilder =
+                        JavaParser.fromJavaVersion();
+                parserBuilder.classpath(runtimeClasspath);
                 JavaTemplate.Builder builder = JavaTemplate.builder(annotationText)
                         .imports(EVENT_SOURCED_AF5)
-                        .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()));
+                        .javaParser(parserBuilder);
                 if (idTypeImport != null) {
                     builder = builder.imports(idTypeImport);
                 }
                 return builder.build().apply(getCursor(), target.getCoordinates().replace());
             }
 
-            private J.Annotation applyKotlinTemplate(String annotationText,
-                                                      @Nullable String idTypeImport,
-                                                      J.Annotation target) {
+            private J.@NonNull Annotation applyKotlinTemplate(@NonNull String annotationText,
+                                                               @Nullable String idTypeImport,
+                                                               J.Annotation target) {
                 KotlinTemplate.Builder builder = KotlinTemplate.builder(annotationText)
                         .imports(EVENT_SOURCED_AF5);
                 if (idTypeImport != null) {
@@ -252,10 +268,11 @@ public class ConfigureEventSourcedAnnotation
      * literal {@code "baz"} (with quotes). Returns {@code null} when the attribute is absent.
      */
     private static @Nullable String findArgumentSource(J.Annotation ann, String name) {
-        if (ann.getArguments() == null) {
+        List<Expression> arguments = ann.getArguments();
+        if (arguments == null) {
             return null;
         }
-        for (J arg : ann.getArguments()) {
+        for (J arg : arguments) {
             if (!(arg instanceof J.Assignment)) {
                 continue;
             }
@@ -286,7 +303,7 @@ public class ConfigureEventSourcedAnnotation
      * a suffix of {@code "\n" + indent}, which terminates the comment line and re-establishes
      * the indent for the {@code @} symbol that follows.
      */
-    private static J.Annotation prependLineComment(J.Annotation ann, String text) {
+    private static J.@NonNull Annotation prependLineComment(J.Annotation ann, @NonNull String text) {
         Space prefix = ann.getPrefix();
         String leading = prefix.getWhitespace();
         // Indent is whatever sits after the last newline in the available whitespace context.
@@ -296,7 +313,7 @@ public class ConfigureEventSourcedAnnotation
         String indent = leading.contains("\n")
                 ? leading.substring(leading.lastIndexOf('\n') + 1)
                 : "";
-        String suffix = "\n" + indent;
+        @NonNull String suffix = "\n" + indent;
         TextComment todo = new TextComment(false, text, suffix, Markers.EMPTY);
         return ann.withPrefix(prefix.withComments(ListUtils.concat(prefix.getComments(), todo)));
     }
@@ -324,10 +341,11 @@ public class ConfigureEventSourcedAnnotation
     }
 
     private static boolean hasTagKey(J.Annotation ann) {
-        if (ann.getArguments() == null) {
+        List<Expression> arguments = ann.getArguments();
+        if (arguments == null) {
             return false;
         }
-        for (J arg : ann.getArguments()) {
+        for (J arg : arguments) {
             if (arg instanceof J.Assignment) {
                 J variable = ((J.Assignment) arg).getVariable();
                 if (variable instanceof J.Identifier

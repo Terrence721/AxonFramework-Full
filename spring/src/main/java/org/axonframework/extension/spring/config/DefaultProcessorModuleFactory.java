@@ -126,7 +126,7 @@ public class DefaultProcessorModuleFactory implements ProcessorModuleFactory {
 
             var settings = Optional.ofNullable(allSettings.get(processorName))
                                    .orElseGet(() -> allSettings.get(EventProcessorSettings.DEFAULT));
-            var processorMode = definitionFor(processorName).map(EventProcessorDefinition::mode)
+            var processorMode = definitionFor(processorName).map(definition -> definition.mode())
                                                             .orElse(settings.processorMode());
             EventProcessorModule module = switch (processorMode) {
                 case POOLED -> {

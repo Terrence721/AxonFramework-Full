@@ -58,7 +58,7 @@ public class DefaultReactorQueryGateway implements ReactorQueryGateway {
     public DefaultReactorQueryGateway(
             QueryGateway queryGateway,
             MessageTypeResolver messageTypeResolver,
-            List<ReactorMessageDispatchInterceptor<? super QueryMessage>> dispatchInterceptors
+            List<ReactorMessageDispatchInterceptor<QueryMessage>> dispatchInterceptors
     ) {
         this.delegate = Objects.requireNonNull(queryGateway, "QueryGateway may not be null");
         this.messageTypeResolver = Objects.requireNonNull(messageTypeResolver, "MessageTypeResolver may not be null");
@@ -136,16 +136,12 @@ public class DefaultReactorQueryGateway implements ReactorQueryGateway {
     }
 
     private static ReactorMessageDispatchInterceptorChain<QueryMessage> buildChain(
-            List<ReactorMessageDispatchInterceptor<? super QueryMessage>> interceptors
+            List<ReactorMessageDispatchInterceptor<QueryMessage>> interceptors
     ) {
         ReactorMessageDispatchInterceptorChain<QueryMessage> chain = (message, ctx) -> Mono.just(message);
         for (int i = interceptors.size() - 1; i >= 0; i--) {
-            // Safe cast: each interceptor in the list can handle QueryMessage,
-            // because they accept "QueryMessage or a supertype of QueryMessage".
-            //noinspection rawtypes,unchecked
-            var interceptor = (ReactorMessageDispatchInterceptor) interceptors.get(i);
+            ReactorMessageDispatchInterceptor<QueryMessage> interceptor = interceptors.get(i);
             var next = chain;
-            //noinspection unchecked
             chain = (message, ctx) -> interceptor.interceptOnDispatch(message, ctx, next);
         }
         return chain;

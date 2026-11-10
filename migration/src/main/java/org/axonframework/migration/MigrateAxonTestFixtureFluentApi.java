@@ -22,12 +22,12 @@ import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.kotlin.tree.K;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,12 +68,12 @@ import java.util.List;
 public class MigrateAxonTestFixtureFluentApi extends Recipe {
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Migrate AggregateTestFixture calls to the AxonTestFixture fluent API";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Rewrites the flat AF4 `fixture.given(...).when(...).expectEvents(...)` call shape to "
                 + "the AF5 fluent `fixture.given().events(...).when().command(...).then().events(...)` "
                 + "shape, including the leaf-method renames (`expectNoEvents` → `noEvents`, "
@@ -84,10 +84,10 @@ public class MigrateAxonTestFixtureFluentApi extends Recipe {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
+    public @NonNull TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            public J.@NonNull MethodInvocation visitMethodInvocation(J.@NonNull MethodInvocation method, @NonNull ExecutionContext ctx) {
                 J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
 
                 Expression select = mi.getSelect();
@@ -163,9 +163,9 @@ public class MigrateAxonTestFixtureFluentApi extends Recipe {
              * a single {@code .then()} (or {@code .given()}/{@code .when()}) shared by all peers
              * under it ({@code .then().noEvents().exception(X)}).
              */
-            private J.MethodInvocation wrapOrRename(J.MethodInvocation mi,
-                                                    String phase,
-                                                    String newName,
+            private J.@NonNull MethodInvocation wrapOrRename(J.MethodInvocation mi,
+                                                    @NonNull String phase,
+                                                    @NonNull String newName,
                                                     Expression select,
                                                     List<Expression> args) {
                 if (phaseAlreadyInChain(select, phase)) {
@@ -220,9 +220,9 @@ public class MigrateAxonTestFixtureFluentApi extends Recipe {
              * already sits on its own line and copy its indent. For pure single-line chains the
              * fallback yields {@link Space#EMPTY} and the result stays single-line.
              */
-            private J.MethodInvocation wrapWithPhase(J.MethodInvocation mi,
-                                                    String phase,
-                                                    String newName,
+            private J.@NonNull MethodInvocation wrapWithPhase(J.MethodInvocation mi,
+                                                    @NonNull String phase,
+                                                    @NonNull String newName,
                                                     Expression select,
                                                     List<Expression> args) {
                 StringBuilder template = new StringBuilder("#{any()}.")
@@ -259,8 +259,10 @@ public class MigrateAxonTestFixtureFluentApi extends Recipe {
                 //       otherwise inherits from the nearest enclosing chain MI that lives on its
                 //       own line. Empty fallback preserves true single-line chains.
                 //   - outer's name prefix = empty
-                Space dotBeforePhase = mi.getPadding().getSelect() != null
-                        ? mi.getPadding().getSelect().getAfter()
+                org.openrewrite.java.tree.JRightPadded<Expression> originalSelectPadding =
+                    mi.getPadding().getSelect();
+                Space dotBeforePhase = originalSelectPadding != null
+                    ? originalSelectPadding.getAfter()
                         : Space.EMPTY;
                 Space dotBeforeLeaf = chainIndent(mi, dotBeforePhase);
                 org.openrewrite.java.tree.JRightPadded<Expression> selectForPhase =
@@ -278,7 +280,7 @@ public class MigrateAxonTestFixtureFluentApi extends Recipe {
                         org.openrewrite.Tree.randomId(),
                         Space.EMPTY,
                         org.openrewrite.marker.Markers.EMPTY,
-                        java.util.Collections.emptyList(),
+                        new ArrayList<>(),
                         phaseSimpleName,
                         null,
                         null);
@@ -298,7 +300,7 @@ public class MigrateAxonTestFixtureFluentApi extends Recipe {
                         org.openrewrite.Tree.randomId(),
                         Space.EMPTY,
                         org.openrewrite.marker.Markers.EMPTY,
-                        java.util.Collections.emptyList(),
+                        new ArrayList<>(),
                         newName,
                         null,
                         null);
@@ -332,7 +334,7 @@ public class MigrateAxonTestFixtureFluentApi extends Recipe {
              * Falls back to {@link Space#EMPTY} for genuinely single-line chains so nothing is
              * forced onto a new line.
              */
-            private Space chainIndent(J.MethodInvocation mi, Space own) {
+            private @NonNull Space chainIndent(J.MethodInvocation mi, @NonNull Space own) {
                 if (containsNewline(own)) {
                     return own;
                 }
@@ -341,9 +343,8 @@ public class MigrateAxonTestFixtureFluentApi extends Recipe {
                     Object value = c.getValue();
                     if (value instanceof J.MethodInvocation) {
                         J.MethodInvocation enclosing = (J.MethodInvocation) value;
-                        Space candidate = enclosing.getPadding().getSelect() != null
-                                ? enclosing.getPadding().getSelect().getAfter()
-                                : Space.EMPTY;
+                        JRightPadded<Expression> select = enclosing.getPadding().getSelect();
+                        Space candidate = select != null ? select.getAfter() : Space.EMPTY;
                         if (containsNewline(candidate)) {
                             return candidate;
                         }

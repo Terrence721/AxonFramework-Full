@@ -47,17 +47,17 @@ public final class PassThroughConverter implements Converter {
 
     @Override
     @Nullable
+    @SuppressWarnings("unchecked")
     public <T> T convert(@Nullable Object input, Type targetType) {
         if (input == null) {
             return null;
         }
         Class<?> sourceType = input.getClass();
         if (sourceType.equals(targetType)) {
-            //noinspection unchecked
             return (T) input;
         }
         throw new IllegalArgumentException(
-                "This Converter only supports same-type conversion, while the unidentical source type ["
+                "This Converter only supports same-type conversion, while the differing source type ["
                         + sourceType + "] and target type [" + targetType.getTypeName()
                         + "] have been given."
         );

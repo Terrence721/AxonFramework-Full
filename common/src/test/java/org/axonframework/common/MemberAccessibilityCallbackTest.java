@@ -18,6 +18,6 @@ class MemberAccessibilityCallbackTest {
         Method method = MemberAccessibilityCallbackTest.class.getDeclaredMethod("hidden");
 
         assertNull(new MemberAccessibilityCallback(method).run());
-        assertTrue(method.canAccess(null) || method.isAccessible());
+        assertTrue(method.canAccess(null));
     }
 }

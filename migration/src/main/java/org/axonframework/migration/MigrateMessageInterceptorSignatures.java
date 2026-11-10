@@ -33,8 +33,10 @@ import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -62,8 +64,8 @@ import java.util.stream.Collectors;
  *       {@code interceptorChain} / {@code messages} parameters become compile errors, which is
  *       exactly the desired feedback: every line that needs review surfaces at compile time
  *       rather than via a silent rewrite.</li>
- *   <li><b>Class-level TODO</b> — a {@code // TODO(axon4to5):} comment is prepended to the class with a
- *       pointer to {@code docs/reference-guide/modules/migration/pages/paths/interceptors.adoc}
+ *   <li><b>Class-level migration note</b> — a review comment is prepended to the class with a
+ *       pointer to the interceptor migration documentation page
  *       so a follow-up pass (LLM or human) knows where to look.</li>
  * </ul>
  *
@@ -72,7 +74,7 @@ import java.util.stream.Collectors;
  * is raw (no type argument), the new parameter falls back to {@code Message}.
  *
  * <p>Idempotent — methods already on the AF5 names ({@code interceptOnHandle} /
- * {@code interceptOnDispatch}) are skipped, and the class-level TODO is only added once.
+ * {@code interceptOnDispatch}) are skipped, and the class-level migration note is only added once.
  *
  * <p><b>Must run after</b> {@code Axon4ToAxon5Messaging}'s {@code ChangeType} steps so that the
  * implements clause already references the AF5 FQNs.
@@ -106,11 +108,13 @@ public class MigrateMessageInterceptorSignatures extends Recipe {
     private static final String IDEMPOTENCY_MARKER = "TODO(axon4to5): migrate the body of this interceptor";
 
     @Override
+    @NonNull
     public String getDisplayName() {
         return "Migrate MessageHandlerInterceptor / MessageDispatchInterceptor signatures to AF5";
     }
 
     @Override
+    @NonNull
     public String getDescription() {
         return "Rewrites the method signatures of `MessageHandlerInterceptor` and "
                 + "`MessageDispatchInterceptor` implementations to their AF5 shape: "
@@ -125,11 +129,12 @@ public class MigrateMessageInterceptorSignatures extends Recipe {
     }
 
     @Override
+    @NonNull
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
+            public J.@NonNull ClassDeclaration visitClassDeclaration(J.@NonNull ClassDeclaration cd, @NonNull ExecutionContext ctx) {
                 J.ClassDeclaration classDecl = super.visitClassDeclaration(cd, ctx);
                 InterceptorRole role = roleOf(classDecl);
                 if (role == null) {
@@ -137,13 +142,13 @@ public class MigrateMessageInterceptorSignatures extends Recipe {
                 }
                 String messageType = messageTypeArg(classDecl, role);
 
-                // Two passes: rewrite the matching `handle` method, then add the class-level TODO.
+                // Two passes: rewrite the matching `handle` method, then add the class-level migration note.
                 // Both are guarded by idempotency checks so re-running the recipe is a no-op.
                 J.ClassDeclaration rewritten = (J.ClassDeclaration) new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration md,
-                                                                       ExecutionContext c) {
-                        J.MethodDeclaration method = super.visitMethodDeclaration(md, c);
+                    public J.@NonNull MethodDeclaration visitMethodDeclaration(J.@NonNull MethodDeclaration md,
+                                                                                @NonNull ExecutionContext c) {
+                        J.@NonNull MethodDeclaration method = super.visitMethodDeclaration(md, c);
                         if (!"handle".equals(method.getSimpleName())) {
                             return method;
                         }
@@ -159,13 +164,16 @@ public class MigrateMessageInterceptorSignatures extends Recipe {
                     }
                 }.visit(classDecl, ctx, getCursor().getParentOrThrow());
 
+                if (rewritten == null) {
+                    return classDecl;
+                }
                 if (rewritten == classDecl || alreadyMarked(rewritten)) {
                     return rewritten;
                 }
                 return prependTodoComment(rewritten);
             }
 
-            private J.MethodDeclaration rewriteHandlerSignature(J.MethodDeclaration method,
+            private J.@NonNull MethodDeclaration rewriteHandlerSignature(J.@NonNull MethodDeclaration method,
                                                                   String messageType) {
                 String paramsTemplate = messageType + " message, ProcessingContext context, "
                         + "MessageHandlerInterceptorChain<" + messageType + "> chain";
@@ -175,7 +183,7 @@ public class MigrateMessageInterceptorSignatures extends Recipe {
                                         AF5_HANDLER_CHAIN);
             }
 
-            private J.MethodDeclaration rewriteDispatchSignature(J.MethodDeclaration method,
+            private J.@NonNull MethodDeclaration rewriteDispatchSignature(J.@NonNull MethodDeclaration method,
                                                                    String messageType) {
                 String paramsTemplate = messageType + " message, ProcessingContext context, "
                         + "MessageDispatchInterceptorChain<" + messageType + "> chain";
@@ -185,10 +193,10 @@ public class MigrateMessageInterceptorSignatures extends Recipe {
                                         AF5_DISPATCH_CHAIN);
             }
 
-            private J.MethodDeclaration rewriteSignature(J.MethodDeclaration method,
+            private J.@NonNull MethodDeclaration rewriteSignature(J.@NonNull MethodDeclaration method,
                                                           String paramsTemplate,
                                                           String newName,
-                                                          String chainFqn) {
+                                                          @NonNull String chainFqn) {
                 // Build a stub class containing the desired method signature with an empty body,
                 // parse it, and graft the stub's return-type / name / parameter LST nodes onto
                 // the original method (preserving the original body, modifiers, and leading
@@ -248,12 +256,20 @@ public class MigrateMessageInterceptorSignatures extends Recipe {
                         + "class _Stub {\n"
                         + "    MessageStream<?> " + newName + "(" + paramsTemplate + ") { }\n"
                         + "}\n";
-                List<SourceFile> parsed = JavaParser.fromJavaVersion()
-                        .classpath(JavaParser.runtimeClasspath())
-                        .build()
-                        .parseInputs(java.util.Collections.singletonList(
-                                Parser.Input.fromString(java.nio.file.Paths.get("_Stub.java"), src)),
-                                java.nio.file.Paths.get("."),
+                JavaParser.Builder<?, ?> builder = JavaParser.fromJavaVersion();
+                builder.classpath(JavaParser.runtimeClasspath());
+                JavaParser parser = Objects.requireNonNull(builder.build());
+                java.nio.file.Path stubPath = Objects.requireNonNull(
+                    java.nio.file.Paths.get("_Stub.java"));
+                java.nio.file.Path relativeTo = Objects.requireNonNull(java.nio.file.Paths.get("."));
+                @SuppressWarnings("null")
+                Parser.Input stubInput = Parser.Input.fromString(stubPath, src);
+                Iterable<Parser.Input> inputs = Objects.requireNonNull(
+                        java.util.Collections.<Parser.Input>singletonList(stubInput));
+                @SuppressWarnings("null")
+                List<SourceFile> parsed = Objects.requireNonNull(parser)
+                        .parseInputs(inputs,
+                                relativeTo,
                                 new org.openrewrite.InMemoryExecutionContext())
                         .collect(Collectors.toList());
                 if (parsed.isEmpty() || !(parsed.get(0) instanceof J.CompilationUnit)) {
@@ -314,6 +330,7 @@ public class MigrateMessageInterceptorSignatures extends Recipe {
              * {@code implements MessageHandlerInterceptor<M>} clause. Falls back to {@code Message}
              * when the implements clause is raw or the argument has no resolvable FQN.
              */
+            @SuppressWarnings("null")
             private String messageTypeArg(J.ClassDeclaration classDecl, InterceptorRole role) {
                 List<TypeTree> impls = classDecl.getImplements();
                 if (impls == null) {
@@ -351,12 +368,11 @@ public class MigrateMessageInterceptorSignatures extends Recipe {
             }
 
             /**
-             * Prepends the TODO line comment to the class declaration's prefix. Mirrors the layout
-             * convention used by {@link ConfigureEventSourcedAnnotation}'s
-             * {@code prependLineComment}: the comment carries a trailing newline-plus-indent so the
-             * class keyword that follows keeps its original indentation.
+             * Prepends the migration note to the class declaration's prefix. The comment carries
+             * a trailing newline-plus-indent so the class keyword that follows keeps its original
+             * indentation.
              */
-            private J.ClassDeclaration prependTodoComment(J.ClassDeclaration classDecl) {
+            private J.@NonNull ClassDeclaration prependTodoComment(J.@NonNull ClassDeclaration classDecl) {
                 Space prefix = classDecl.getPrefix();
                 String leading = prefix.getWhitespace();
                 String indent = leading.contains("\n")

@@ -3,7 +3,6 @@ package org.axonframework.extension.spring;
 import java.util.Map;
 import tools.jackson.databind.ObjectMapper;
 
-import org.axonframework.messaging.core.GenericMessage;
 import org.axonframework.messaging.core.MessageType;
 import org.axonframework.messaging.eventhandling.GenericEventMessage;
 import org.axonframework.extension.spring.data.JacksonPageDeserializer;
@@ -22,7 +21,7 @@ class SpringMessagingAndDataTest {
         org.axonframework.messaging.eventhandling.EventMessage axon =
                 new GenericEventMessage(new MessageType("example", "Event", MessageType.DEFAULT_VERSION), "payload", Map.of("key", "value"));
 
-        org.springframework.messaging.Message outbound = converter.convertToOutboundMessage(axon);
+        org.springframework.messaging.Message<?> outbound = converter.convertToOutboundMessage(axon);
 
         assertNotNull(outbound);
         assertEquals(axon.payload(), outbound.getPayload());

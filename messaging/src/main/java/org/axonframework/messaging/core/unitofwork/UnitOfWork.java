@@ -24,7 +24,6 @@ import org.axonframework.messaging.core.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
@@ -203,7 +202,7 @@ public class UnitOfWork implements ProcessingLifecycle {
         private final AtomicReference<Phase> currentPhase = new AtomicReference<>(null);
 
         private final ConcurrentNavigableMap<Phase, Queue<Function<ProcessingContext, CompletableFuture<?>>>> phaseActions =
-                new ConcurrentSkipListMap<>(Comparator.comparingInt(Phase::order));
+            new ConcurrentSkipListMap<>((phase1, phase2) -> Integer.compare(phase1.order(), phase2.order()));
         private final Queue<Consumer<ProcessingContext>> completeHandlers = new ConcurrentLinkedQueue<>();
         private final Queue<ErrorHandler> errorHandlers = new ConcurrentLinkedQueue<>();
         private final AtomicReference<@Nullable CauseAndPhase> errorCause = new AtomicReference<>();
@@ -518,8 +517,8 @@ public class UnitOfWork implements ProcessingLifecycle {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public <T> T getResource(ResourceKey<T> key) {
-            //noinspection unchecked
             return (T) resources.get(key);
         }
 
@@ -529,36 +528,36 @@ public class UnitOfWork implements ProcessingLifecycle {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public <T> T putResource(ResourceKey<T> key,
                                  T resource) {
-            //noinspection unchecked
             return (T) resources.put(key, resource);
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public <T> T updateResource(ResourceKey<T> key,
                                     UnaryOperator<T> resourceUpdater) {
-            //noinspection unchecked
             return (T) resources.compute(key, (k, v) -> resourceUpdater.apply((T) v));
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public <T> T putResourceIfAbsent(ResourceKey<T> key,
                                          T resource) {
-            //noinspection unchecked
             return (T) resources.putIfAbsent(key, resource);
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public <T> T computeResourceIfAbsent(ResourceKey<T> key,
                                              Supplier<T> resourceSupplier) {
-            //noinspection unchecked
             return (T) resources.computeIfAbsent(key, t -> resourceSupplier.get());
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public <T> T removeResource(ResourceKey<T> key) {
-            //noinspection unchecked
             return (T) resources.remove(key);
         }
 

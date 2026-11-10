@@ -23,13 +23,11 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 class ClockUtilsTest {
 
     @Test
     void setAndResetGlobalClock() {
-        Clock original = ClockUtils.get();
         try {
             Clock fixed = Clock.fixed(Instant.parse("2024-01-01T00:00:00Z"), ZoneOffset.UTC);
             ClockUtils.set(fixed);

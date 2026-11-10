@@ -17,7 +17,6 @@
 package org.axonframework.conversion.jackson;
 
 import org.junit.jupiter.api.Test;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 

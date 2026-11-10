@@ -58,8 +58,8 @@ public class DelegatingMessageConverter implements MessageConverter {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <M extends Message> M convertMessage(M message, Type targetType) {
-        //noinspection unchecked
         return (M) message.withConvertedPayload(targetType, delegate);
     }
 

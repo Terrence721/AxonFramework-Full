@@ -52,7 +52,7 @@ public class SequencingEventHandlingComponent extends DelegatingEventHandlingCom
 
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final Context.ResourceKey<Map<Object, CompletableFuture<?>>> sequencedInvocationsKey =
+        private final Context.ResourceKey<Map<Object, CompletableFuture<MessageStream.Entry<Message>>>> sequencedInvocationsKey =
             Context.ResourceKey.withLabel("sequencedInvocations");
 
     /**
@@ -71,11 +71,10 @@ public class SequencingEventHandlingComponent extends DelegatingEventHandlingCom
                                                ProcessingContext context) {
         Objects.requireNonNull(event, "Event may not be null");
         Objects.requireNonNull(context, "ProcessingContext may not be null");
-        Map<Object, CompletableFuture<?>> invocationsBySequenceIdentifier =
+        Map<Object, CompletableFuture<MessageStream.Entry<Message>>> invocationsBySequenceIdentifier =
                 context.computeResourceIfAbsent(sequencedInvocationsKey, ConcurrentHashMap::new);
 
-        //noinspection unchecked
-        CompletableFuture<Message> resultFuture = (CompletableFuture<Message>) invocationsBySequenceIdentifier.compute(
+        CompletableFuture<MessageStream.Entry<Message>> resultFuture = invocationsBySequenceIdentifier.compute(
                 sequenceIdentifierFor(event, context),
                 (sequenceIdentifier, previousInvocation) -> chainedSequenceInvocations(
                         sequenceIdentifier,
@@ -83,12 +82,13 @@ public class SequencingEventHandlingComponent extends DelegatingEventHandlingCom
                         event,
                         context
                 ));
-        return MessageStream.fromFuture(resultFuture).ignoreEntries();
+        CompletableFuture<Message> messageFuture = resultFuture.thenApply(entry -> entry == null ? null : entry.message());
+        return MessageStream.<Message>fromFuture(messageFuture).ignoreEntries();
     }
 
-    private CompletableFuture<?> chainedSequenceInvocations(
+    private CompletableFuture<MessageStream.Entry<Message>> chainedSequenceInvocations(
             Object sequenceIdentifier,
-            CompletableFuture<?> previousInvocation,
+            CompletableFuture<MessageStream.Entry<Message>> previousInvocation,
             EventMessage event,
             ProcessingContext context
     ) {
@@ -101,9 +101,7 @@ public class SequencingEventHandlingComponent extends DelegatingEventHandlingCom
                     "Event [{}] | Previous invocation found for sequence identifier [{}]. Chaining the current event handling.",
                     event,
                     sequenceIdentifier);
-            return previousInvocation.thenCompose(
-                    (r) -> delegate.handle(event, context).asCompletableFuture()
-            );
+            return previousInvocation.thenCompose((r) -> delegate.handle(event, context).asCompletableFuture());
         }
     }
 }

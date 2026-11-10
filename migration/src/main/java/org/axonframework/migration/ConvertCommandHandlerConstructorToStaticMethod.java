@@ -27,9 +27,9 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -72,23 +72,23 @@ public class ConvertCommandHandlerConstructorToStaticMethod extends Recipe {
     private static final String NEW_METHOD_NAME = "handle";
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Convert @CommandHandler constructors to static handle methods";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Rewrites Axon Framework 4 `@CommandHandler` constructors into `public static "
                 + "void handle(...)` methods, matching the AF5 contract where `@CommandHandler` "
                 + "no longer targets constructors. Parameter list and method body are preserved.";
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
+    public @NonNull TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<>() {
 
             @Override
-            public boolean isAcceptable(SourceFile sourceFile, ExecutionContext ctx) {
+            public boolean isAcceptable(@NonNull SourceFile sourceFile, @NonNull ExecutionContext ctx) {
                 // Java-only. Kotlin sources need a different output shape (companion object +
                 // @JvmStatic — there is no `static` modifier in Kotlin) and are handled by the
                 // dedicated ConvertCommandHandlerConstructorToCompanionObject recipe.
@@ -96,8 +96,8 @@ public class ConvertCommandHandlerConstructorToStaticMethod extends Recipe {
             }
 
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method,
-                                                              ExecutionContext ctx) {
+            public J.@NonNull MethodDeclaration visitMethodDeclaration(J.@NonNull MethodDeclaration method,
+                                                                         @NonNull ExecutionContext ctx) {
                 J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
                 if (!m.isConstructor() || !hasCommandHandlerAnnotation(m)) {
                     return m;
@@ -120,7 +120,7 @@ public class ConvertCommandHandlerConstructorToStaticMethod extends Recipe {
                 return false;
             }
 
-            private J.MethodDeclaration rewriteToStaticHandleMethod(J.MethodDeclaration m) {
+            private J.@NonNull MethodDeclaration rewriteToStaticHandleMethod(J.MethodDeclaration m) {
                 // Insert `static` after the existing modifiers (typically right after `public`).
                 List<J.Modifier> modifiers = new ArrayList<>(m.getModifiers());
                 boolean alreadyStatic = false;
@@ -137,7 +137,7 @@ public class ConvertCommandHandlerConstructorToStaticMethod extends Recipe {
                             Markers.EMPTY,
                             null,
                             J.Modifier.Type.Static,
-                            Collections.emptyList()));
+                            new ArrayList<>()));
                 }
 
                 // The constructor's name is the class name and carries the spacing that the
@@ -150,7 +150,7 @@ public class ConvertCommandHandlerConstructorToStaticMethod extends Recipe {
                         Tree.randomId(),
                         nameOriginalPrefix,
                         Markers.EMPTY,
-                        Collections.emptyList(),
+                        new ArrayList<>(),
                         "void",
                         JavaType.Primitive.Void,
                         null);

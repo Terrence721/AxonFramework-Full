@@ -20,15 +20,19 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Adds the {@code @EntityCreator} annotation to existing no-arg constructors of classes annotated with either
@@ -55,12 +59,12 @@ public class AddEntityCreatorAnnotation extends Recipe {
     private static final String AF4_AGGREGATE_ROOT_FQN = "org.axonframework.modelling.command.AggregateRoot";
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Add @EntityCreator to no-arg constructors of event-sourced entities";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Annotates existing no-arg constructors with `@EntityCreator` for any class annotated with "
                 + "`@EventSourcedEntity` or the Spring `@EventSourced` stereotype. Required by AF5 — the framework "
                 + "uses this annotation to instantiate the entity before applying events. Idempotent: skips "
@@ -68,10 +72,10 @@ public class AddEntityCreatorAnnotation extends Recipe {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
+    public @NonNull TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration cd, ExecutionContext ctx) {
+            public J.@NonNull ClassDeclaration visitClassDeclaration(J.@NonNull ClassDeclaration cd, @NonNull ExecutionContext ctx) {
                 J.ClassDeclaration classDecl = super.visitClassDeclaration(cd, ctx);
                 if (!isEventSourcedEntity(classDecl)) {
                     return classDecl;
@@ -80,7 +84,7 @@ public class AddEntityCreatorAnnotation extends Recipe {
             }
 
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.@NonNull MethodDeclaration visitMethodDeclaration(J.@NonNull MethodDeclaration method, @NonNull ExecutionContext ctx) {
                 J.MethodDeclaration md = super.visitMethodDeclaration(method, ctx);
                 if (!md.isConstructor() || !md.getParameters().isEmpty()
                         // Java represents an empty parameter list as a single Empty node — accept that too.
@@ -121,9 +125,6 @@ public class AddEntityCreatorAnnotation extends Recipe {
             }
 
             private boolean isEventSourcedEntity(J.ClassDeclaration cd) {
-                if (cd.getLeadingAnnotations() == null) {
-                    return false;
-                }
                 for (J.Annotation a : cd.getLeadingAnnotations()) {
                     if (TypeUtils.isOfClassType(a.getType(), EVENT_SOURCED_ENTITY_FQN)
                             || TypeUtils.isOfClassType(a.getType(), EVENT_SOURCED_SPRING_FQN)
@@ -147,7 +148,7 @@ public class AddEntityCreatorAnnotation extends Recipe {
                         Tree.randomId(),
                         Space.EMPTY,
                         Markers.EMPTY,
-                        Collections.emptyList(),
+                        new ArrayList<>(),
                         "EntityCreator",
                         JavaType.ShallowClass.build(ENTITY_CREATOR_FQN),
                         null);
@@ -177,7 +178,7 @@ public class AddEntityCreatorAnnotation extends Recipe {
              *   {@code "\n" + indent} so it renders on its own line.</li>
              * </ul>
              */
-            private J.MethodDeclaration prependAnnotation(J.MethodDeclaration md, J.Annotation annotation) {
+            private J.@NonNull MethodDeclaration prependAnnotation(J.MethodDeclaration md, J.Annotation annotation) {
                 Space methodPrefix = md.getPrefix();
                 String whitespace = methodPrefix.getWhitespace();
                 String indent = trailingIndent(whitespace);
@@ -194,26 +195,28 @@ public class AddEntityCreatorAnnotation extends Recipe {
 
                 if (md.getLeadingAnnotations().isEmpty()) {
                     J.MethodDeclaration withAnnotation = md.withPrefix(adjustedMethodPrefix)
-                            .withLeadingAnnotations(Collections.singletonList(annotation));
-                    if (!withAnnotation.getModifiers().isEmpty()) {
-                        return withAnnotation.withModifiers(
-                                ListUtils.mapFirst(withAnnotation.getModifiers(),
-                                        m -> m.withPrefix(newlineIndent)));
+                            .withLeadingAnnotations(new ArrayList<>(Collections.singletonList(annotation)));
+                        @Nullable List<J.Modifier> modifiers = withAnnotation.getModifiers();
+                        if (modifiers != null && !modifiers.isEmpty()) {
+                            List<J.Modifier> updatedModifiers = new ArrayList<>(modifiers);
+                            updatedModifiers.set(0, updatedModifiers.get(0).withPrefix(newlineIndent));
+                            return withAnnotation.withModifiers(updatedModifiers);
                     }
-                    if (withAnnotation.getReturnTypeExpression() != null) {
+                    TypeTree returnTypeExpression = withAnnotation.getReturnTypeExpression();
+                    if (returnTypeExpression != null) {
                         return withAnnotation.withReturnTypeExpression(
-                                withAnnotation.getReturnTypeExpression().withPrefix(newlineIndent));
+                                returnTypeExpression.withPrefix(newlineIndent));
                     }
                     return withAnnotation.withName(withAnnotation.getName().withPrefix(newlineIndent));
                 }
 
                 J.Annotation oldFirst = md.getLeadingAnnotations().get(0);
                 Space oldFirstPrefix = oldFirst.getPrefix();
+                List<J.Annotation> updatedAnnotations = new ArrayList<>(md.getLeadingAnnotations());
+                updatedAnnotations.set(0, oldFirst.withPrefix(newlineIndent));
+                updatedAnnotations.add(0, annotation.withPrefix(oldFirstPrefix));
                 return md.withPrefix(adjustedMethodPrefix)
-                        .withLeadingAnnotations(ListUtils.concat(
-                                annotation.withPrefix(oldFirstPrefix),
-                                ListUtils.mapFirst(md.getLeadingAnnotations(),
-                                        first -> first.withPrefix(newlineIndent))));
+                    .withLeadingAnnotations(updatedAnnotations);
             }
 
             private boolean needsBlankLineBump(J.MethodDeclaration md, String whitespace) {
@@ -251,9 +254,6 @@ public class AddEntityCreatorAnnotation extends Recipe {
             }
 
             private boolean hasEntityCreator(J.MethodDeclaration md) {
-                if (md.getLeadingAnnotations() == null) {
-                    return false;
-                }
                 for (J.Annotation a : md.getLeadingAnnotations()) {
                     // Type-based match handles imported annotations whose
                     // bindings have already resolved.

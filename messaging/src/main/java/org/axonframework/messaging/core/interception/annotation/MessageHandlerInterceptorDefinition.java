@@ -20,7 +20,6 @@ import org.axonframework.common.AxonConfigurationException;
 import org.axonframework.messaging.core.Message;
 import org.axonframework.messaging.core.MessageHandlerInterceptorChain;
 import org.axonframework.messaging.core.MessageStream;
-import org.axonframework.messaging.core.MessageStream.Entry;
 import org.axonframework.messaging.core.annotation.HandlerAttributes;
 import org.axonframework.messaging.core.annotation.HandlerEnhancerDefinition;
 import org.axonframework.messaging.core.annotation.MessageHandlingMember;
@@ -122,9 +121,8 @@ public class MessageHandlerInterceptorDefinition implements HandlerEnhancerDefin
                               context,
                               pc -> {
                                   if (super.canHandle(message, pc)) {
-                                      //noinspection unchecked
                                       return super.handle(message, pc, target)
-                                                  .map(r -> (Entry<Message>) r);
+                                                  .map(r -> r);
                                   }
                                   return MessageStream.failed(error);
                               }

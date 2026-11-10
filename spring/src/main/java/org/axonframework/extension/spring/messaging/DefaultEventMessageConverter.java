@@ -45,27 +45,26 @@ public class DefaultEventMessageConverter implements EventMessageConverter {
     private static final String AXON_MESSAGE_PREFIX = "axon-message-";
     private static final String MESSAGE_ID = AXON_MESSAGE_PREFIX + "id";
     private static final String MESSAGE_TYPE = AXON_MESSAGE_PREFIX + "type";
-    private static final String AGGREGATE_ID = AXON_MESSAGE_PREFIX + "aggregate-id";
-    private static final String AGGREGATE_SEQ = AXON_MESSAGE_PREFIX + "aggregate-seq";
-    private static final String AGGREGATE_TYPE = AXON_MESSAGE_PREFIX + "aggregate-type";
 
     @Override
-    public <T> Message convertToOutboundMessage(EventMessage event) {
+    public <T> Message<T> convertToOutboundMessage(EventMessage event) {
         Map<String, @Nullable Object> headers = new HashMap<>(event.metadata());
         headers.put(MESSAGE_ID, event.identifier());
         headers.put(MESSAGE_TYPE, event.type().toString());
-        return new GenericMessage(Objects.requireNonNull(event.payload()),
-                                  new SettableTimestampMessageHeaders(headers, event.timestamp().toEpochMilli()));
+        @SuppressWarnings("unchecked")
+        T payload = (T) Objects.requireNonNull(event.payload());
+        return new GenericMessage<>(payload,
+                                    new SettableTimestampMessageHeaders(headers, event.timestamp().toEpochMilli()));
     }
 
     @Override
-    public <T> EventMessage convertFromInboundMessage(Message message) {
+    public <T> EventMessage convertFromInboundMessage(Message<T> message) {
         MessageHeaders headers = message.getHeaders();
         Map<String, String> metadata = headers.entrySet()
                                               .stream()
                                               .filter(entry -> !entry.getKey().startsWith(AXON_MESSAGE_PREFIX))
                                               .collect(Collectors.toMap(
-                                                      Map.Entry::getKey,
+                                                      entry -> entry.getKey(),
                                                       entry -> entry.getValue().toString()
                                               ));
 
@@ -74,7 +73,7 @@ public class DefaultEventMessageConverter implements EventMessageConverter {
         Long timestamp = headers.getTimestamp();
 
         org.axonframework.messaging.core.GenericMessage genericMessage
-                = new org.axonframework.messaging.core.GenericMessage(messageId, type, message.getPayload(), metadata);
+            = new org.axonframework.messaging.core.GenericMessage(messageId, type, message.getPayload(), metadata);
         //noinspection DataFlowIssue - Just let it throw a NullPointerException if the timestamp is null
         return new GenericEventMessage(genericMessage, () -> Instant.ofEpochMilli(timestamp));
     }
@@ -84,7 +83,7 @@ public class DefaultEventMessageConverter implements EventMessageConverter {
      * based on the header. When it is not present, we can expect a non-Axon {@link Message} is handled. As such, we
      * base the {@code type} on the fully qualified class qualifiedName.
      */
-    private static <T> MessageType getType(Message message) {
+    private static MessageType getType(Message<?> message) {
         MessageHeaders headers = message.getHeaders();
         return headers.containsKey(MESSAGE_TYPE)
                 ? MessageType.fromString(Objects.toString(headers.get(MESSAGE_TYPE)))

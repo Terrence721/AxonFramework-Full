@@ -55,12 +55,12 @@ public interface CommandHandlerRegistry<S extends CommandHandlerRegistry<S>> {
      * @param commandHandler The handler instance that handles {@link CommandMessage commands} for the given names.
      * @return This registry for fluent interfacing.
      */
+    @SuppressWarnings("unchecked")
     default S subscribe(Set<QualifiedName> names,
                         CommandHandler commandHandler) {
         requireNonNull(names, "The set of names may not be null");
         requireNonNull(commandHandler, "The commandHandler may not be null");
         names.forEach(name -> subscribe(name, commandHandler));
-        //noinspection unchecked
         return (S) this;
     }
 

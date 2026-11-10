@@ -90,7 +90,7 @@ public class SimpleStateManager implements StateManager {
     @Override
     public Set<Class<?>> registeredEntities() {
         return repositories.stream()
-                           .map(Repository::entityType)
+                           .map(repository -> repository.entityType())
                            .collect(Collectors.toSet());
     }
 
@@ -98,13 +98,13 @@ public class SimpleStateManager implements StateManager {
     public Set<Class<?>> registeredIdsFor(Class<?> entityType) {
         return repositories.stream()
                            .filter(r -> r.entityType().equals(entityType))
-                           .map(Repository::idType)
+                           .map(repository -> repository.idType())
                            .collect(Collectors.toSet());
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <I, T> @Nullable Repository<I, T> repository(Class<T> entityType, Class<I> idType) {
-        //noinspection unchecked
         return (Repository<I, T>) repositories.stream()
                                               .filter(r -> r.entityType().equals(entityType))
                                               .filter(r -> r.idType().equals(idType))

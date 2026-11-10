@@ -48,102 +48,120 @@ public class LegacyMessageSupportingContext implements ProcessingContext {
      *
      * @param message The message to be used as the only resource in this context.
      */
+    @Deprecated
     public LegacyMessageSupportingContext(Message message) {
         this.resources = new ConcurrentHashMap<>();
         Message.addToContext(this, message);
     }
 
+    @Deprecated
     @Override
     public boolean isStarted() {
         return true;
     }
 
+    @Deprecated
     @Override
     public boolean isError() {
         return false;
     }
 
+    @Deprecated
     @Override
     public boolean isCommitted() {
         return false;
     }
 
+    @Deprecated
     @Override
     public boolean isCompleted() {
         return false;
     }
 
+    @Deprecated
     @Override
     public ProcessingLifecycle on(Phase phase, Function<ProcessingContext, CompletableFuture<?>> action) {
         throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
     }
 
+    @Deprecated
     @Override
     public ProcessingLifecycle onError(ErrorHandler action) {
         throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
     }
 
+    @Deprecated
     @Override
     public ProcessingLifecycle whenComplete(Consumer<ProcessingContext> action) {
         throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
     }
 
+    @Deprecated
     @Override
     public boolean containsResource(ResourceKey<?> key) {
         return resources.containsKey(key);
     }
 
+    @Deprecated
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getResource(ResourceKey<T> key) {
-        //noinspection unchecked
         return (T) resources.get(key);
     }
 
+    @Deprecated
     @Override
     public Map<ResourceKey<?>, Object> resources() {
         return Map.copyOf(resources);
     }
 
+    @Deprecated
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T putResource(ResourceKey<T> key,
                              T resource) {
-        //noinspection unchecked
         return (T) resources.put(key, resource);
     }
 
+    @Deprecated
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T updateResource(ResourceKey<T> key,
                                 UnaryOperator<T> resourceUpdater) {
-        //noinspection unchecked
         return (T) resources.compute(key, (k, v) -> resourceUpdater.apply((T) v));
     }
 
+    @Deprecated
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T putResourceIfAbsent(ResourceKey<T> key,
                                      T resource) {
-        //noinspection unchecked
         return (T) resources.putIfAbsent(key, resource);
     }
 
+    @Deprecated
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T computeResourceIfAbsent(ResourceKey<T> key,
                                          Supplier<T> resourceSupplier) {
-        //noinspection unchecked
         return (T) resources.computeIfAbsent(key, t -> resourceSupplier.get());
     }
 
+    @Deprecated
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T removeResource(ResourceKey<T> key) {
-        //noinspection unchecked
         return (T) resources.remove(key);
     }
 
+    @Deprecated
     @Override
     public <T> boolean removeResource(ResourceKey<T> key,
                                       T expectedResource) {
         return resources.remove(key, expectedResource);
     }
 
+    @Deprecated
     @Override
     public <C> C component(Class<C> type, @Nullable String name) {
         throw new ComponentNotFoundException(type, name);

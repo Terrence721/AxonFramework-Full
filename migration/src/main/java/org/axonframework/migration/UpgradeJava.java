@@ -18,6 +18,7 @@ package org.axonframework.migration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
@@ -89,12 +90,12 @@ public class UpgradeJava extends Recipe {
     }
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Upgrade Java compiler target for Axon Framework 5";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Bumps the Java compiler target in pom.xml/build.gradle to the configured LTS "
                 + "(defaults to " + DEFAULT_TARGET_VERSION + ", the Axon Framework 5 minimum). "
                 + "No-op for modules already at or above the target — projects already on a higher Java "
@@ -102,7 +103,7 @@ public class UpgradeJava extends Recipe {
     }
 
     @Override
-    public List<Recipe> getRecipeList() {
+    public @NonNull List<Recipe> getRecipeList() {
         int target = targetVersion != null ? targetVersion : DEFAULT_TARGET_VERSION;
         if (target < MINIMUM_TARGET_VERSION) {
             throw new IllegalArgumentException(

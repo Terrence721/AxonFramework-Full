@@ -21,7 +21,6 @@ import org.axonframework.common.AxonConfigurationException;
 import org.axonframework.common.ReflectionUtils;
 import org.axonframework.common.annotation.Internal;
 import org.axonframework.common.infra.ComponentDescriptor;
-import org.axonframework.common.infra.DescribableComponent;
 import org.axonframework.conversion.ConversionException;
 import org.axonframework.messaging.commandhandling.CommandMessage;
 import org.axonframework.messaging.commandhandling.CommandResultMessage;
@@ -57,7 +56,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -95,7 +93,7 @@ import static org.axonframework.messaging.core.annotation.AnnotatedHandlerInspec
  * @since 3.1.0
  */
 @Internal
-public class AnnotatedEntityMetamodel<E> implements EntityMetamodel<E>, DescribableComponent {
+public class AnnotatedEntityMetamodel<E> implements EntityMetamodel<E> {
 
     private static final Logger logger = LoggerFactory.getLogger(AnnotatedEntityMetamodel.class);
 
@@ -423,10 +421,9 @@ public class AnnotatedEntityMetamodel<E> implements EntityMetamodel<E>, Describa
                                               ServiceLoader<EntityChildModelDefinition> childEntityDefinitions) {
         List<EntityChildMetamodel<Object, E>> createdChildModels = childEntityDefinitions
                 .stream()
-                .map(ServiceLoader.Provider::get)
+                .map(provider -> provider.get())
                 .map(d -> d.createChildDefinition(entityType, this::createChildEntityModel, field))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .flatMap(optional -> requireNonNull(optional).stream())
                 .toList();
         if (createdChildModels.size() > 1) {
             throw new IllegalStateException("Multiple child entity definitions found for member [" + field

@@ -112,7 +112,7 @@ public class MergedTrackingToken implements WrappedToken {
         return WrappedToken.unwrap(trackingToken, MergedTrackingToken.class)
                            .map(m -> m.mergePosition())
                            .filter(p -> p != Long.MIN_VALUE)
-                           .map(OptionalLong::of)
+                           .map(p -> OptionalLong.of(p.longValue()))
                            .orElse(OptionalLong.empty());
     }
 

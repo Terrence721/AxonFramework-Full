@@ -93,8 +93,8 @@ public class UpdateCheckerAutoConfiguration {
                                                               c.getComponent(UpdateCheckerReporter.class),
                                                               usagePropertyProvider
                                                       ))
-                                                      .onStart(Phase.EXTERNAL_CONNECTIONS, UpdateChecker::start)
-                                                      .onShutdown(Phase.EXTERNAL_CONNECTIONS, UpdateChecker::stop));
+                                                      .onStart(Phase.EXTERNAL_CONNECTIONS, updateChecker -> updateChecker.start())
+                                                      .onShutdown(Phase.EXTERNAL_CONNECTIONS, updateChecker -> updateChecker.stop()));
             }
 
             @Override

@@ -18,7 +18,6 @@ package org.axonframework.messaging.core.annotation;
 
 import java.lang.reflect.Executable;
 import java.util.Comparator;
-import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
 /**
@@ -38,8 +37,8 @@ import java.util.function.ToIntFunction;
 public final class HandlerComparator {
 
     private static final Comparator<MessageHandlingMember<?>> HANDLER_COMPARATOR =
-        Comparator.comparing(
-                (Function<MessageHandlingMember<?>, Class<?>>) MessageHandlingMember::payloadType,
+        Comparator.<MessageHandlingMember<?>, Class<?>>comparing(
+            member -> member.payloadType(),
                 HandlerComparator::compareHierarchy
         )
         .thenComparing(Comparator.comparingInt(HandlerComparator::parameterCount).reversed())
@@ -48,7 +47,7 @@ public final class HandlerComparator {
     private static final Comparator<MessageHandlingMember<?>> HANDLER_COMPARATOR_REVERSED = HANDLER_COMPARATOR.reversed();
 
     private static final Comparator<MessageHandlingMember<?>> INSTANCE =
-            Comparator.comparingInt((ToIntFunction<MessageHandlingMember<?>>) MessageHandlingMember::priority)
+            Comparator.comparingInt((ToIntFunction<MessageHandlingMember<?>>) m -> m.priority())
                       .reversed()
                       .thenComparing(m -> !isResultHandler(m))
                       .thenComparing((memberOne, memberTwo) -> isResultHandler(memberOne) || isResultHandler(memberTwo)
@@ -104,13 +103,13 @@ public final class HandlerComparator {
 
     private static Integer parameterCount(MessageHandlingMember<?> handler) {
         return handler.unwrap(Executable.class)
-                      .map(Executable::getParameterCount)
+                      .map(executable -> executable.getParameterCount())
                       .orElse(1);
     }
 
     private static String executableSignature(MessageHandlingMember<?> handler) {
         return handler.unwrap(Executable.class)
-                      .map(Executable::toGenericString)
+                      .map(executable -> executable.toGenericString())
                       .orElse(handler.toString());
     }
 }

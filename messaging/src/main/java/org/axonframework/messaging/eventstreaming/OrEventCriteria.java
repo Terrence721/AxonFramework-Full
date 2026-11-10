@@ -75,7 +75,12 @@ sealed class OrEventCriteria implements EventCriteria permits EventTypeRestricta
 
     @Override
     public boolean hasCriteria() {
-        return criteria.stream().anyMatch(EventCriteria::hasCriteria);
+        for (EventCriteria criterion : criteria) {
+            if (criterion.hasCriteria()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

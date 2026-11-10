@@ -17,7 +17,6 @@
 package org.axonframework.eventsourcing.annotation.reflection;
 
 import org.axonframework.common.AxonConfigurationException;
-import org.axonframework.common.ObjectUtils;
 import org.axonframework.common.ReflectionUtils;
 import org.axonframework.common.annotation.AnnotationUtils;
 import org.axonframework.eventsourcing.EventSourcedEntityFactory;
@@ -248,7 +247,7 @@ public class AnnotationBasedEventSourcedEntityFactory<E, ID> implements EventSou
     private Set<ScannedEntityCreator> getMethodsCompatibleWithIdAndNoMessage(ID id) {
         return creators.stream()
                        .filter(method -> method.supportsId(id))
-                       .filter(ScannedEntityCreator::isWithoutPayload)
+                       .filter(creator -> creator.isWithoutPayload())
                        .collect(Collectors.toSet());
     }
 
@@ -281,7 +280,7 @@ public class AnnotationBasedEventSourcedEntityFactory<E, ID> implements EventSou
             }
             StringBuilder message = new StringBuilder(
                     "No suitable @EntityCreator found for id: [%s] and event message [%s]. Candidates were:"
-                            .formatted(id, ObjectUtils.getOrDefault(eventMessage, Message::type, "none")));
+                            .formatted(id, eventMessage == null ? "none" : eventMessage.type()));
             creators.forEach(creator -> message.append("\n - ").append(creator));
             throw new AxonConfigurationException(message.toString());
         }
@@ -309,7 +308,7 @@ public class AnnotationBasedEventSourcedEntityFactory<E, ID> implements EventSou
             throw new AxonConfigurationException(message.toString());
         }
         return matchingCreators.stream()
-                               .max(Comparator.comparingInt(ScannedEntityCreator::getParameterCount))
+                               .max(Comparator.comparingInt(creator -> creator.getParameterCount()))
                                .orElseThrow();
     }
 
@@ -389,7 +388,7 @@ public class AnnotationBasedEventSourcedEntityFactory<E, ID> implements EventSou
 
             return CompletableFuture.allOf(resolvedParams)
                                     .thenApply(v -> Arrays.stream(resolvedParams)
-                                                          .map(CompletableFuture::resultNow)
+                                                          .map(future -> future.resultNow())
                                                           .toArray())
                                     .thenApply(this::constructEntityWithArguments)
                                     .join();

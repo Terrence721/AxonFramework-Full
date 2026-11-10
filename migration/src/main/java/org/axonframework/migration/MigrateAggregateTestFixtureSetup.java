@@ -29,6 +29,7 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.kotlin.KotlinTemplate;
 import org.openrewrite.kotlin.tree.K;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 
@@ -50,8 +51,8 @@ import java.util.Map;
  * by {@link AddEventTagAnnotation} (under {@link AddEventTagAnnotation#SHARED_ID_TYPES_KEY})
  * while {@code @AggregateIdentifier} is still on the source. When the id type is
  * unavailable (no annotated field, or an unresolvable type), the recipe falls
- * back to {@code Object.class} with a {@code TODO(axon4to5):} comment so the developer
- * notices and supplies the correct type manually — same shape as
+ * back to {@code Object.class} with a comment prompting the developer to supply
+ * the correct type manually — same shape as
  * {@link ConfigureEventSourcedAnnotation}.
  *
  * <p>Only the AF4 {@code AggregateTestFixture} FQN is matched, so
@@ -82,11 +83,13 @@ public class MigrateAggregateTestFixtureSetup extends Recipe {
     private static final String TODO_ID_TYPE_KOTLIN = "Object::class.java" + TODO_COMMENT;
 
     @Override
+    @NonNull
     public String getDisplayName() {
         return "Migrate AggregateTestFixture setup to AxonTestFixture.with(EventSourcingConfigurer...)";
     }
 
     @Override
+    @NonNull
     public String getDescription() {
         return "Rewrites `new AggregateTestFixture<X>(X.class)` (the AF4 aggregate-fixture constructor) "
                 + "to AF5's `AxonTestFixture.with(EventSourcingConfigurer.create().registerEntity("
@@ -98,23 +101,23 @@ public class MigrateAggregateTestFixtureSetup extends Recipe {
     }
 
     @Override
+    @NonNull
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaVisitor<ExecutionContext>() {
             @Override
-            public J visitNewClass(J.NewClass nc, ExecutionContext ctx) {
+            @NonNull
+            public J visitNewClass(J.@NonNull NewClass nc, ExecutionContext ctx) {
                 J.NewClass newClass = (J.NewClass) super.visitNewClass(nc, ctx);
 
                 if (!TypeUtils.isOfClassType(newClass.getType(), AF4_AGGREGATE_TEST_FIXTURE)) {
                     return newClass;
                 }
-                if (newClass.getArguments() == null
-                        || newClass.getArguments().isEmpty()
-                        || newClass.getArguments().get(0) instanceof J.Empty) {
-                    return newClass;
-                }
                 // Single-arg constructor only — multi-arg AF4 forms (e.g. with a
                 // ParameterResolverFactory) are uncommon and need manual review.
                 if (newClass.getArguments().size() != 1) {
+                    return newClass;
+                }
+                if (newClass.getArguments().get(0) instanceof J.Empty) {
                     return newClass;
                 }
 
@@ -138,7 +141,7 @@ public class MigrateAggregateTestFixtureSetup extends Recipe {
                 // explicit method-reference shape). JavaTemplate would either fail to compile
                 // the placeholder or emit Java-shaped class literals that don't compile in
                 // Kotlin. Detect the source language once and dispatch to the right template
-                // engine; everything else (imports, TODO comment, idempotency) is shared.
+                // engine; everything else (imports, placeholder comment, idempotency) is shared.
                 boolean kotlin = getCursor().firstEnclosing(SourceFile.class) instanceof K.CompilationUnit;
 
                 String idTypeExpr;
@@ -153,7 +156,7 @@ public class MigrateAggregateTestFixtureSetup extends Recipe {
                 }
                 String aggregateExpr = aggregateSimple + (kotlin ? "::class.java" : ".class");
 
-                String template = "AxonTestFixture.with("
+                @NonNull String template = "AxonTestFixture.with("
                         + "EventSourcingConfigurer.create()"
                         + ".registerEntity(EventSourcedEntityModule.autodetected("
                         + idTypeExpr + ", " + aggregateExpr + ")))";
@@ -171,6 +174,9 @@ public class MigrateAggregateTestFixtureSetup extends Recipe {
                 maybeAddImport(AF5_EVENT_SOURCED_ENTITY_MODULE, null, false);
                 if (idTypeImport != null) {
                     maybeAddImport(idTypeImport, null, false);
+                }
+                if (replaced == null) {
+                    throw new IllegalStateException("The fixture setup template produced no replacement.");
                 }
                 return replaced;
             }
@@ -208,20 +214,21 @@ public class MigrateAggregateTestFixtureSetup extends Recipe {
                 return null;
             }
 
-            private J applyJavaTemplate(String template, String idTypeImport, J.NewClass target) {
+            private J applyJavaTemplate(@NonNull String template, String idTypeImport, J.NewClass target) {
+                JavaParser.Builder<?, ?> parser = JavaParser.fromJavaVersion();
+                parser.classpath(JavaParser.runtimeClasspath());
                 JavaTemplate.Builder builder = JavaTemplate.builder(template)
                         .imports(AF5_AXON_TEST_FIXTURE,
                                  AF5_EVENT_SOURCING_CONFIGURER,
                                  AF5_EVENT_SOURCED_ENTITY_MODULE)
-                        .javaParser(JavaParser.fromJavaVersion()
-                                              .classpath(JavaParser.runtimeClasspath()));
+                        .javaParser(parser);
                 if (idTypeImport != null) {
                     builder = builder.imports(idTypeImport);
                 }
                 return builder.build().apply(getCursor(), target.getCoordinates().replace());
             }
 
-            private J applyKotlinTemplate(String template, String idTypeImport, J.NewClass target) {
+            private J applyKotlinTemplate(@NonNull String template, String idTypeImport, J.NewClass target) {
                 KotlinTemplate.Builder builder = KotlinTemplate.builder(template)
                         .imports(AF5_AXON_TEST_FIXTURE,
                                  AF5_EVENT_SOURCING_CONFIGURER,

@@ -101,7 +101,7 @@ public class SimpleEntityLifecycleHandler<I, E> implements EntityLifecycleHandle
         MessageStream<? extends EventMessage> source = transaction.source(SourcingCondition.conditionFor(criteria));
 
         return source.reduce(
-            (E) null,
+            null,
             (entity, entry) -> evolver.evolve(identifier, entity, entry.message(), pc)
         );
     }

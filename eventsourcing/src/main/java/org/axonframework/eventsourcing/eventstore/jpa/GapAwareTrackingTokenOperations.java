@@ -22,7 +22,6 @@ import org.axonframework.messaging.eventhandling.processing.streaming.token.GapA
 import org.axonframework.messaging.eventhandling.processing.streaming.token.TrackingToken;
 import org.slf4j.Logger;
 
-import java.time.Clock;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;

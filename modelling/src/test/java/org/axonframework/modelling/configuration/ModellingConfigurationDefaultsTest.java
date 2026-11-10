@@ -16,7 +16,6 @@
 
 package org.axonframework.modelling.configuration;
 
-import org.axonframework.common.configuration.ComponentRegistry;
 import org.axonframework.common.configuration.DefaultComponentRegistry;
 import org.axonframework.modelling.StateManager;
 import org.junit.jupiter.api.Test;

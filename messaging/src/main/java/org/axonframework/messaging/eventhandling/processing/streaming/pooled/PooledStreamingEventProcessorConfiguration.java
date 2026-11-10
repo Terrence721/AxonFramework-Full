@@ -711,7 +711,8 @@ public class PooledStreamingEventProcessorConfiguration extends EventProcessorCo
      */
     public SegmentChangeListener segmentChangeListener() {
         return segmentChangeListeners.stream()
-                                     .reduce(SegmentChangeListener.noOp(), SegmentChangeListener::andThen);
+                         .reduce(SegmentChangeListener.noOp(),
+                             (first, second) -> first.andThen(second));
     }
 
     /**

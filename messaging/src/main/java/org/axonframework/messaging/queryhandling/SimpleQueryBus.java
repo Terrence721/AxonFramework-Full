@@ -214,7 +214,7 @@ public class SimpleQueryBus implements QueryBus {
                 updateHandlers.entrySet()
                               .stream()
                               .filter(entry -> filter.test(entry.getKey()))
-                              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                              .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
         if (matchingHandlers.isEmpty()) {
             return deliveredCount;
         }
@@ -342,7 +342,7 @@ public class SimpleQueryBus implements QueryBus {
                            UPDATE_TASKS_KEY,
                            () -> {
                                List<Runnable> subscriptionQueryTasks = new ArrayList<>();
-                               context.runOnAfterCommit(c -> subscriptionQueryTasks.forEach(Runnable::run));
+                               context.runOnAfterCommit(c -> subscriptionQueryTasks.forEach(task -> task.run()));
                                return subscriptionQueryTasks;
                            }
                    )

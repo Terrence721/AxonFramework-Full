@@ -90,5 +90,6 @@ public @interface InjectEntity {
      *
      * @return The {@link EntityIdResolver} to resolve the identifier of the entity to inject.
      */
+    @SuppressWarnings("all")
     Class<? extends EntityIdResolver> idResolver() default AnnotationBasedEntityIdResolver.class;
 }

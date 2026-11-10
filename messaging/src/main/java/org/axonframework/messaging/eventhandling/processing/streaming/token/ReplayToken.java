@@ -187,7 +187,7 @@ public class ReplayToken implements WrappedToken {
     ) {
         return WrappedToken.unwrap(token, ReplayToken.class)
                            .filter(rt -> rt.isReplay())
-                           .map(ReplayToken::resetContext)
+                           .map(rt -> rt.resetContext())
                            .map(rc -> converter.convert(rc, type));
     }
 

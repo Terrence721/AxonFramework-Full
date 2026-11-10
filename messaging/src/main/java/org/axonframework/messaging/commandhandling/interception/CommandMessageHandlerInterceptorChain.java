@@ -54,9 +54,16 @@ public class CommandMessageHandlerInterceptorChain implements MessageHandlerInte
                 new LinkedList<>(interceptors).descendingIterator();
         CommandHandler handler = Objects.requireNonNull(commandHandler, "The Command Handler may not be null.");
         while (interceptorIterator.hasNext()) {
-            handler = new InterceptingHandler(interceptorIterator.next(), handler);
+            handler = new InterceptingHandler(asCommandMessageInterceptor(interceptorIterator.next()), handler);
         }
         this.interceptingHandler = handler;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static MessageHandlerInterceptor<CommandMessage> asCommandMessageInterceptor(
+            MessageHandlerInterceptor<? super CommandMessage> interceptor
+    ) {
+        return (MessageHandlerInterceptor<CommandMessage>) interceptor;
     }
 
     @Override
@@ -69,16 +76,16 @@ public class CommandMessageHandlerInterceptorChain implements MessageHandlerInte
     }
 
     private record InterceptingHandler(
-            MessageHandlerInterceptor<? super CommandMessage> interceptor,
+            MessageHandlerInterceptor<CommandMessage> interceptor,
             CommandHandler next
     ) implements CommandHandler, MessageHandlerInterceptorChain<CommandMessage> {
 
         @Override
+        @SuppressWarnings("unchecked")
         public MessageStream.Single<CommandResultMessage> handle(CommandMessage command,
                                                                  ProcessingContext context) {
-            //noinspection unchecked,rawtypes
-            return interceptor.interceptOnHandle(command, context, (MessageHandlerInterceptorChain) this)
-                              .first();
+            return (MessageStream.Single<CommandResultMessage>) (MessageStream.Single<?>)
+                    interceptor.interceptOnHandle(command, context, this).first();
         }
 
         @Override

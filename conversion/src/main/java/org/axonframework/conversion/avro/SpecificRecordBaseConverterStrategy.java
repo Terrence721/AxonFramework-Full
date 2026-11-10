@@ -118,8 +118,7 @@ public class SpecificRecordBaseConverterStrategy implements AvroConverterStrateg
         decoder.addSchema(writerSchema);
 
         try {
-            //noinspection unchecked
-            return (T) decoder.decode(bytes);
+            return readerType.cast(decoder.decode(bytes));
         } catch (IOException | AvroRuntimeException e) {
             throw AvroUtil.createExceptionFailedToDeserialize(
                     readerType,
@@ -154,8 +153,7 @@ public class SpecificRecordBaseConverterStrategy implements AvroConverterStrateg
 
         SpecificRecordBase decoded = (SpecificRecordBase) readerSpecificData.deepCopy(writerSchema,
                                                                                       genericRecord);
-        //noinspection unchecked
-        return (T) decoded;
+        return readerType.cast(decoded);
     }
 
     @Override

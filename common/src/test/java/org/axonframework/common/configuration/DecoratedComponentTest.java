@@ -28,9 +28,10 @@ class DecoratedComponentTest {
     void resolveThrowsWhenDecoratedTypeIsIncompatible() {
         Component<String> delegate = new InstantiatedComponentDefinition<>(
                 new Component.Identifier<>(String.class, "cmp"), "base");
+        ComponentDecorator<String, Object> incompatibleDecorator = (config, name, value) -> 42;
         @SuppressWarnings("unchecked")
         ComponentDecorator<String, String> decorator =
-                (ComponentDecorator<String, String>) (ComponentDecorator) (config, name, value) -> 42;
+                (ComponentDecorator<String, String>) (ComponentDecorator<?, ?>) incompatibleDecorator;
 
         DecoratedComponent<String, String> decorated =
                 new DecoratedComponent<>(delegate, decorator, List.of(), List.of());

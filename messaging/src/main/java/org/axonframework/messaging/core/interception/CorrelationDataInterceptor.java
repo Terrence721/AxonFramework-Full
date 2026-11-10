@@ -97,10 +97,10 @@ public class CorrelationDataInterceptor<M extends Message>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public MessageStream<?> interceptOnDispatch(M message,
                                                 @Nullable ProcessingContext context,
                                                 MessageDispatchInterceptorChain<M> chain) {
-        //noinspection unchecked
         return context == null || !context.containsResource(CORRELATION_DATA)
                 ? chain.proceed(message, context)
                 : chain.proceed((M) message.andMetadata(context.getResource(CORRELATION_DATA)), context);

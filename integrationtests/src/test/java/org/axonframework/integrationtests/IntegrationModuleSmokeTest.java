@@ -4,7 +4,6 @@ import org.axonframework.messaging.eventhandling.EventBus;
 import org.axonframework.messaging.eventhandling.SimpleEventBus;
 import org.axonframework.eventsourcing.eventstore.EventStore;
 import org.axonframework.eventsourcing.eventstore.StorageEngineBackedEventStore;
-import org.axonframework.eventsourcing.EventSourcingRepository;
 import org.axonframework.eventsourcing.eventstore.inmemory.InMemoryEventStorageEngine;
 import org.axonframework.eventsourcing.eventstore.MetadataBasedTagResolver;
 import org.junit.jupiter.api.Test;

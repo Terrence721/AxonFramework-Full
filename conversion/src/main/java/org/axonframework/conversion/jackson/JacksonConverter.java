@@ -100,6 +100,7 @@ public class JacksonConverter implements Converter {
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T convert(@Nullable Object input,
                          Type targetType) {

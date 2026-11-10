@@ -104,7 +104,7 @@ public class AnnotationBasedEventCriteriaResolver<E, ID> implements CriteriaReso
                 .stream(entityType.getDeclaredMethods())
                 .filter(m -> m.isAnnotationPresent(EventCriteriaBuilder.class))
                 .map(WrappedEventCriteriaBuilderMethod::new)
-                .collect(Collectors.groupingBy(WrappedEventCriteriaBuilderMethod::getIdentifierType));
+                .collect(Collectors.groupingBy(builder -> builder.identifierType));
 
         eventCriteriaBuilders.entrySet().stream()
                              .filter(entry -> entry.getValue().size() > 1)
@@ -120,7 +120,7 @@ public class AnnotationBasedEventCriteriaResolver<E, ID> implements CriteriaReso
                              });
 
         this.builderMap = eventCriteriaBuilders.entrySet().stream()
-                                               .collect(Collectors.toMap(Map.Entry::getKey,
+                                               .collect(Collectors.toMap(entry -> entry.getKey(),
                                                                          m -> m.getValue().getFirst()));
     }
 
@@ -193,10 +193,6 @@ public class AnnotationBasedEventCriteriaResolver<E, ID> implements CriteriaReso
             } catch (InvocationTargetException | IllegalAccessException e) {
                 throw new IllegalArgumentException("Error invoking EventCriteriaBuilder method", e);
             }
-        }
-
-        public Class<?> getIdentifierType() {
-            return identifierType;
         }
 
         public Method getMethod() {

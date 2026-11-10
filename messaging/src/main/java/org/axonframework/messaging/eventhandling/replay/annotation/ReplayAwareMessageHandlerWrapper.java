@@ -55,7 +55,7 @@ public class ReplayAwareMessageHandlerWrapper implements HandlerEnhancerDefiniti
         boolean isReplayAllowed = (boolean) original
                 .attribute(HandlerAttributes.ALLOW_REPLAY)
                 .orElseGet(() -> original.unwrap(Member.class)
-                                         .map(Member::getDeclaringClass)
+                                         .map(member -> member == null ? null : member.getDeclaringClass())
                                          .map(c -> AnnotationUtils.findAnnotationAttributes(c, AllowReplay.class)
                                                                   .orElse(DEFAULT_SETTING))
                                          .orElse(DEFAULT_SETTING).get("allowReplay")

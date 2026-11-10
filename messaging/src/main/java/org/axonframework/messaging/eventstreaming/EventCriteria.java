@@ -165,7 +165,7 @@ import java.util.stream.Collectors;
  * @since 5.0.0
  */
 public sealed interface EventCriteria
-        permits OrEventCriteria, TagAndTypeFilteredEventCriteria, TagFilteredEventCriteria, AnyEvent, EventCriterion,
+    permits OrEventCriteria, EventCriterion,
         EventTypeRestrictableEventCriteria {
 
     /**

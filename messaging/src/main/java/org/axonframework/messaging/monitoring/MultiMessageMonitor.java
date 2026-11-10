@@ -70,7 +70,7 @@ public class MultiMessageMonitor<T extends Message> implements MessageMonitor<T>
         return new MonitorCallback() {
             @Override
             public void reportSuccess() {
-                monitorCallbacks.forEach(MonitorCallback::reportSuccess);
+                monitorCallbacks.forEach(monitorCallback -> monitorCallback.reportSuccess());
             }
 
             @Override
@@ -80,7 +80,7 @@ public class MultiMessageMonitor<T extends Message> implements MessageMonitor<T>
 
             @Override
             public void reportIgnored() {
-                monitorCallbacks.forEach(MonitorCallback::reportIgnored);
+                monitorCallbacks.forEach(monitorCallback -> monitorCallback.reportIgnored());
             }
         };
     }

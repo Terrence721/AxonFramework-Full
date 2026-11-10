@@ -154,7 +154,7 @@ class Coordinator {
      * coordination task cannot be started.
      */
     public CompletableFuture<Void> start() {
-        RunState newState = this.runState.updateAndGet(RunState::attemptStart);
+        RunState newState = this.runState.updateAndGet(state -> Objects.requireNonNull(state).attemptStart());
         if (newState.wasStarted()) {
             logger.debug("Processor [{}]. Starting Coordinator...", name);
             return ProcessUtils.executeUntilTrue(this::initializeTokenStore, tokenStoreInitRetryInterval, tokenStoreInitMaxRetries, executorService)
@@ -164,7 +164,7 @@ class Coordinator {
                         this.coordinationTask.set(task);
                     })
                     .exceptionally(e -> {
-                        runState.updateAndGet(RunState::attemptStop)
+                        runState.updateAndGet(state -> Objects.requireNonNull(state).attemptStop())
                                 .shutdownHandle()
                                 .complete(null);
                         if (e instanceof CompletionException ce) {
@@ -187,7 +187,7 @@ class Coordinator {
      */
     public CompletableFuture<Void> stop() {
         logger.debug("Processor [{}]. Stopping Coordinator...", name);
-        CompletableFuture<Void> handle = runState.updateAndGet(RunState::attemptStop)
+        CompletableFuture<Void> handle = runState.updateAndGet(state -> Objects.requireNonNull(state).attemptStop())
                                                  .shutdownHandle();
         CoordinationTask task = coordinationTask.getAndSet(null);
         if (task != null) {
@@ -789,7 +789,7 @@ class Coordinator {
             // Abort WorkPackages for which releaseUntil() has been invoked
             workPackages.entrySet().stream()
                         .filter(entry -> isSegmentBlockedFromClaim(entry.getKey()))
-                        .map(Map.Entry::getValue)
+                        .map(entry -> entry.getValue())
                         .forEach(workPackage -> {
                             logger.debug(
                                     "Processor [{}] (Coordination Task [{}]) was requested and will comply with releasing claim for segment {}.",
@@ -810,7 +810,7 @@ class Coordinator {
                 workPackages.values()
                             .stream()
                             .filter(workPackage -> !workPackage.isAbortTriggered())
-                            .filter(WorkPackage::isProcessingEvents)
+                            .filter(workPackage -> workPackage.isProcessingEvents())
                             .forEach(workPackage -> workPackage.extendClaimIfThresholdIsMet()
                                                                .whenComplete((ignored, e) -> {
                                                                    if (e == null) {
@@ -959,7 +959,9 @@ class Coordinator {
             try {
                 // Coordinate events to work packages and reschedule this coordinator
                 if (!hasNextEvent() && isDone()) {
-                    workPackages.keySet().forEach(i -> processingStatusUpdater.accept(i, TrackerStatus::caughtUp));
+                    workPackages.keySet().forEach(i -> processingStatusUpdater.accept(
+                            i, status -> Objects.requireNonNull(status).caughtUp()
+                    ));
                 }
                 coordinateWorkPackages();
                 errorWaitBackOff = 500;
@@ -1290,12 +1292,12 @@ class Coordinator {
 
         private boolean isSpaceAvailable() {
             return workPackages.values().stream()
-                               .allMatch(WorkPackage::hasRemainingCapacity);
+                               .allMatch(workPackage -> workPackage.hasRemainingCapacity());
         }
 
         private boolean isDone() {
             return workPackages.values().stream()
-                               .allMatch(WorkPackage::isDone);
+                               .allMatch(workPackage -> workPackage.isDone());
         }
 
         private MessageStream.Entry<? extends EventMessage> nextEventOrNull() {
@@ -1378,7 +1380,7 @@ class Coordinator {
 
             // If a work package has been aborted by something else than the Coordinator. We should abandon it.
             workPackages.values().stream()
-                        .filter(WorkPackage::isAbortTriggered)
+                        .filter(workPackage -> workPackage.isAbortTriggered())
                         .forEach(workPackage -> {
                             advanceReleaseDeadlineFor(workPackage.segment().getSegmentId());
                             abortWorkPackage(workPackage, null);
@@ -1386,7 +1388,7 @@ class Coordinator {
 
             // Chances are no events were scheduled at all. Scheduling regardless will ensure the token claim is held.
             workPackages.values()
-                        .forEach(WorkPackage::scheduleWorker);
+                        .forEach(workPackage -> workPackage.scheduleWorker());
         }
 
         private void offerEventToWorkPackages(MessageStream.Entry<? extends EventMessage> eventEntry) {

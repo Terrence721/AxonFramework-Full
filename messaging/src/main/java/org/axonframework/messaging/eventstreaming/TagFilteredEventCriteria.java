@@ -35,7 +35,7 @@ import static java.util.Objects.requireNonNull;
  * @since 5.0.0
  */
 record TagFilteredEventCriteria(Set<Tag> tags)
-        implements EventCriteria, EventCriterion, EventTypeRestrictableEventCriteria {
+    implements EventCriterion, EventTypeRestrictableEventCriteria {
 
     /**
      * Constructs an {@link EventCriteria} that matches against the given {@code tags}. If the {@code tags} set is

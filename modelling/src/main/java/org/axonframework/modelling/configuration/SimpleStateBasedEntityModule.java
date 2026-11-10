@@ -186,9 +186,12 @@ class SimpleStateBasedEntityModule<ID, E>
                 ComponentDefinition
                         .ofTypeAndName(CommandHandlingComponent.class, entityName())
                         .withBuilder(c -> new EntityCommandHandlingComponent<ID, E>(
-                                c.getComponent(Repository.class, entityName()),
-                                c.getComponent(EntityMetamodel.class, entityName()),
-                                c.getComponent(EntityIdResolver.class, entityName())))
+                            c.getComponent(new TypeReference<Repository<ID, E>>() {
+                            }, entityName()),
+                                c.getComponent(new TypeReference<EntityMetamodel<E>>() {
+                                }, entityName()),
+                                c.getComponent(new TypeReference<EntityIdResolver<ID>>() {
+                                }, entityName())))
                         .onStart(Phase.LOCAL_MESSAGE_HANDLER_REGISTRATIONS, (config, component) -> {
                             config.getComponent(CommandBus.class).subscribe(component);
                             return FutureUtils.emptyCompletedFuture();

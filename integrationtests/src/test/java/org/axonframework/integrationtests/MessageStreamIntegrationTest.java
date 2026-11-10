@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Assertions;
 class MessageStreamIntegrationTest {
     @Test
     void streamsCanTransformAndCollectMessages() {
-        String type = "test";
         Message first = new GenericMessage(new MessageType("example", "Message", MessageType.DEFAULT_VERSION), "one");
         Message second = new GenericMessage(new MessageType("example", "Message", MessageType.DEFAULT_VERSION), "two");
 

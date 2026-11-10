@@ -108,7 +108,7 @@ public final class FluxUtils {
     public static <M extends Message> Publisher<M> streamToPublisher(Supplier<MessageStream<M>> stream) {
         return Mono.fromSupplier(stream)
                    .flatMapMany(FluxUtils::of)
-                   .map(MessageStream.Entry::message);
+                   .map(entry -> java.util.Objects.requireNonNull(entry).message());
     }
 
     static class FluxStreamAdapter<M extends Message> {

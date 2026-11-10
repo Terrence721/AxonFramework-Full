@@ -95,7 +95,7 @@ public final class TracingHandlerEnhancerDefinition implements HandlerEnhancerDe
         return String.format("%s(%s)",
                              executable.getName(),
                              Arrays.stream(executable.getParameterTypes())
-                                   .map(Class::getSimpleName)
+                                   .map(parameterType -> parameterType.getSimpleName())
                                    .collect(Collectors.joining(",")));
     }
 
@@ -181,17 +181,19 @@ public final class TracingHandlerEnhancerDefinition implements HandlerEnhancerDe
 
         @Override
         public String commandName() {
-            return delegateAs(CommandHandlingMember.class).map(CommandHandlingMember::commandName).orElse("");
+            return delegateAs(CommandHandlingMember.class).map(member -> member.commandName()).orElse("");
         }
 
         @Override
         public String routingKey() {
-            return delegateAs(CommandHandlingMember.class).map(CommandHandlingMember::routingKey).orElse("");
+            return delegateAs(CommandHandlingMember.class).map(member -> member.routingKey()).orElse("");
         }
 
         @Override
         public boolean isFactoryHandler() {
-            return delegateAs(CommandHandlingMember.class).map(CommandHandlingMember::isFactoryHandler).orElse(false);
+            return delegateAs(CommandHandlingMember.class)
+                    .map(member -> ((CommandHandlingMember<?>) member).isFactoryHandler())
+                    .orElse(false);
         }
     }
 
@@ -206,7 +208,9 @@ public final class TracingHandlerEnhancerDefinition implements HandlerEnhancerDe
 
         @Override
         public String eventName() {
-            return delegateAs(EventHandlingMember.class).map(EventHandlingMember::eventName).orElse("");
+            return delegateAs(EventHandlingMember.class)
+                    .map(member -> ((EventHandlingMember<?>) member).eventName())
+                    .orElse("");
         }
     }
 
@@ -221,12 +225,16 @@ public final class TracingHandlerEnhancerDefinition implements HandlerEnhancerDe
 
         @Override
         public String queryName() {
-            return delegateAs(QueryHandlingMember.class).map(QueryHandlingMember::queryName).orElse("");
+            return delegateAs(QueryHandlingMember.class)
+                    .map(member -> ((QueryHandlingMember<?>) member).queryName())
+                    .orElse("");
         }
 
         @Override
         public Type resultType() {
-            return delegateAs(QueryHandlingMember.class).map(QueryHandlingMember::resultType).orElse(Object.class);
+            return delegateAs(QueryHandlingMember.class)
+                    .map(member -> ((QueryHandlingMember<?>) member).resultType())
+                    .orElse(Object.class);
         }
     }
 }
