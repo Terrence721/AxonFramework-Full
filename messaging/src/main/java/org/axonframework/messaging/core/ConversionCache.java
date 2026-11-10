@@ -77,10 +77,10 @@ class ConversionCache {
      * {@link Converter#convert(Object, Type) converting}.
      */
     @Nullable
+    @SuppressWarnings("unchecked")
     <T> T convertIfAbsent(Type targetType,
                           Converter converter) {
         if (conversionEnabled) {
-            //noinspection unchecked
             return (T) unwrapNull(conversionCache.computeIfAbsent(
                     new Target(targetType, converter),
                     t -> wrapNull(converter.convert(original, targetType))

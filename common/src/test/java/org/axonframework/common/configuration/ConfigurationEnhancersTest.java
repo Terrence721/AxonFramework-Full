@@ -72,7 +72,6 @@ class ConfigurationEnhancersTest {
     @Test
     void invokeAllOrdering() {
         ConfigurationEnhancers enhancers = new ConfigurationEnhancers();
-        java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger();
         enhancers.register(enhancer(1));
         enhancers.register(enhancer(-1));
         enhancers.invokeAll(new DefaultComponentRegistry());

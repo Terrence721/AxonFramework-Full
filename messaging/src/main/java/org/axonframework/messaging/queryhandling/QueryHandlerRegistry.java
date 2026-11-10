@@ -41,10 +41,10 @@ public interface QueryHandlerRegistry<S extends QueryHandlerRegistry<S>> {
      * @param queryHandler The handler instance that handles {@link QueryMessage queries} for the given names.
      * @return This registry for fluent interfacing.
      */
+    @SuppressWarnings("unchecked")
     default S subscribe(Set<QualifiedName> names,
                         QueryHandler queryHandler) {
         names.forEach(name -> subscribe(name, queryHandler));
-        //noinspection unchecked
         return (S) this;
     }
 

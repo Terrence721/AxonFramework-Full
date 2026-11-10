@@ -74,8 +74,8 @@ public class EventMessageHandlerInterceptorChain implements MessageHandlerInterc
     ) implements EventHandler, MessageHandlerInterceptorChain<EventMessage> {
 
         @Override
-                public MessageStream.Empty<Message> handle(EventMessage event, ProcessingContext context) {
-            //noinspection unchecked,rawtypes
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        public MessageStream.Empty<Message> handle(EventMessage event, ProcessingContext context) {
             return interceptor.interceptOnHandle(event, context, (MessageHandlerInterceptorChain) this)
                               .ignoreEntries();
         }

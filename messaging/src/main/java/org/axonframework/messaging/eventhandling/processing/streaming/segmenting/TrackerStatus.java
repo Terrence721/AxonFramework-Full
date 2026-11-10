@@ -217,13 +217,13 @@ public final class TrackerStatus implements EventTrackerStatus {
     public OptionalLong getCurrentPosition() {
         if (isReplaying()) {
             return WrappedToken.unwrap(trackingToken, ReplayToken.class)
-                               .map(ReplayToken::position)
+                               .map(replayToken -> replayToken.position())
                                .orElse(OptionalLong.empty());
         }
 
         if (isMerging()) {
             return WrappedToken.unwrap(trackingToken, MergedTrackingToken.class)
-                               .map(MergedTrackingToken::position)
+                               .map(mergedTrackingToken -> mergedTrackingToken.position())
                                .orElse(OptionalLong.empty());
         }
 

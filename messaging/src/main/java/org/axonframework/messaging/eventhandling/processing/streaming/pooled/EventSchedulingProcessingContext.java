@@ -94,8 +94,8 @@ class EventSchedulingProcessingContext implements ProcessingContext {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getResource(ResourceKey<T> key) {
-        //noinspection unchecked
         return (T) resources.get(key);
     }
 
@@ -105,36 +105,36 @@ class EventSchedulingProcessingContext implements ProcessingContext {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T putResource(ResourceKey<T> key,
                              T resource) {
-        //noinspection unchecked
         return (T) resources.put(key, resource);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T updateResource(ResourceKey<T> key,
                                 UnaryOperator<T> resourceUpdater) {
-        //noinspection unchecked
         return (T) resources.compute(key, (k, v) -> resourceUpdater.apply((T) v));
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T putResourceIfAbsent(ResourceKey<T> key,
                                      T resource) {
-        //noinspection unchecked
         return (T) resources.putIfAbsent(key, resource);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T computeResourceIfAbsent(ResourceKey<T> key,
                                          Supplier<T> resourceSupplier) {
-        //noinspection unchecked
         return (T) resources.computeIfAbsent(key, t -> resourceSupplier.get());
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T removeResource(ResourceKey<T> key) {
-        //noinspection unchecked
         return (T) resources.remove(key);
     }
 

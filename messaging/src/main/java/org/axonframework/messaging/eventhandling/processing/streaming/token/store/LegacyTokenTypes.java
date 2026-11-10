@@ -60,6 +60,7 @@ public final class LegacyTokenTypes {
     private LegacyTokenTypes() {
     }
 
+    @SuppressWarnings("removal")
     private static Map<String, Class<? extends TrackingToken>> loadMappings() {
         Map<String, Class<? extends TrackingToken>> mappings = new HashMap<>();
         mappings.put("org.axonframework.eventhandling.GlobalSequenceTrackingToken", GlobalSequenceTrackingToken.class);
@@ -72,6 +73,7 @@ public final class LegacyTokenTypes {
         return Map.copyOf(mappings);
     }
 
+    @SuppressWarnings("removal")
     private static void addContributedMappings(Map<String, Class<? extends TrackingToken>> mappings,
                                                LegacyTokenTypeMapper mapper) {
         Objects.requireNonNull(mapper.mappings(), "A LegacyTokenTypeMapper must not return null mappings.")

@@ -17,7 +17,6 @@
 package org.axonframework.eventsourcing.eventstore.tracing.attributes;
 
 import org.axonframework.eventsourcing.eventstore.TagResolver;
-import org.axonframework.messaging.core.Message;
 import org.axonframework.messaging.core.MessageType;
 import org.axonframework.messaging.core.QualifiedName;
 import org.axonframework.messaging.eventhandling.EventMessage;
@@ -29,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EventTagsSpanAttributesProviderTest {
     @Test

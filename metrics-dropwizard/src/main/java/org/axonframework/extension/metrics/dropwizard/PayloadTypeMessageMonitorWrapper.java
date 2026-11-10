@@ -26,6 +26,7 @@ import org.axonframework.messaging.monitoring.MessageMonitor;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -56,7 +57,7 @@ public class PayloadTypeMessageMonitorWrapper<T extends MessageMonitor<Message> 
      * @param monitorSupplier A Supplier of MessageMonitors of type {@code T} for every encountered payload type
      */
     public PayloadTypeMessageMonitorWrapper(Supplier<T> monitorSupplier) {
-        this(monitorSupplier, Class::getName);
+        this(monitorSupplier, type -> Objects.requireNonNull(type).getName());
     }
 
     /**

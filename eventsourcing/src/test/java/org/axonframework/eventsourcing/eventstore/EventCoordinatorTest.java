@@ -16,10 +16,6 @@
 
 package org.axonframework.eventsourcing.eventstore;
 
-import org.axonframework.messaging.eventhandling.EventMessage;
-import org.axonframework.messaging.eventhandling.GenericEventMessage;
-import org.axonframework.messaging.core.MessageType;
-import org.axonframework.messaging.core.QualifiedName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

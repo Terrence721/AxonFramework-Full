@@ -39,10 +39,10 @@ public interface EventHandlerRegistry<S extends EventHandlerRegistry<S>> {
      * @param eventHandler The handler instance that handles {@link EventMessage events} for the given names.
      * @return This registry for fluent interfacing.
      */
+    @SuppressWarnings("unchecked")
     default S subscribe(Set<QualifiedName> names,
                         EventHandler eventHandler) {
         names.forEach(name -> subscribe(name, eventHandler));
-        //noinspection unchecked
         return (S) this;
     }
 

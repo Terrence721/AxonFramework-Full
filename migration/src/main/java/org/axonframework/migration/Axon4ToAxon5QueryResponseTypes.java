@@ -24,6 +24,7 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,11 +77,13 @@ public class Axon4ToAxon5QueryResponseTypes extends Recipe {
     private static final String MULTIPLE_INSTANCES_OF = "multipleInstancesOf";
 
     @Override
+    @NonNull
     public String getDisplayName() {
         return "Unwrap ResponseTypes wrappers on AF5-shape QueryGateway.query(...) calls";
     }
 
     @Override
+    @NonNull
     public String getDescription() {
         return "On two-argument `queryGateway.query(payload, ResponseType)` calls, unwraps the AF4 "
                 + "`ResponseTypes.instanceOf(...)` / `optionalInstanceOf(...)` / `multipleInstancesOf(...)` "
@@ -93,11 +96,12 @@ public class Axon4ToAxon5QueryResponseTypes extends Recipe {
     }
 
     @Override
+    @NonNull
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            public J.@NonNull MethodInvocation visitMethodInvocation(J.@NonNull MethodInvocation method, @NonNull ExecutionContext ctx) {
                 J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
 
                 if (!"query".equals(mi.getSimpleName())) {

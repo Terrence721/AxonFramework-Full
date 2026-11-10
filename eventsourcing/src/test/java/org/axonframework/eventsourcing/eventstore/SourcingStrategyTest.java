@@ -19,7 +19,6 @@ package org.axonframework.eventsourcing.eventstore;
 import org.axonframework.messaging.core.QualifiedName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

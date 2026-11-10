@@ -206,7 +206,7 @@ public class MethodInvokingMessageHandlingMember<T> implements MessageHandlingMe
 
         return CompletableFuture.allOf(futures)
                                 .thenApply(v -> Arrays.stream(futures)
-                                                      .map(CompletableFuture::resultNow)
+                                                      .map(future -> future.getNow(null))
                                                       .toArray());
     }
 

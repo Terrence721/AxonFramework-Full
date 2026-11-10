@@ -130,7 +130,7 @@ public @interface SequencingPolicy {
      *
      * @return The sequencing policy class to instantiate.
      */
-    Class<? extends org.axonframework.messaging.core.sequencing.SequencingPolicy> type() default SequentialPolicy.class;
+    Class<? extends org.axonframework.messaging.core.sequencing.SequencingPolicy<?>> type() default SequentialPolicy.class;
 
     /**
      * String parameters to pass to the sequencing policy constructor.

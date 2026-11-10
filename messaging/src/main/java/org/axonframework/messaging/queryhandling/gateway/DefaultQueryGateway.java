@@ -145,7 +145,7 @@ public class DefaultQueryGateway implements QueryGateway {
                                            @Nullable ProcessingContext context) {
         return Mono.fromSupplier(() -> asQueryMessage(query, metadata))
                    .flatMapMany(queryMessage -> FluxUtils.of(queryBus.query(queryMessage, context)))
-                   .map(MessageStream.Entry::message)
+                   .map(entry -> entry.message())
                    .mapNotNull(m -> m.payloadAs(responseType, converter));
     }
 

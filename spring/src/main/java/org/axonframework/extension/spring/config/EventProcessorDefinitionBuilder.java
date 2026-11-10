@@ -83,8 +83,8 @@ class EventProcessorDefinitionBuilder<T extends EventProcessorConfiguration>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public EventProcessorConfiguration applySettings(EventProcessorConfiguration settings) {
-        //noinspection unchecked
         return configurationCustomizer.apply((T) settings);
     }
 

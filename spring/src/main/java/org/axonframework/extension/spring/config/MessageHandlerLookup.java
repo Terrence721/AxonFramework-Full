@@ -158,7 +158,7 @@ public class MessageHandlerLookup implements BeanDefinitionRegistryPostProcessor
                     .entrySet()
                     .stream()
                     .sorted(java.util.Map.Entry.comparingByValue())
-                    .map(java.util.Map.Entry::getKey)
+                    .map(entry -> entry.getKey())
                     .collect(Collectors.toList());
     }
 

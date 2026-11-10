@@ -109,13 +109,12 @@ public class ChainedConverter<S, T> implements ContentTypeConverter<S, T> {
      * @param delegates The chain of delegates to perform the conversion.
      */
 
+    @SuppressWarnings("unchecked")
     public ChainedConverter(List<ContentTypeConverter<?, ?>> delegates) {
         Assert.isTrue(!delegates.isEmpty(), () -> "The given delegates may not be null or empty");
         Assert.isTrue(isContinuous(delegates), () -> "The given delegates must form a continuous chain");
         this.delegates = new ArrayList<>(delegates);
-        //noinspection unchecked
         this.source = (Class<S>) this.delegates.getFirst().expectedSourceType();
-        //noinspection unchecked
         this.target = (Class<T>) this.delegates.getLast().targetType();
     }
 
@@ -144,13 +143,13 @@ public class ChainedConverter<S, T> implements ContentTypeConverter<S, T> {
     @Override
     public @Nullable T convert(@Nullable S input) {
         Object intermediate = input;
-        //noinspection rawtypes - Supressed inspection as each step has a different type
-        for (ContentTypeConverter step : delegates) {
-            //noinspection unchecked
-            intermediate = step.convert(intermediate);
+        for (ContentTypeConverter<?, ?> step : delegates) {
+            @SuppressWarnings("unchecked")
+            ContentTypeConverter<Object, Object> typedStep = (ContentTypeConverter<Object, Object>) step;
+            intermediate = typedStep.convert(intermediate);
         }
-        //noinspection ReassignedVariable,unchecked
-        return (T) intermediate;
+        //noinspection ReassignedVariable
+        return target.cast(intermediate);
     }
 
     /**

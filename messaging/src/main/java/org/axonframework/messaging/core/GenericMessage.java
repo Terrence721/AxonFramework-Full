@@ -183,17 +183,22 @@ public class GenericMessage extends AbstractMessage {
     @Nullable
     public <T> T payloadAs(Type type, @Nullable Converter converter) {
         //noinspection rawtypes,unchecked
-        if (type instanceof Class clazz && clazz.isAssignableFrom(payloadType()) || Void.class.equals(payloadType())) {
-            //noinspection unchecked
-            return (T) payload();
+        if (type instanceof Class<?> clazz && clazz.isAssignableFrom(payloadType())) {
+            @SuppressWarnings("unchecked")
+            T typedPayload = (T) clazz.cast(payload());
+            return typedPayload;
+        }
+        if (Void.class.equals(payloadType())) {
+            return null;
         }
 
         if (converter == null) {
             if (TypeReference.fromType(type).getTypeAsClass().isAssignableFrom(payloadType())) {
                 // Without a converter the type arguments cannot be converted or validated. As the payload is already
                 // assignable to the requested type's erasure, return it as is instead of failing.
-                //noinspection unchecked
-                return (T) payload();
+                @SuppressWarnings("unchecked")
+                T typedPayload = (T) payload();
+                return typedPayload;
             }
             throw new ConversionException("Cannot convert " + payloadType() + " to " + type + " without a converter.");
         }

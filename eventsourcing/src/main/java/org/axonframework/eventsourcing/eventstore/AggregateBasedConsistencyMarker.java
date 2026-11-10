@@ -88,7 +88,7 @@ public class AggregateBasedConsistencyMarker extends AbstractConsistencyMarker<A
      */
     @Override
     public AggregateBasedConsistencyMarker doLowerBound(AggregateBasedConsistencyMarker other) {
-        return combineWith(other, Math::min);
+        return combineWith(other, (left, right) -> left.compareTo(right) <= 0 ? left : right);
     }
 
     /**
@@ -104,7 +104,7 @@ public class AggregateBasedConsistencyMarker extends AbstractConsistencyMarker<A
      */
     @Override
     public AggregateBasedConsistencyMarker doUpperBound(AggregateBasedConsistencyMarker other) {
-        return combineWith(other, Math::max);
+        return combineWith(other, (left, right) -> left.compareTo(right) >= 0 ? left : right);
     }
 
     private AggregateBasedConsistencyMarker combineWith(AggregateBasedConsistencyMarker other,

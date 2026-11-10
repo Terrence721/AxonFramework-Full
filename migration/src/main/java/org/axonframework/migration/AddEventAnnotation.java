@@ -22,14 +22,18 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -64,35 +68,36 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
     }
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Add @Event to event payload classes";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Scans @EventSourcingHandler methods and annotates their event parameter types with "
                 + "@Event. Migrates @Revision(\"x\") on the class to @Event(version = \"x\"), "
                 + "removing the now-obsolete @Revision annotation.";
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(@NonNull ExecutionContext ctx) {
         return new Accumulator();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public @NonNull TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method,
-                                                              ExecutionContext ctx) {
+            public J.@NonNull MethodDeclaration visitMethodDeclaration(J.@NonNull MethodDeclaration method,
+                                                                       @NonNull ExecutionContext ctx) {
                 if (isEventSourcingHandler(method)) {
                     List<Statement> params = method.getParameters();
                     if (!params.isEmpty() && params.get(0) instanceof J.VariableDeclarations) {
                         J.VariableDeclarations firstParam = (J.VariableDeclarations) params.get(0);
-                        if (firstParam.getTypeExpression() != null) {
+                        TypeTree typeExpression = firstParam.getTypeExpression();
+                        if (typeExpression != null) {
                             JavaType.FullyQualified fqType = TypeUtils.asFullyQualified(
-                                    firstParam.getTypeExpression().getType());
+                                    typeExpression.getType());
                             if (fqType != null
                                     && !fqType.getFullyQualifiedName().startsWith("org.axonframework")) {
                                 acc.eventTypeFqns.add(fqType.getFullyQualifiedName());
@@ -116,14 +121,15 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public @NonNull TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
         return new JavaIsoVisitor<>() {
 
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl,
-                                                            ExecutionContext ctx) {
-                if (classDecl.getType() == null
-                        || !acc.eventTypeFqns.contains(classDecl.getType().getFullyQualifiedName())
+            public J.@NonNull ClassDeclaration visitClassDeclaration(J.@NonNull ClassDeclaration classDecl,
+                                                                     @NonNull ExecutionContext ctx) {
+                JavaType.FullyQualified classType = classDecl.getType();
+                if (classType == null
+                    || !acc.eventTypeFqns.contains(classType.getFullyQualifiedName())
                         || hasAnnotation(classDecl, EVENT_FQN)) {
                     return super.visitClassDeclaration(classDecl, ctx);
                 }
@@ -132,13 +138,21 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
                 String annotationText = revisionValue != null
                         ? "@Event(version = \"" + revisionValue + "\")"
                         : "@Event";
+                @NonNull String[] runtimeClasspath = Objects.requireNonNull(JavaParser.runtimeClasspath().stream()
+                    .map(Objects::requireNonNull)
+                    .toArray(size -> new @NonNull String[size]));
+
+                var parserBuilder = JavaParser.fromJavaVersion().classpath(runtimeClasspath);
+                if (parserBuilder == null) {
+                    throw new IllegalStateException("JavaParser classpath configuration returned null");
+                }
 
                 // Add @Event FIRST. JavaTemplate.apply walks the visitor's cursor (which still
                 // references the un-modified `classDecl`), so removing @Revision beforehand
                 // would be silently discarded by the apply.
-                J.ClassDeclaration annotated = JavaTemplate.builder(annotationText)
+                J.@NonNull ClassDeclaration annotated = JavaTemplate.builder(annotationText)
                         .imports(EVENT_FQN)
-                        .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
+                        .javaParser(parserBuilder)
                         .build()
                         .apply(getCursor(), classDecl.getCoordinates().addAnnotation((a, b) -> 0));
                 maybeAddImport(EVENT_FQN, null, false);
@@ -153,7 +167,7 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
         };
     }
 
-    private static boolean hasAnnotation(J.ClassDeclaration cd, String fqn) {
+    private static boolean hasAnnotation(J.ClassDeclaration cd, @NonNull String fqn) {
         for (J.Annotation ann : cd.getLeadingAnnotations()) {
             if (TypeUtils.isOfClassType(ann.getType(), fqn)) {
                 return true;
@@ -181,8 +195,9 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
             if (!isRevision) {
                 continue;
             }
-            if (ann.getArguments() != null && !ann.getArguments().isEmpty()) {
-                J arg = ann.getArguments().get(0);
+            List<Expression> arguments = ann.getArguments();
+            if (arguments != null && !arguments.isEmpty()) {
+                J arg = arguments.get(0);
                 if (arg instanceof J.Literal) {
                     Object val = ((J.Literal) arg).getValue();
                     if (val != null) {
@@ -204,7 +219,8 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
         return null;
     }
 
-    private static J.ClassDeclaration removeClassAnnotation(J.ClassDeclaration cd, String fqn) {
+    private static J.@NonNull ClassDeclaration removeClassAnnotation(J.@NonNull ClassDeclaration cd,
+                                                                      @NonNull String fqn) {
         List<J.Annotation> originals = cd.getLeadingAnnotations();
         List<J.Annotation> remaining = new ArrayList<>();
         boolean firstWasRemoved = false;
@@ -235,6 +251,6 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
             J.Annotation newFirst = remaining.get(0).withPrefix(removedFirstPrefix);
             remaining.set(0, newFirst);
         }
-        return cd.withLeadingAnnotations(remaining);
+        return Objects.requireNonNull(cd.withLeadingAnnotations(remaining));
     }
 }

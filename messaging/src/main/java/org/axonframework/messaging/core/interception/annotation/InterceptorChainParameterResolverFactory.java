@@ -95,10 +95,10 @@ public class InterceptorChainParameterResolverFactory
      * @return the interceptor chain registered in the context, or {@code null} if not present
      */
     @Nullable
+    @SuppressWarnings("unchecked")
     public static <M extends Message> MessageHandlerInterceptorChain<M> currentInterceptorChain(
             ProcessingContext processingContext
     ) {
-        //noinspection unchecked
         return (MessageHandlerInterceptorChain<M>) processingContext.getResource(INTERCEPTOR_CHAIN_KEY);
     }
 

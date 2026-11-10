@@ -178,7 +178,7 @@ public class AnnotationBasedEntityEvolvingComponent<E> implements EntityEvolving
     ) {
         return inspector.getAllHandlers().entrySet().stream()
                         .collect(Collectors.toUnmodifiableMap(
-                                Map.Entry::getKey,
+                                entry -> entry.getKey(),
                                 entry -> indexHandlersByEventName(entry.getValue(), messageTypeResolver)
                         ));
     }
@@ -201,7 +201,7 @@ public class AnnotationBasedEntityEvolvingComponent<E> implements EntityEvolving
     private QualifiedName eventName(MessageHandlingMember<? super E> handler,
                                     MessageTypeResolver messageTypeResolver) {
         return handler.unwrap(EventHandlingMember.class)
-                      .map(EventHandlingMember::eventName)
+                      .map(member -> member.eventName())
                       .filter(StringUtils::nonEmpty)
                       .map(QualifiedName::new)
                       .orElseGet(() -> messageTypeResolver.resolveOrThrow(handler.payloadType()).qualifiedName());

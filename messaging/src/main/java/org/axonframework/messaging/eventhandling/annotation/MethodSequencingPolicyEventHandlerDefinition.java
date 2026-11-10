@@ -68,7 +68,7 @@ public class MethodSequencingPolicyEventHandlerDefinition implements HandlerEnha
         // @HasHandlerAttributes only scans the method, not the declaring class
         if (policyType.isEmpty()) {
             Optional<SequencingPolicy> classLevelAnnotation = original.unwrap(Method.class)
-                                                                      .map(Method::getDeclaringClass)
+                                                                      .map(method -> method.getDeclaringClass())
                                                                       .map(clazz -> clazz.getAnnotation(SequencingPolicy.class));
 
             if (classLevelAnnotation.isPresent()) {

@@ -315,7 +315,7 @@ public class JpaTokenStore implements TokenStore {
                   .setLockMode(LockModeType.NONE)
                   .getResultList();
 
-        return resultList.stream().map(TokenEntry::getSegment).toList();
+        return resultList.stream().map((@NonNull TokenEntry tokenEntry) -> tokenEntry.getSegment()).toList();
     }
 
     @Override
@@ -333,7 +333,7 @@ public class JpaTokenStore implements TokenStore {
 
             return resultList.stream()
                              .filter(tokenEntry -> tokenEntry.mayClaim(nodeId, claimTimeout))
-                             .map(TokenEntry::getSegment)
+                             .map((@NonNull TokenEntry tokenEntry) -> tokenEntry.getSegment())
                              .collect(Collectors.toList());
         });
     }

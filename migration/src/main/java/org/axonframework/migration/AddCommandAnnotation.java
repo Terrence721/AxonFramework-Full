@@ -35,8 +35,10 @@ import org.jspecify.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Scans for methods annotated with {@code @CommandHandler} and annotates their command parameter
@@ -167,14 +169,16 @@ public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Ac
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public @NonNull TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
         return new JavaIsoVisitor<>() {
 
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl,
-                                                            ExecutionContext ctx) {
-                if (classDecl.getType() == null
-                        || !acc.commandTypeFqns.contains(classDecl.getType().getFullyQualifiedName())) {
+                public J.@NonNull ClassDeclaration visitClassDeclaration(
+                    J.@NonNull ClassDeclaration classDecl, @NonNull ExecutionContext ctx) {
+                JavaType classType = classDecl.getType();
+                JavaType.FullyQualified fullyQualifiedClassType = TypeUtils.asFullyQualified(classType);
+                if (fullyQualifiedClassType == null
+                    || !acc.commandTypeFqns.contains(fullyQualifiedClassType.getFullyQualifiedName())) {
                     return super.visitClassDeclaration(classDecl, ctx);
                 }
 
@@ -222,11 +226,17 @@ public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Ac
                 // Add the class-level @Command annotation FIRST. JavaTemplate.apply walks this
                 // visitor's cursor (which still references the un-modified `classDecl`), so any
                 // child mutations applied beforehand would be silently discarded by the apply.
-                J.ClassDeclaration annotated = JavaTemplate.builder(annotationText)
+                JavaParser.Builder<? extends JavaParser, ?> parserBuilder = JavaParser.fromJavaVersion();
+                parserBuilder.classpath(JavaParser.runtimeClasspath());
+                Object applied = JavaTemplate.builder(annotationText)
                         .imports(COMMAND_FQN)
-                        .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
+                        .javaParser(parserBuilder)
                         .build()
                         .apply(getCursor(), classDecl.getCoordinates().addAnnotation((a, b) -> 0));
+                if (!(applied instanceof J.ClassDeclaration)) {
+                    throw new IllegalStateException("Adding @Command did not return a class declaration");
+                }
+                J.@NonNull ClassDeclaration annotated = (J.ClassDeclaration) applied;
                 maybeAddImport(COMMAND_FQN, null, false);
 
                 // Now strip @RoutingKey from record components and body fields on the
@@ -243,13 +253,16 @@ public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Ac
             }
 
             @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVar,
-                                                                     ExecutionContext ctx) {
-                J.VariableDeclarations vd = super.visitVariableDeclarations(multiVar, ctx);
+            public J.@NonNull VariableDeclarations visitVariableDeclarations(
+                    J.@NonNull VariableDeclarations multiVar, @NonNull ExecutionContext ctx) {
+                J.@NonNull VariableDeclarations vd = super.visitVariableDeclarations(multiVar, ctx);
                 J.ClassDeclaration enclosingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                if (enclosingClass == null || enclosingClass.getType() == null
-                        || !acc.commandTypeFqns.contains(
-                                enclosingClass.getType().getFullyQualifiedName())) {
+                if (enclosingClass == null) {
+                    return vd;
+                }
+                JavaType.FullyQualified enclosingType = enclosingClass.getType();
+                if (enclosingType == null
+                    || !acc.commandTypeFqns.contains(enclosingType.getFullyQualifiedName())) {
                     return vd;
                 }
                 if (!hasRoutingKeyAnnotation(vd)) {
@@ -314,8 +327,9 @@ public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Ac
      * field matches.
      */
     private static String findFieldName(J.ClassDeclaration cd, Predicate<J.VariableDeclarations> matcher) {
-        if (cd.getPrimaryConstructor() != null) {
-            for (Statement stmt : cd.getPrimaryConstructor()) {
+        List<Statement> primaryConstructor = cd.getPrimaryConstructor();
+        if (primaryConstructor != null) {
+            for (Statement stmt : primaryConstructor) {
                 if (stmt instanceof J.VariableDeclarations) {
                     J.VariableDeclarations vd = (J.VariableDeclarations) stmt;
                     if (matcher.test(vd) && !vd.getVariables().isEmpty()) {
@@ -391,9 +405,10 @@ public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Ac
      * method returns, because this helper operates on the already-present annotation and the
      * import for {@code @Command} should already exist.
      */
-    private static J.ClassDeclaration addRoutingKeyToCommandAnnotation(J.ClassDeclaration classDecl,
-                                                                        String routingKeyField,
-                                                                        Cursor outerCursor) {
+    @SuppressWarnings("null")
+    private static J.@NonNull ClassDeclaration addRoutingKeyToCommandAnnotation(J.ClassDeclaration classDecl,
+                                                                                 String routingKeyField,
+                                                                                 Cursor outerCursor) {
         List<J.Annotation> updatedAnns = new ArrayList<>(classDecl.getLeadingAnnotations());
         for (int i = 0; i < updatedAnns.size(); i++) {
             J.Annotation ann = updatedAnns.get(i);
@@ -411,7 +426,10 @@ public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Ac
             Cursor annCursor = new Cursor(outerCursor, ann);
             J.Annotation replacement = JavaTemplate.builder("@Command(routingKey = \"" + routingKeyField + "\")")
                     .imports(COMMAND_FQN)
-                    .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
+                        .javaParser(JavaParser.fromJavaVersion().classpath(
+                            JavaParser.runtimeClasspath().stream()
+                                    .map(Objects::requireNonNull)
+                                    .collect(Collectors.toList())))
                     .build()
                     .apply(annCursor, ann.getCoordinates().replace());
             updatedAnns.set(i, replacement);
@@ -453,11 +471,13 @@ public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Ac
      * Removes the {@code @RoutingKey} annotation from all record components and body fields of
      * the given class declaration, returning the rewritten class declaration.
      */
-    private static J.ClassDeclaration removeRoutingKeyFromComponentsAndFields(J.ClassDeclaration cd) {
-        J.ClassDeclaration result = cd;
-        if (result.getPrimaryConstructor() != null) {
-            List<Statement> rewritten = new ArrayList<>(result.getPrimaryConstructor().size());
-            for (Statement stmt : result.getPrimaryConstructor()) {
+    private static J.@NonNull ClassDeclaration removeRoutingKeyFromComponentsAndFields(
+            J.@NonNull ClassDeclaration cd) {
+        J.@NonNull ClassDeclaration result = cd;
+        List<Statement> primaryConstructor = result.getPrimaryConstructor();
+        if (primaryConstructor != null) {
+            List<Statement> rewritten = new ArrayList<>(primaryConstructor.size());
+            for (Statement stmt : primaryConstructor) {
                 if (stmt instanceof J.VariableDeclarations) {
                     rewritten.add(stripRoutingKey((J.VariableDeclarations) stmt));
                 } else {
@@ -484,7 +504,7 @@ public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Ac
      * Removes any {@code @RoutingKey} leading annotation from {@code vd}, fixing up the spacing
      * that would otherwise be left attached to the now-removed annotation.
      */
-    private static J.VariableDeclarations stripRoutingKey(J.VariableDeclarations vd) {
+    private static J.@NonNull VariableDeclarations stripRoutingKey(J.@NonNull VariableDeclarations vd) {
         List<J.Annotation> remaining = new ArrayList<>();
         boolean removed = false;
         for (J.Annotation ann : vd.getLeadingAnnotations()) {
@@ -506,10 +526,13 @@ public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Ac
                 result = result.withModifiers(Space.formatFirstPrefix(
                         result.getModifiers(),
                         Space.firstPrefix(result.getModifiers()).withWhitespace("")));
-            } else if (result.getTypeExpression() != null) {
-                result = result.withTypeExpression(
-                        result.getTypeExpression().withPrefix(
-                                result.getTypeExpression().getPrefix().withWhitespace("")));
+            } else {
+                J typeExpression = result.getTypeExpression();
+                if (typeExpression != null) {
+                    result = result.withTypeExpression(
+                            typeExpression.withPrefix(
+                                    typeExpression.getPrefix().withWhitespace("")));
+                }
             }
         }
         return result;
@@ -555,7 +578,7 @@ public class AddCommandAnnotation extends ScanningRecipe<AddCommandAnnotation.Ac
         return false;
     }
 
-    private static boolean hasAnnotation(J.ClassDeclaration cd, String fqn) {
+    private static boolean hasAnnotation(J.ClassDeclaration cd, @NonNull String fqn) {
         for (J.Annotation ann : cd.getLeadingAnnotations()) {
             if (TypeUtils.isOfClassType(ann.getType(), fqn)) {
                 return true;

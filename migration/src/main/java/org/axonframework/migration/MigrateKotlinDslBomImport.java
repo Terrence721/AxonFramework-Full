@@ -18,6 +18,7 @@ package org.axonframework.migration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
@@ -30,6 +31,7 @@ import org.openrewrite.kotlin.tree.K;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Rewrites Kotlin DSL Spring Dependency Management {@code mavenBom(...)}
@@ -120,12 +122,12 @@ public class MigrateKotlinDslBomImport extends Recipe {
     }
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Migrate Kotlin DSL `mavenBom(...)` import (with property indirection)";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Swaps the `groupId:artifactId` prefix of a Spring Dependency "
                 + "Management `mavenBom(\"g:a:${property(\"...\")}\")` call in a "
                 + "`build.gradle.kts` script, leaving the `${property(...)}` "
@@ -137,13 +139,13 @@ public class MigrateKotlinDslBomImport extends Recipe {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
+    public @NonNull TreeVisitor<?, ExecutionContext> getVisitor() {
         String oldPrefix = oldGroupId + ":" + oldArtifactId + ":";
         String newPrefix = newGroupId + ":" + newArtifactId + ":";
 
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+            public J.@NonNull MethodInvocation visitMethodInvocation(J.@NonNull MethodInvocation method, @NonNull ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
                 if ("mavenBom".equals(m.getSimpleName()) && !m.getArguments().isEmpty()) {
                     Expression first = m.getArguments().get(0);
@@ -160,7 +162,7 @@ public class MigrateKotlinDslBomImport extends Recipe {
             }
 
             @Override
-            public J.Assignment visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
+            public J.@NonNull Assignment visitAssignment(J.@NonNull Assignment assignment, @NonNull ExecutionContext ctx) {
                 J.Assignment a = super.visitAssignment(assignment, ctx);
                 if (extraPropertyKey != null && newVersion != null) {
                     return maybeUpdateExtraSubscriptAssignment(a, extraPropertyKey, newVersion);
@@ -210,8 +212,8 @@ public class MigrateKotlinDslBomImport extends Recipe {
      * expression. We pattern-match on that exact shape so a subscript
      * assignment on something other than {@code extra} is left untouched.
      */
-    private static J.Assignment maybeUpdateExtraSubscriptAssignment(
-            J.Assignment assignment, String key, String newValue) {
+        private static J.@NonNull Assignment maybeUpdateExtraSubscriptAssignment(
+            J.@NonNull Assignment assignment, String key, String newValue) {
         Expression variable = assignment.getVariable();
         if (!(variable instanceof J.MethodInvocation)) {
             return assignment;
@@ -248,6 +250,6 @@ public class MigrateKotlinDslBomImport extends Recipe {
         String oldSource = valueLiteral.getValueSource();
         String newSource = oldSource == null ? "\"" + newValue + "\"" : oldSource.replace((String) oldValue, newValue);
         J.Literal newValueLiteral = valueLiteral.withValue(newValue).withValueSource(newSource);
-        return assignment.withAssignment(newValueLiteral);
+        return Objects.requireNonNull(assignment.withAssignment(newValueLiteral));
     }
 }

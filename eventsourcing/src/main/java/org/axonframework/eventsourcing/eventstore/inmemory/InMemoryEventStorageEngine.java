@@ -46,7 +46,6 @@ import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Optional;
@@ -151,7 +150,7 @@ public class InMemoryEventStorageEngine implements EventStorageEngine {
                                       }
                                       return (ConsistencyMarker) new GlobalIndexConsistencyMarker(marker);
                                   })
-                                  .reduce(ConsistencyMarker::upperBound)
+                                  .reduce((left, right) -> left.upperBound(right))
                                   .orElse(ConsistencyMarker.ORIGIN);
 
                     // Publish the batch with a single position advance, once every event of it is stored. Readers are
@@ -291,10 +290,10 @@ public class InMemoryEventStorageEngine implements EventStorageEngine {
                                Instant eventTimestamp = event.timestamp();
                                return eventTimestamp.equals(at) || eventTimestamp.isAfter(at);
                            })
-                           .map(Map.Entry::getKey)
-                           .min(Comparator.comparingLong(Long::longValue))
+                           .map(entry -> entry.getKey())
+                           .min(Comparator.naturalOrder())
                            .map(position -> position - 1)
-                           .map(GlobalSequenceTrackingToken::new)
+                           .map(position -> new GlobalSequenceTrackingToken(position))
                            .map(tt -> (TrackingToken) tt)
                            .map(CompletableFuture::completedFuture)
                            .orElseGet(this::latestToken);

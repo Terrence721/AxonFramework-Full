@@ -265,8 +265,7 @@ public class SpringComponentRegistry implements
                         String.format("Class %s is not a ConfigurationEnhancer", fullyQualifiedClassName)
                 );
             }
-            //noinspection unchecked
-            return disableEnhancer((Class<? extends ConfigurationEnhancer>) enhancerClass);
+            return disableEnhancer(enhancerClass.asSubclass(ConfigurationEnhancer.class));
         } catch (ClassNotFoundException e) {
             logger.warn(
                     "Disabling Configuration Enhancer [{}] won't take effect as the enhancer class could not be found.",
@@ -349,12 +348,14 @@ public class SpringComponentRegistry implements
         }
 
         Component<?> springComponent = new SpringComponent<>(componentId, bean);
-        //noinspection rawtypes
-        for (DecoratorDefinition.CompletedDecoratorDefinition decorator : decorators) {
-            //noinspection unchecked
+        for (DecoratorDefinition.CompletedDecoratorDefinition<?, ?> decorator : decorators) {
             if (decorator.matches(componentId)) {
-                //noinspection unchecked
-                springComponent = decorator.decorate(springComponent);
+                @SuppressWarnings("unchecked")
+                DecoratorDefinition.CompletedDecoratorDefinition<Object, Object> typedDecorator =
+                        (DecoratorDefinition.CompletedDecoratorDefinition<Object, Object>) decorator;
+                @SuppressWarnings("unchecked")
+                Component<Object> typedComponent = (Component<Object>) springComponent;
+                springComponent = typedDecorator.decorate(typedComponent);
             }
         }
         // Initialize the components lifecycle handlers, by adapting them into SmartLifecycle beans through the SpringLifecycleRegistry.
@@ -472,7 +473,7 @@ public class SpringComponentRegistry implements
         ServiceLoader<ConfigurationEnhancer> enhancerLoader =
                 ServiceLoader.load(ConfigurationEnhancer.class, getClass().getClassLoader());
         enhancerLoader.stream()
-                      .map(ServiceLoader.Provider::get)
+                      .map(provider -> provider.get())
                       .filter(enhancer -> !disabledEnhancers.contains(enhancer.getClass()))
                       .forEach(this::registerEnhancer);
     }
@@ -529,22 +530,33 @@ public class SpringComponentRegistry implements
      * {@link #registerDecorator(DecoratorDefinition) registers} them.
      */
     private void scanForDecoratorDefinitions() {
-        //noinspection unchecked
-        beanFactory.getBeansOfType(DecoratorDefinition.class)
-                   .forEach((beanName, decorator) -> registerDecorator(decorator));
+        for (String beanName : beanFactory.getBeanNamesForType(DecoratorDefinition.class)) {
+            Object bean = beanFactory.getBean(beanName);
+            if (bean instanceof DecoratorDefinition.CompletedDecoratorDefinition<?, ?> decorator) {
+                logger.debug("Registering decorator definition: [{}]", bean);
+                decorators.add(decorator);
+            } else {
+                throw new IllegalArgumentException("Unsupported decorator definition type: " + bean);
+            }
+        }
     }
 
     /**
      * Decorate all components that have been {@link #registerComponent(ComponentDefinition) registered directly} or
      * registered through a {@link ConfigurationEnhancer}.
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings("unchecked")
     private void decorateComponents() {
-        decorators.sort(Comparator.comparingInt(DecoratorDefinition.CompletedDecoratorDefinition::order));
-        for (DecoratorDefinition.CompletedDecoratorDefinition decorator : decorators) {
-            for (Component.Identifier id : components.identifiers()) {
+        decorators.sort(Comparator.comparingInt(
+            (DecoratorDefinition.CompletedDecoratorDefinition<?, ?> decorator) -> decorator.order()
+        ));
+        for (DecoratorDefinition.CompletedDecoratorDefinition<?, ?> decorator : decorators) {
+            for (Component.Identifier<?> id : components.identifiers()) {
                 if (decorator.matches(id)) {
-                    components.replace(id, decorator::decorate);
+                        DecoratorDefinition.CompletedDecoratorDefinition<Object, Object> typedDecorator =
+                            (DecoratorDefinition.CompletedDecoratorDefinition<Object, Object>) decorator;
+                    components.replace((Component.Identifier<Object>) id,
+                                   component -> typedDecorator.decorate(component));
                 }
             }
         }
@@ -619,8 +631,8 @@ public class SpringComponentRegistry implements
      * {@link #postProcessBeanFactory(ConfigurableListableBeanFactory)} method and
      * {@link #registerFactory(ComponentFactory) registers} them.
      */
+    @SuppressWarnings("unchecked")
     private void scanForComponentFactories() {
-        //noinspection unchecked
         beanFactory.getBeansOfType(ComponentFactory.class)
                    .forEach((beanName, factory) -> registerFactory(factory));
     }
@@ -699,7 +711,7 @@ public class SpringComponentRegistry implements
         }
 
         @Override
-        @SuppressWarnings("unchecked,DataFlowIssue")
+        @SuppressWarnings({"unchecked", "DataFlowIssue"})
         public <C> C getComponent(TypeReference<C> typeReference, @Nullable String name) {
             Assert.notNull(name, () -> "Spring does not allow the use of null names for component retrieval.");
             try {
@@ -722,7 +734,7 @@ public class SpringComponentRegistry implements
         }
 
         @Override
-        @SuppressWarnings("unchecked,DataFlowIssue")
+        @SuppressWarnings({"unchecked", "DataFlowIssue"})
         public <C> Optional<C> getOptionalComponent(TypeReference<C> typeReference, @Nullable String name) {
             Assert.notNull(name, () -> "Spring does not allow the use of null names for component retrieval.");
             try {

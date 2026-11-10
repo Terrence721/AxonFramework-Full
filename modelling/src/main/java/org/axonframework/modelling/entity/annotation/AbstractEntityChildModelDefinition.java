@@ -67,7 +67,7 @@ public abstract class AbstractEntityChildModelDefinition implements EntityChildM
             return Optional.empty();
         }
 
-        //noinspection unchecked - this is the actual C type
+        @SuppressWarnings("unchecked")
         Class<C> childType = (Class<C>) getChildTypeFromMember(member);
         AnnotatedEntityMetamodel<C> childModel = metamodelFactory.createMetamodelForType(childType);
 
@@ -125,17 +125,15 @@ public abstract class AbstractEntityChildModelDefinition implements EntityChildM
             CommandTargetResolver<C> commandTargetResolver);
 
     private EventTargetMatcherDefinition constructForwardingDefinition(Map<String, Object> attributes) {
-        //noinspection unchecked
-        Class<EventTargetMatcherDefinition> definitionClazz =
-                (Class<EventTargetMatcherDefinition>) attributes.get("eventTargetMatcher");
+        Class<? extends EventTargetMatcherDefinition> definitionClazz =
+                ((Class<?>) attributes.get("eventTargetMatcher")).asSubclass(EventTargetMatcherDefinition.class);
         return ConstructorUtils.getConstructorFunctionWithZeroArguments(definitionClazz).get();
     }
 
     private CommandTargetResolverDefinition constructCommandChildEntityResolver(
             Map<String, Object> attributes) {
-        //noinspection unchecked
-        Class<CommandTargetResolverDefinition> definitionClazz =
-                (Class<CommandTargetResolverDefinition>) attributes.get("commandTargetResolver");
+        Class<? extends CommandTargetResolverDefinition> definitionClazz =
+                ((Class<?>) attributes.get("commandTargetResolver")).asSubclass(CommandTargetResolverDefinition.class);
         return ConstructorUtils.getConstructorFunctionWithZeroArguments(definitionClazz).get();
     }
 }

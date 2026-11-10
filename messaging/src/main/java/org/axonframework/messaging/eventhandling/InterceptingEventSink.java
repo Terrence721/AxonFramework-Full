@@ -110,7 +110,7 @@ public class InterceptingEventSink implements EventSink {
 
             return MessageStream.fromIterable(events)
                 .flatMap(entry -> interceptorChain.proceed(entry.message(), context).<M>cast())
-                .collect(ArrayList<M>::new, List::add)
+                .collect(ArrayList<M>::new, (collectedEvents, event) -> collectedEvents.add(event))
                 .thenCompose(interceptedEvents -> delegate.publish(context, interceptedEvents));
         }
     }

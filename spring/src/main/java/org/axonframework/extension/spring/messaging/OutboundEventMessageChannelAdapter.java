@@ -117,7 +117,7 @@ public class OutboundEventMessageChannelAdapter implements InitializingBean {
      * @param event The Axon EventMessage to transform
      * @return The Spring Messaging Message representing the Event Message
      */
-    protected Message transform(EventMessage event) {
+    protected Message<?> transform(EventMessage event) {
         return eventMessageConverter.convertToOutboundMessage(event);
     }
 }

@@ -213,7 +213,7 @@ public class AddAxonTestFixtureTearDown extends Recipe {
              * common case where {@code junit-jupiter-api} is not on the parser
              * classpath, which would otherwise leave annotation types unresolved).
              */
-            private boolean hasMethodAnnotation(J.ClassDeclaration cd, String fqn, String simpleName) {
+            private boolean hasMethodAnnotation(J.ClassDeclaration cd, @NonNull String fqn, String simpleName) {
                 for (Statement st : cd.getBody().getStatements()) {
                     if (!(st instanceof J.MethodDeclaration)) {
                         continue;

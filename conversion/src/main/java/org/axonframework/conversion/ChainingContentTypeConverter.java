@@ -76,11 +76,10 @@ public class ChainingContentTypeConverter implements Converter {
      * @param classLoader The class loader used to load the {@link ContentTypeConverter ContentTypeConverters}.
      */
     public ChainingContentTypeConverter(ClassLoader classLoader) {
-        //noinspection rawtypes
-        ServiceLoader<ContentTypeConverter> converterLoader =
+        ServiceLoader<?> converterLoader =
                 ServiceLoader.load(ContentTypeConverter.class, classLoader);
-        for (ContentTypeConverter<?, ?> converter : converterLoader) {
-            converters.add(converter);
+        for (Object converter : converterLoader) {
+            converters.add((ContentTypeConverter<?, ?>) converter);
         }
     }
 
@@ -122,13 +121,13 @@ public class ChainingContentTypeConverter implements Converter {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> @Nullable T convert(@Nullable Object input, Type targetType) {
         if (input == null) {
             return null;
         }
         Class<?> sourceType = input.getClass();
         if (sourceType.equals(targetType)) {
-            //noinspection unchecked
             return (T) input;
         }
 
@@ -147,9 +146,12 @@ public class ChainingContentTypeConverter implements Converter {
             }
         }
 
-        //noinspection unchecked,rawtypes | calculateChain expects generic Class i.o. wildcard, which we cannot provide.
+        //noinspection unchecked | targetClass is validated as a Class above, but its type parameter is unknown.
+        Class<T> typedTargetClass = (Class<T>) targetClass;
+        //noinspection unchecked | the runtime class of the input is a Class<Object> for chaining purposes.
+        Class<Object> typedSourceClass = (Class<Object>) input.getClass();
         ChainedConverter<Object, T> converter =
-                ChainedConverter.calculateChain(input.getClass(), (Class) targetClass, converters);
+            ChainedConverter.calculateChain(typedSourceClass, typedTargetClass, converters);
         converters.addFirst(converter);
         return converter.convert(input);
     }

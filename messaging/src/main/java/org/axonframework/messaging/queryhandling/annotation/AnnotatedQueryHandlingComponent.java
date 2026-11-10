@@ -100,9 +100,8 @@ public class AnnotatedQueryHandlingComponent<T> implements QueryHandlingComponen
 
     private void registerHandler(QueryHandlingMember<? super T> handler) {
         Class<?> payloadType = handler.payloadType();
-        QualifiedName qualifiedName = handler.unwrap(QueryHandlingMember.class)
-                                             .map(QueryHandlingMember::queryName)
-                                             // Filter empty Strings to  fall back to the MessageTypeResolver
+        QualifiedName qualifiedName = Optional.of(handler.queryName())
+                             // Filter empty Strings to fall back to the MessageTypeResolver
                                              .filter(StringUtils::nonEmpty)
                                              .map(QualifiedName::new)
                                              .orElseGet(() -> messageTypeResolver.resolveOrThrow(payloadType)

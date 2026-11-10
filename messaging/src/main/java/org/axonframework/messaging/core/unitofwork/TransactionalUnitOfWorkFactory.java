@@ -74,7 +74,7 @@ public class TransactionalUnitOfWorkFactory implements UnitOfWorkFactory {
             Function<UnitOfWorkConfiguration, UnitOfWorkConfiguration> customization
     ) {
         if (transactionManager.requiresSameThreadInvocations()) {
-            customization = customization.andThen(UnitOfWorkConfiguration::forcedSameThreadInvocation);
+            customization = customization.andThen(configuration -> configuration.forcedSameThreadInvocation());
         }
         var unitOfWork = delegate.create(identifier, customization);
 

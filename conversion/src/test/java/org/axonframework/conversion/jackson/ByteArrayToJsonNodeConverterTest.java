@@ -32,7 +32,7 @@ class ByteArrayToJsonNodeConverterTest {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = mapper.readTree("{\"value\":\"hello\"}".getBytes(StandardCharsets.UTF_8));
         ByteArrayToJsonNodeConverter converter = new ByteArrayToJsonNodeConverter(mapper);
-        assertEquals(node.get("value").asText(), converter.convert("{\"value\":\"hello\"}".getBytes(StandardCharsets.UTF_8)).get("value").asText());
+        assertEquals(node.get("value").stringValue(), converter.convert("{\"value\":\"hello\"}".getBytes(StandardCharsets.UTF_8)).get("value").stringValue());
     }
 
     @Test

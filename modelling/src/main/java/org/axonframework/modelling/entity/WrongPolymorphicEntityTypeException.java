@@ -50,7 +50,7 @@ public class WrongPolymorphicEntityTypeException extends RuntimeException {
                 commandMessage.type(),
                 givenEntityType.getName(),
                 supportedEntityTypes.stream()
-                                    .map(Class::getName)
+                                    .map(entityType -> entityType.getName())
                                     .reduce((a, b) -> a + ", " + b)
                                     .orElse("none")
         ));

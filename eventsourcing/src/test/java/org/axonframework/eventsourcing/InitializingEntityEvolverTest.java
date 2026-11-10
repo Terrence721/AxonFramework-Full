@@ -32,7 +32,7 @@ class InitializingEntityEvolverTest {
     @Test
     void initializeRejectsNullContext() {
         InitializingEntityEvolver<String, String> evolver =
-                new InitializingEntityEvolver<>( (id, event, context) -> id, (org.axonframework.modelling.EntityEvolver<String>) (entity, message, context) -> entity);
+            new InitializingEntityEvolver<>( (id, event, context) -> id, (EntityEvolver<String>) (entity, message, context) -> entity);
 
         assertThrows(NullPointerException.class, () -> evolver.initialize("id", null));
     }
@@ -40,7 +40,7 @@ class InitializingEntityEvolverTest {
     @Test
     void evolveRejectsNullContext() {
         InitializingEntityEvolver<String, String> evolver =
-                new InitializingEntityEvolver<>( (id, event, context) -> id, (org.axonframework.modelling.EntityEvolver<String>) (entity, message, context) -> entity);
+            new InitializingEntityEvolver<>( (id, event, context) -> id, (EntityEvolver<String>) (entity, message, context) -> entity);
 
         assertThrows(NullPointerException.class, () ->
                 evolver.evolve("id", null, null, null));

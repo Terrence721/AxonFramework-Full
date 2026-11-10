@@ -26,6 +26,7 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.kotlin.KotlinParser;
 import org.openrewrite.kotlin.tree.K;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,11 +70,13 @@ public class ConvertCommandHandlerConstructorToCompanionObject extends Recipe {
     private static final String NEW_METHOD_NAME = "handle";
 
     @Override
+    @NonNull
     public String getDisplayName() {
         return "Convert Kotlin @CommandHandler constructors to a companion-object handle method";
     }
 
     @Override
+    @NonNull
     public String getDescription() {
         return "Rewrites Kotlin `@CommandHandler constructor(...)` declarations into "
                 + "`companion object { @JvmStatic @CommandHandler fun handle(...) }` on the same "
@@ -82,23 +85,21 @@ public class ConvertCommandHandlerConstructorToCompanionObject extends Recipe {
     }
 
     @Override
+    @NonNull
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
-            public boolean isAcceptable(SourceFile sourceFile, ExecutionContext ctx) {
+            public boolean isAcceptable(@NonNull SourceFile sourceFile, @NonNull ExecutionContext ctx) {
                 // Only Kotlin sources. Java is handled by the sibling recipe
                 // ConvertCommandHandlerConstructorToStaticMethod.
                 return sourceFile instanceof K.CompilationUnit;
             }
 
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl,
-                                                            ExecutionContext ctx) {
+            public J.@NonNull ClassDeclaration visitClassDeclaration(J.@NonNull ClassDeclaration classDecl,
+                                                                      @NonNull ExecutionContext ctx) {
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
-                if (cd.getBody() == null) {
-                    return cd;
-                }
                 List<J.MethodDeclaration> commandConstructors = collectCommandHandlerConstructors(cd);
                 if (commandConstructors.isEmpty()) {
                     return cd;
@@ -240,9 +241,6 @@ public class ConvertCommandHandlerConstructorToCompanionObject extends Recipe {
                         continue;
                     }
                     J.ClassDeclaration holder = (J.ClassDeclaration) topLevel;
-                    if (holder.getBody() == null) {
-                        continue;
-                    }
                     for (Statement member : holder.getBody().getStatements()) {
                         if (member instanceof J.ClassDeclaration) {
                             return (J.ClassDeclaration) member;
@@ -285,15 +283,22 @@ public class ConvertCommandHandlerConstructorToCompanionObject extends Recipe {
              * each line that anchored to the old depth gains a 4-space pad.
              */
             private J.Block rebaseBodyIndent(J.Block body) {
-                J.Block rebased = body.withEnd(addIndentLevel(body.getEnd()));
-                rebased = rebased.withStatements(
-                        rebased.getStatements().stream()
-                                .map(s -> (Statement) s.withPrefix(addIndentLevel(s.getPrefix())))
-                                .toList());
+                J.Block rebased = body;
+                org.openrewrite.java.tree.Space end = body.getEnd();
+                if (end != null) {
+                    rebased = body.withEnd(addIndentLevel(end));
+                }
+                @NonNull List<Statement> statements = new ArrayList<>();
+                for (Statement statement : rebased.getStatements()) {
+                    statements.add((Statement) statement.withPrefix(
+                            addIndentLevel(java.util.Objects.requireNonNull(statement.getPrefix()))));
+                }
+                rebased = rebased.withStatements(statements);
                 return rebased;
             }
 
-            private org.openrewrite.java.tree.Space addIndentLevel(org.openrewrite.java.tree.Space space) {
+                private org.openrewrite.java.tree.@NonNull Space addIndentLevel(
+                    org.openrewrite.java.tree.Space space) {
                 String ws = space.getWhitespace();
                 int lastNewline = ws.lastIndexOf('\n');
                 if (lastNewline < 0) {

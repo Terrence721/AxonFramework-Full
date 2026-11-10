@@ -37,7 +37,7 @@ import static java.util.Objects.requireNonNull;
  * @since 5.0.0
  */
 record TagAndTypeFilteredEventCriteria(Set<QualifiedName> types,
-                                       Set<Tag> tags) implements EventCriteria, EventCriterion {
+                                       Set<Tag> tags) implements EventCriterion {
 
     /**
      * Constructs an {@link EventCriteria} that matches against given {@code types} and the given {@code tags}. If the

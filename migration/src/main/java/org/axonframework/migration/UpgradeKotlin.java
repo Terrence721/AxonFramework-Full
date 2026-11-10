@@ -18,6 +18,7 @@ package org.axonframework.migration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
@@ -88,12 +89,12 @@ public class UpgradeKotlin extends Recipe {
     }
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Upgrade Kotlin to 2.x for Axon Framework 5";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Bumps the `org.jetbrains.kotlin:*` dependency versions and the `kotlin-maven-plugin` to the "
                 + "configured Kotlin line (defaults to \"" + DEFAULT_TARGET_VERSION + "\", the latest Kotlin 2.x). "
                 + "No-op for modules already at or above the target — the underlying upgrade recipes never "
@@ -101,17 +102,17 @@ public class UpgradeKotlin extends Recipe {
     }
 
     @Override
-    public List<Recipe> getRecipeList() {
+    public @NonNull List<Recipe> getRecipeList() {
         String target = targetVersion != null ? targetVersion : DEFAULT_TARGET_VERSION;
         if (majorVersion(target) < MINIMUM_MAJOR_VERSION) {
             throw new IllegalArgumentException(
                     "Axon Framework 5 requires Kotlin " + MINIMUM_MAJOR_VERSION + ".0 or higher, "
                             + "but targetVersion was \"" + target + "\"");
         }
-        return List.of(
+        return new java.util.ArrayList<>(List.of(
                 new UpgradeDependencyVersion("org.jetbrains.kotlin", "*", target, null, true, null),
                 new UpgradePluginVersion("org.jetbrains.kotlin", "kotlin-maven-plugin", target, null, null, null)
-        );
+        ));
     }
 
     /**

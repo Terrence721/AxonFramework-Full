@@ -111,7 +111,7 @@ class SpanAttributesProviderRegistryTest {
         return configuration.getComponent(SpanAttributesProviderRegistry.class)
                             .providers(configuration)
                             .stream()
-                            .<Class<?>>map(Object::getClass)
+                            .<Class<?>>map(provider -> provider.getClass())
                             .toList();
     }
 

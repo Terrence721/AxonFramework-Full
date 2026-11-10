@@ -39,7 +39,6 @@ import org.axonframework.eventsourcing.snapshot.api.SnapshotPolicy;
 import org.axonframework.eventsourcing.snapshot.store.SnapshotStore;
 import org.axonframework.messaging.commandhandling.CommandBus;
 import org.axonframework.messaging.commandhandling.CommandHandlingComponent;
-import org.axonframework.messaging.core.MessageType;
 import org.axonframework.messaging.core.MessageTypeResolver;
 import org.axonframework.messaging.core.VersionedType;
 import org.axonframework.modelling.EntityIdResolver;
@@ -235,12 +234,15 @@ class SimpleEventSourcedEntityModule<ID, E> extends BaseModule<SimpleEventSource
                 );
     }
 
-    private ComponentDefinition<CommandHandlingComponent> commandHandlingComponent() {
-        //noinspection unchecked
+        //noinspection SpellCheckingInspection
+        @SuppressWarnings({"unchecked", "SpellCheckingInspection"})
+        private ComponentDefinition<CommandHandlingComponent> commandHandlingComponent() {
         return ComponentDefinition
                 .ofTypeAndName(CommandHandlingComponent.class, entityName())
                 .withBuilder(c -> new EntityCommandHandlingComponent<ID, E>(
-                        c.getComponent(Repository.class, entityName()),
+                (Repository<ID, E>) c.getComponent(Repository.class, entityName()),
+                    //noinspection SpellCheckingInspection
+                        //noinspection SpellCheckingInspection
                         c.getComponent(EntityMetamodel.class, entityName()),
                         c.getComponent(EntityIdResolver.class, entityName())
                 ))

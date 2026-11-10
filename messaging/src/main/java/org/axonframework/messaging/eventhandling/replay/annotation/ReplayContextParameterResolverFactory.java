@@ -16,7 +16,6 @@
 
 package org.axonframework.messaging.eventhandling.replay.annotation;
 
-import org.axonframework.conversion.Converter;
 import org.axonframework.conversion.GeneralConverter;
 import org.axonframework.messaging.core.Message;
 import org.axonframework.messaging.core.annotation.ParameterResolver;

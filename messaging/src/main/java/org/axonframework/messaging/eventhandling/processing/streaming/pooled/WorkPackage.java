@@ -196,15 +196,12 @@ class WorkPackage implements SegmentProgressContext {
         }
 
         BatchProcessingEntry batchProcessingEntry = new BatchProcessingEntry();
-        boolean canHandleAny = eventEntries.stream()
-                                           .map(eventEntry -> {
-                                               boolean canHandle = canHandleMessage(eventEntry);
-                                               batchProcessingEntry.add(new DefaultProcessingEntry(eventEntry,
-                                                                                                   canHandle));
-                                               return canHandle;
-                                           })
-                                           .reduce(Boolean::logicalOr)
-                                           .orElse(false);
+        boolean canHandleAny = false;
+        for (MessageStream.Entry<? extends EventMessage> eventEntry : eventEntries) {
+            boolean canHandle = canHandleMessage(eventEntry);
+            batchProcessingEntry.add(new DefaultProcessingEntry(eventEntry, canHandle));
+            canHandleAny |= canHandle;
+        }
 
         processingQueue.add(batchProcessingEntry);
         lastDeliveredToken = batchProcessingEntry.trackingToken();
@@ -310,8 +307,8 @@ class WorkPackage implements SegmentProgressContext {
         return canHandle(eventEntry.message(), processingContext);
     }
 
+    @SuppressWarnings("unchecked")
     private static ProcessingContext copyResources(Context from, ProcessingContext to) {
-        //noinspection unchecked
         from.resources().forEach((k, v) -> to.putResource((Context.ResourceKey<Object>) k, v));
         return to;
     }

@@ -16,6 +16,7 @@
 
 package org.axonframework.migration;
 
+import org.jspecify.annotations.NonNull;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
@@ -76,11 +77,13 @@ public class ReplaceAggregateLifecycleApply extends Recipe {
     private static final MethodMatcher APPLY_AF5 = new MethodMatcher(AF5_AGGREGATE_LIFECYCLE_FQN + " apply(..)");
 
     @Override
+    @NonNull
     public String getDisplayName() {
         return "Replace AggregateLifecycle.apply(...) with EventAppender.append(...)";
     }
 
     @Override
+    @NonNull
     public String getDescription() {
         return "Replaces every `AggregateLifecycle.apply(X)` (statically imported or via the class) with "
                 + "`eventAppender.append(X)`, injecting an `EventAppender eventAppender` parameter into the enclosing "
@@ -88,11 +91,13 @@ public class ReplaceAggregateLifecycleApply extends Recipe {
     }
 
     @Override
+    @NonNull
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.@NonNull MethodDeclaration visitMethodDeclaration(J.@NonNull MethodDeclaration method,
+                                                                        @NonNull ExecutionContext ctx) {
                 // Constructors are never the right injection target. In AF5 the entity is being
                 // constructed — there is no command being handled, so the framework has no
                 // EventAppender to provide. Any AF4 constructor that emitted a creation event via
@@ -129,10 +134,11 @@ public class ReplaceAggregateLifecycleApply extends Recipe {
 
                 // Now visit the body to swap apply(X) → eventAppender.append(X). We rebuild the method declaration
                 // with the rewritten body so the cursor sees the freshly-added parameter.
-                J.MethodDeclaration finalMd = md;
+                J.@NonNull MethodDeclaration finalMd = java.util.Objects.requireNonNull(md);
                 J.MethodDeclaration result = (J.MethodDeclaration) new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, ExecutionContext c) {
+                    public J.@NonNull MethodInvocation visitMethodInvocation(J.@NonNull MethodInvocation mi,
+                                                                              @NonNull ExecutionContext c) {
                         J.MethodInvocation invocation = super.visitMethodInvocation(mi, c);
                         if (!APPLY_AF4.matches(invocation) && !APPLY_AF5.matches(invocation)) {
                             return invocation;
@@ -148,15 +154,18 @@ public class ReplaceAggregateLifecycleApply extends Recipe {
                         if (invocation.getArguments().size() > 1) {
                             return invocation;
                         }
-                        return JavaTemplate.builder("#{}.append(#{any()})")
+                        J.MethodInvocation rewritten = (J.MethodInvocation) JavaTemplate.builder("#{}.append(#{any()})")
                                 .imports(EVENT_APPENDER_FQN)
-                                .javaParser(JavaParser.fromJavaVersion()
-                                        .classpath(JavaParser.runtimeClasspath()))
+                                .javaParser(JavaParser.fromJavaVersion())
                                 .build()
                                 .apply(getCursor(),
                                        invocation.getCoordinates().replace(),
                                        appenderName,
                                        invocation.getArguments().get(0));
+                        if (rewritten == null) {
+                            throw new NullPointerException("Template returned a null method invocation");
+                        }
+                        return rewritten;
                     }
                 }.visitNonNull(finalMd, ctx, getCursor().getParentOrThrow());
 
@@ -175,7 +184,8 @@ public class ReplaceAggregateLifecycleApply extends Recipe {
                 boolean[] found = {false};
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, ExecutionContext c) {
+                    public J.@NonNull MethodInvocation visitMethodInvocation(J.@NonNull MethodInvocation mi,
+                                                                              @NonNull ExecutionContext c) {
                         if (APPLY_AF4.matches(mi) || APPLY_AF5.matches(mi)) {
                             found[0] = true;
                         }
@@ -194,10 +204,11 @@ public class ReplaceAggregateLifecycleApply extends Recipe {
                         continue;
                     }
                     J.VariableDeclarations vd = (J.VariableDeclarations) p;
-                    if (vd.getTypeExpression() == null) {
+                    org.openrewrite.java.tree.TypeTree typeExpression = vd.getTypeExpression();
+                    if (typeExpression == null) {
                         continue;
                     }
-                    JavaType.FullyQualified type = TypeUtils.asFullyQualified(vd.getTypeExpression().getType());
+                    JavaType.FullyQualified type = TypeUtils.asFullyQualified(typeExpression.getType());
                     if (type != null && EVENT_APPENDER_FQN.equals(type.getFullyQualifiedName())
                             && !vd.getVariables().isEmpty()) {
                         return vd.getVariables().get(0).getSimpleName();
@@ -226,11 +237,16 @@ public class ReplaceAggregateLifecycleApply extends Recipe {
                 } else {
                     template.append("EventAppender eventAppender");
                 }
-                return JavaTemplate.builder(template.toString())
+                String templateSource = template.toString();
+                if (templateSource == null) {
+                    throw new IllegalStateException("Template source must not be null");
+                }
+                return JavaTemplate.builder(templateSource)
                         .imports(EVENT_APPENDER_FQN)
-                        .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
+                    .javaParser(JavaParser.fromJavaVersion())
                         .build()
-                        .apply(getCursor(), md.getCoordinates().replaceParameters(), templateArgs.toArray());
+                           .apply(getCursor(), md.getCoordinates().replaceParameters(),
+                               templateArgs.toArray(new Object[templateArgs.size()]));
             }
 
             /**

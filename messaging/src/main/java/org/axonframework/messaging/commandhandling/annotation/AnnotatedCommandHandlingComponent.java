@@ -101,7 +101,7 @@ public class AnnotatedCommandHandlingComponent<T> implements CommandHandlingComp
     private void registerHandler(CommandHandlingMember<? super T> handler) {
         Class<?> payloadType = handler.payloadType();
         QualifiedName qualifiedName = handler.unwrap(CommandHandlingMember.class)
-                                             .map(CommandHandlingMember::commandName)
+                                             .map(member -> member.commandName())
                                              // Filter empty Strings to  fall back to the MessageTypeResolver
                                              .filter(StringUtils::nonEmpty)
                                              .map(QualifiedName::new)

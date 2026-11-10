@@ -62,6 +62,6 @@ class ChainedConverterTest {
                 ChainedConverter.calculateChain(String.class, String.class, candidates);
 
         assertEquals("value", converter.convert("value"));
-        assertTrue(ChainedConverter.canConvert(String.class, String.class, (java.util.List) candidates));
+        assertTrue(ChainedConverter.canConvert(String.class, String.class, java.util.List.copyOf(candidates)));
     }
 }

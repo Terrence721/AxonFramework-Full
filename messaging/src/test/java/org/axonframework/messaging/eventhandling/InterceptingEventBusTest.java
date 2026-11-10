@@ -50,6 +50,7 @@ class InterceptingEventBusTest {
         return new GenericEventMessage(TYPE, payload);
     }
 
+    @SafeVarargs
     private static List<MessageDispatchInterceptor<? super EventMessage>> interceptors(
             MessageDispatchInterceptor<? super EventMessage>... interceptors
     ) {

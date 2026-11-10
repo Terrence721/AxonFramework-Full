@@ -28,7 +28,6 @@ import org.axonframework.common.DateTimeUtils;
 import org.axonframework.messaging.eventhandling.processing.streaming.StreamingEventProcessor;
 import org.axonframework.messaging.eventhandling.processing.streaming.segmenting.Segment;
 import org.axonframework.messaging.eventhandling.processing.streaming.token.TrackingToken;
-import org.axonframework.messaging.eventhandling.processing.streaming.token.store.LegacyTokenTypes;
 import org.axonframework.conversion.Converter;
 
 import java.time.Instant;
@@ -117,7 +116,12 @@ public class TokenEntry {
         if (token == null || tokenType == null) {
             return null;
         }
-        return LegacyTokenTypes.deserialize(converter, token, tokenType);
+        try {
+            Class<? extends TrackingToken> tokenClass = Class.forName(tokenType).asSubclass(TrackingToken.class);
+            return converter.convert(token, tokenClass);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Unable to deserialize tracking token of type " + tokenType, e);
+        }
     }
 
     /**

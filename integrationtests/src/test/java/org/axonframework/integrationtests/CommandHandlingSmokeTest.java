@@ -1,9 +1,5 @@
 package org.axonframework.integrationtests;
 
-import java.util.concurrent.TimeUnit;
-
-import org.axonframework.messaging.commandhandling.CommandBus;
-import org.axonframework.messaging.commandhandling.CommandHandler;
 import org.axonframework.messaging.commandhandling.CommandResultMessage;
 import org.axonframework.messaging.commandhandling.GenericCommandMessage;
 import org.axonframework.messaging.commandhandling.SimpleCommandBus;

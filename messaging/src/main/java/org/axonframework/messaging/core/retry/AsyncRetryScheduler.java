@@ -103,13 +103,13 @@ public class AsyncRetryScheduler implements RetryScheduler, DescribableComponent
             this.history.add(simplify(newFailure));
         }
 
+        @SuppressWarnings("unchecked")
         private Class<? extends Throwable>[] simplify(Throwable failure) {
             List<Class<? extends Throwable>> causes = new ArrayList<>();
             Throwable cause = failure;
             do {
                 causes.add(cause.getClass());
             } while ((cause = cause.getCause()) != null);
-            //noinspection unchecked
             return causes.toArray(new Class[0]);
         }
 

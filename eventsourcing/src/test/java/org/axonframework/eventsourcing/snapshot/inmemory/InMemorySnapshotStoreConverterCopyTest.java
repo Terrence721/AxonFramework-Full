@@ -35,11 +35,12 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 class InMemorySnapshotStoreConverterCopyTest {
     private final Converter copyConverter = new Converter() {
         @Override
-        public Object convert(Object input, Type targetType) {
+        @SuppressWarnings("unchecked")
+        public <T> T convert(Object input, Type targetType) {
             if (targetType == byte[].class) {
-                return input.toString().getBytes(StandardCharsets.UTF_8);
+                return (T) input.toString().getBytes(StandardCharsets.UTF_8);
             }
-            return new String((byte[]) input, StandardCharsets.UTF_8);
+            return (T) new String((byte[]) input, StandardCharsets.UTF_8);
         }
 
         @Override

@@ -75,7 +75,7 @@ public record AggregateBasedJpaEventStorageEngineConfiguration(
         EventTypeResolver eventTypeResolver
 ) {
 
-    private static final Predicate<List<? extends AggregateEventEntry>> DEFAULT_BATCH_PREDICATE = List::isEmpty;
+    private static final Predicate<List<? extends AggregateEventEntry>> DEFAULT_BATCH_PREDICATE = batch -> batch.isEmpty();
     private static final EventCoordinator DEFAULT_EVENT_COORDINATOR = EventCoordinator.SIMPLE;
     private static final int DEFAULT_BATCH_SIZE = 100;
     private static final int DEFAULT_GAP_CLEANING_THRESHOLD = 250;

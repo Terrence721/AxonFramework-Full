@@ -99,8 +99,9 @@ public class DefaultMessageDispatchInterceptorChain<M extends Message>
             try {
                 // Safe cast: each interceptor in the list can handle M,
                 // because they accept "M or a supertype of M".
-                //noinspection rawtypes,unchecked
-                return interceptor.interceptOnDispatch(message, context, (MessageDispatchInterceptorChain) this);
+                @SuppressWarnings({"unchecked", "rawtypes"})
+                MessageDispatchInterceptor<M> castInterceptor = (MessageDispatchInterceptor) interceptor;
+                return castInterceptor.interceptOnDispatch(message, context, this);
             } catch (RuntimeException e) {
                 return MessageStream.failed(e);
             }

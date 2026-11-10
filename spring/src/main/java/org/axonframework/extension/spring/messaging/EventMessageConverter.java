@@ -33,7 +33,7 @@ public interface EventMessageConverter {
 	 * @param <T>   The event payload type
 	 * @return The outbound Spring message
 	 */
-	<T> Message convertToOutboundMessage(EventMessage event);
+	<T> Message<T> convertToOutboundMessage(EventMessage event);
 
 	/**
 	 * Converts a Spring inbound {@code message} into an Axon event Message
@@ -42,5 +42,5 @@ public interface EventMessageConverter {
 	 * @param <T>     The message payload type
 	 * @return The inbound Axon event message
 	 */
-	<T> EventMessage convertFromInboundMessage(Message message);
+	<T> EventMessage convertFromInboundMessage(Message<T> message);
 }

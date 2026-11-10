@@ -50,8 +50,8 @@ public class SimpleContext implements Context {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getResource(ResourceKey<T> key) {
-        //noinspection unchecked
         return (T) resources.get(key);
     }
 

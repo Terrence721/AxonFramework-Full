@@ -21,7 +21,6 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
@@ -31,14 +30,16 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.kotlin.marker.PrimaryConstructor;
 import org.openrewrite.kotlin.tree.K;
 import org.openrewrite.marker.Markers;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collections;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,12 +133,12 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
     }
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Add @EventTag to the aggregate-identifier field of event payload classes";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Scans event-sourced entity classes for their @AggregateIdentifier field and the "
                 + "event types used in @EventSourcingHandler methods, then annotates the "
                 + "corresponding field in each event class with "
@@ -145,16 +146,16 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(@NonNull ExecutionContext ctx) {
         return new Accumulator();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public @NonNull TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl,
-                                                            ExecutionContext ctx) {
+            public J.@NonNull ClassDeclaration visitClassDeclaration(J.@NonNull ClassDeclaration classDecl,
+                                                                     @NonNull ExecutionContext ctx) {
                 if (!isEntityClass(classDecl)) {
                     return super.visitClassDeclaration(classDecl, ctx);
                 }
@@ -168,7 +169,8 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                 // Publish the @AggregateIdentifier field's declared type so
                 // ConfigureEventSourcedAnnotation can populate @EventSourced(idType=...)
                 // even when it runs after RemoveAnnotation has stripped @AggregateIdentifier.
-                if (classDecl.getType() != null) {
+                JavaType.FullyQualified entityType = classDecl.getType();
+                if (entityType != null) {
                     String idTypeFqn = findAggregateIdFieldTypeFqn(classDecl);
                     if (idTypeFqn != null) {
                         @SuppressWarnings("unchecked")
@@ -178,7 +180,7 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                             shared = new HashMap<>();
                             ctx.putMessage(SHARED_ID_TYPES_KEY, shared);
                         }
-                        shared.put(classDecl.getType().getFullyQualifiedName(), idTypeFqn);
+                        shared.put(entityType.getFullyQualifiedName(), idTypeFqn);
                     }
                 }
 
@@ -196,11 +198,12 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                         continue;
                     }
                     J.VariableDeclarations firstParam = (J.VariableDeclarations) params.get(0);
-                    if (firstParam.getTypeExpression() == null) {
+                    TypeTree typeExpression = firstParam.getTypeExpression();
+                    if (typeExpression == null) {
                         continue;
                     }
                     JavaType.FullyQualified eventType = TypeUtils.asFullyQualified(
-                            firstParam.getTypeExpression().getType());
+                            typeExpression.getType());
                     if (eventType == null
                             || eventType.getFullyQualifiedName().startsWith("org.axonframework")) {
                         continue;
@@ -217,8 +220,8 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                 final String capturedEntitySimpleName = entitySimpleName;
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi,
-                                                                    ExecutionContext c) {
+                        public J.@NonNull MethodInvocation visitMethodInvocation(
+                            J.@NonNull MethodInvocation mi, @NonNull ExecutionContext c) {
                         J.MethodInvocation invocation = super.visitMethodInvocation(mi, c);
                         if (!APPLY_AF4.matches(invocation) && !APPLY_AF5.matches(invocation)) {
                             return invocation;
@@ -248,27 +251,29 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public @NonNull TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
         return new JavaIsoVisitor<>() {
 
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl,
-                                                            ExecutionContext ctx) {
-                if (classDecl.getType() == null) {
+            public J.@NonNull ClassDeclaration visitClassDeclaration(J.@NonNull ClassDeclaration classDecl,
+                                                                      @NonNull ExecutionContext ctx) {
+                var classType = classDecl.getType();
+                if (classType == null) {
                     return super.visitClassDeclaration(classDecl, ctx);
                 }
-                String fqn = classDecl.getType().getFullyQualifiedName();
-                if (!acc.targets.containsKey(fqn)) {
+                String fqn = classType.getFullyQualifiedName();
+                var target = acc.targets.get(fqn);
+                if (target == null) {
                     return super.visitClassDeclaration(classDecl, ctx);
                 }
                 // Store target in cursor message so visitVariableDeclarations can read it.
-                getCursor().putMessage("eventTagTarget", acc.targets.get(fqn));
+                getCursor().putMessage("eventTagTarget", target);
                 return super.visitClassDeclaration(classDecl, ctx);
             }
 
             @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVar,
-                                                                     ExecutionContext ctx) {
+            public J.@NonNull VariableDeclarations visitVariableDeclarations(J.@NonNull VariableDeclarations multiVar,
+                                                                     @NonNull ExecutionContext ctx) {
                 J.VariableDeclarations vd = super.visitVariableDeclarations(multiVar, ctx);
 
                 // Only act on fields and record components of event classes — never on regular
@@ -287,10 +292,14 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                     return vd;
                 }
                 J.ClassDeclaration enclosingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                if (enclosingClass == null || enclosingClass.getType() == null) {
+                if (enclosingClass == null) {
                     return vd;
                 }
-                String classFqn = enclosingClass.getType().getFullyQualifiedName();
+                JavaType.FullyQualified classType = enclosingClass.getType();
+                if (classType == null) {
+                    return vd;
+                }
+                String classFqn = classType.getFullyQualifiedName();
                 Accumulator.EventTagTarget target = acc.targets.get(classFqn);
                 if (target == null) {
                     return vd;
@@ -324,9 +333,9 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                 return annotateWithEventTag(vd, target.tagKey, null);
             }
 
-            private J.VariableDeclarations annotateWithEventTag(J.VariableDeclarations vd,
-                                                                 String tagKey,
-                                                                 @SuppressWarnings("unused") String todoComment) {
+            private J.@NonNull VariableDeclarations annotateWithEventTag(J.@NonNull VariableDeclarations vd,
+                                                                         String tagKey,
+                                                                         @SuppressWarnings("unused") String todoComment) {
                 if (isKotlinSource()) {
                     // Kotlin path — JavaTemplate.addAnnotation produces inconsistent layout on
                     // data class primary-constructor params (annotation lost or pushed to a
@@ -337,16 +346,23 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                     J.Annotation tag = buildEventTagAnnotation(tagKey);
                     J.VariableDeclarations annotated = prependAnnotationOnNewLine(vd, tag);
                     maybeAddImport(EVENT_TAG_FQN, null, false);
+                    if (annotated == null) {
+                        throw new IllegalStateException("Failed to add @EventTag annotation");
+                    }
                     return annotated;
                 }
                 J.VariableDeclarations annotated = JavaTemplate.builder(
                                 "@EventTag(key = \"" + tagKey + "\")")
                         .imports(EVENT_TAG_FQN)
-                        .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
+                        .javaParser(JavaParser.fromJavaVersion())
                         .build()
                         .apply(getCursor(), vd.getCoordinates().addAnnotation((a, b) -> 0));
                 maybeAddImport(EVENT_TAG_FQN, null, false);
-                return forceAnnotationOnOwnLine(annotated);
+                J.VariableDeclarations result = forceAnnotationOnOwnLine(annotated);
+                if (result == null) {
+                    throw new IllegalStateException("Failed to add @EventTag annotation");
+                }
+                return result;
             }
 
             private boolean isKotlinSource() {
@@ -366,7 +382,7 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                         Tree.randomId(),
                         Space.EMPTY,
                         Markers.EMPTY,
-                        Collections.emptyList(),
+                        new java.util.ArrayList<J.Annotation>(),
                         "EventTag",
                         JavaType.ShallowClass.build(EVENT_TAG_FQN),
                         null);
@@ -374,7 +390,7 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                         Tree.randomId(),
                         Space.EMPTY,
                         Markers.EMPTY,
-                        Collections.emptyList(),
+                        new java.util.ArrayList<J.Annotation>(),
                         "key",
                         null,
                         null);
@@ -425,29 +441,40 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                                                                        J.Annotation annotation) {
                 String indent = trailingIndent(vd.getPrefix().getWhitespace());
                 Space newlineIndent = Space.format("\n" + indent);
-                J.VariableDeclarations withAnnotation = vd.withLeadingAnnotations(
-                        ListUtils.concat(annotation, vd.getLeadingAnnotations()));
-                if (vd.getLeadingAnnotations().isEmpty()) {
+                List<J.Annotation> existingAnnotations = vd.getLeadingAnnotations() == null
+                    ? Collections.emptyList()
+                    : vd.getLeadingAnnotations();
+                List<J.Annotation> annotations = new java.util.ArrayList<>(existingAnnotations);
+                annotations.add(0, annotation);
+                J.VariableDeclarations withAnnotation = vd.withLeadingAnnotations(annotations);
+                if (existingAnnotations.isEmpty()) {
                     // First annotation — re-flow the declaration's downstream nodes so the
                     // annotation block sits on its own line above the val/var keyword.
-                    if (!withAnnotation.getModifiers().isEmpty()) {
-                        return withAnnotation.withModifiers(
-                                ListUtils.mapFirst(withAnnotation.getModifiers(),
-                                        m -> m.withPrefix(newlineIndent)));
+                    List<J.Modifier> modifiers = withAnnotation.getModifiers() == null
+                        ? Collections.emptyList()
+                        : withAnnotation.getModifiers();
+                    if (!modifiers.isEmpty()) {
+                        List<J.Modifier> updatedModifiers = new java.util.ArrayList<>(modifiers);
+                        updatedModifiers.set(0, modifiers.get(0).withPrefix(newlineIndent));
+                        return withAnnotation.withModifiers(updatedModifiers);
                     }
-                    if (withAnnotation.getTypeExpression() != null) {
+                    var typeExpression = withAnnotation.getTypeExpression();
+                    if (typeExpression != null) {
                         return withAnnotation.withTypeExpression(
-                                withAnnotation.getTypeExpression().withPrefix(newlineIndent));
+                                typeExpression.withPrefix(newlineIndent));
                     }
                     return withAnnotation;
                 }
                 // Existing annotations: bump the previous first annotation onto a new line.
-                J.Annotation oldFirst = vd.getLeadingAnnotations().get(0);
+                J.Annotation oldFirst = existingAnnotations.get(0);
                 Space oldFirstPrefix = oldFirst.getPrefix();
-                return vd.withLeadingAnnotations(ListUtils.concat(
-                        annotation.withPrefix(oldFirstPrefix),
-                        ListUtils.mapFirst(vd.getLeadingAnnotations(),
-                                first -> first.withPrefix(newlineIndent))));
+                List<J.Annotation> updatedAnnotations = new java.util.ArrayList<>(existingAnnotations.size() + 1);
+                updatedAnnotations.add(annotation.withPrefix(oldFirstPrefix));
+                for (int i = 0; i < existingAnnotations.size(); i++) {
+                    J.Annotation existing = existingAnnotations.get(i);
+                    updatedAnnotations.add(i == 0 ? existing.withPrefix(newlineIndent) : existing);
+                }
+                return vd.withLeadingAnnotations(updatedAnnotations);
             }
 
             private String trailingIndent(String whitespace) {
@@ -488,12 +515,14 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                         return vd;
                     }
                     Space finalIndent = indent;
-                    return vd.withModifiers(ListUtils.mapFirst(vd.getModifiers(),
-                                                                m -> m.withPrefix(finalIndent)));
+                    List<J.Modifier> modifiers = new ArrayList<>(vd.getModifiers());
+                    modifiers.set(0, first.withPrefix(finalIndent));
+                    return vd.withModifiers(modifiers);
                 }
-                if (vd.getTypeExpression() != null
-                        && !vd.getTypeExpression().getPrefix().getWhitespace().contains("\n")) {
-                    return vd.withTypeExpression(vd.getTypeExpression().withPrefix(indent));
+                TypeTree typeExpression = vd.getTypeExpression();
+                if (typeExpression != null
+                        && !typeExpression.getPrefix().getWhitespace().contains("\n")) {
+                    return vd.withTypeExpression(typeExpression.withPrefix(indent));
                 }
                 return vd;
             }
@@ -519,8 +548,10 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                 if (clazz == null) {
                     return null;
                 }
-                if (clazz.getPadding().getPrimaryConstructor() != null) {
-                    for (Statement s : clazz.getPadding().getPrimaryConstructor().getElements()) {
+                org.openrewrite.java.tree.JContainer<Statement> primaryConstructor =
+                        clazz.getPadding().getPrimaryConstructor();
+                if (primaryConstructor != null) {
+                    for (Statement s : primaryConstructor.getElements()) {
                         if (s == vd || !(s instanceof J.VariableDeclarations)) {
                             continue;
                         }
@@ -580,8 +611,9 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
              */
             private List<J.VariableDeclarations> classFields(J.ClassDeclaration classDecl) {
                 List<J.VariableDeclarations> fields = new java.util.ArrayList<>();
-                if (classDecl.getPrimaryConstructor() != null) {
-                    for (Statement stmt : classDecl.getPrimaryConstructor()) {
+                List<Statement> primaryConstructor = classDecl.getPrimaryConstructor();
+                if (primaryConstructor != null) {
+                    for (Statement stmt : primaryConstructor) {
                         J.VariableDeclarations field = unwrapVariableDeclarations(stmt);
                         if (field != null) {
                             fields.add(field);
@@ -682,18 +714,17 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
      * to a fully-qualified type (e.g. primitives, unresolved type bindings).
      */
     private static @Nullable String findAggregateIdFieldTypeFqn(J.ClassDeclaration cd) {
-        if (cd.getBody() == null) {
-            return null;
-        }
         for (Statement stmt : cd.getBody().getStatements()) {
             J.VariableDeclarations vd = unwrapVariableDeclarations(stmt);
-            if (vd == null
-                    || !isAggregateIdentifierField(vd)
-                    || vd.getTypeExpression() == null) {
+            if (vd == null || !isAggregateIdentifierField(vd)) {
+                continue;
+            }
+            TypeTree typeExpression = vd.getTypeExpression();
+            if (typeExpression == null) {
                 continue;
             }
             JavaType.FullyQualified ft =
-                    TypeUtils.asFullyQualified(vd.getTypeExpression().getType());
+                    TypeUtils.asFullyQualified(typeExpression.getType());
             if (ft != null) {
                 return ft.getFullyQualifiedName();
             }
@@ -737,9 +768,6 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
      * (at either the AF4 or post-{@code ChangePackage} AF5 FQN), or {@code null} if not found.
      */
     private static String findAggregateIdFieldName(J.ClassDeclaration cd) {
-        if (cd.getBody() == null) {
-            return null;
-        }
         for (Statement stmt : cd.getBody().getStatements()) {
             J.VariableDeclarations vd = unwrapVariableDeclarations(stmt);
             if (vd == null) {

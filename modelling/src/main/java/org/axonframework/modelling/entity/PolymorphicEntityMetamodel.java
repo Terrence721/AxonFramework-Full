@@ -22,7 +22,6 @@ import org.axonframework.messaging.commandhandling.CommandMessage;
 import org.axonframework.messaging.commandhandling.CommandResultMessage;
 import org.axonframework.messaging.commandhandling.NoHandlerForCommandException;
 import org.axonframework.common.infra.ComponentDescriptor;
-import org.axonframework.common.infra.DescribableComponent;
 import org.axonframework.messaging.eventhandling.EventMessage;
 import org.axonframework.messaging.core.MessageStream;
 import org.axonframework.messaging.core.QualifiedName;
@@ -53,7 +52,7 @@ import java.util.Set;
  * @param <E> The type of polymorphic entity this metamodel represents.
  * @since 5.0.0
  */
-public class PolymorphicEntityMetamodel<E> implements EntityMetamodel<E>, DescribableComponent {
+public class PolymorphicEntityMetamodel<E> implements EntityMetamodel<E> {
 
     private final EntityMetamodel<E> superTypeMetamodel;
     private final Map<Class<? extends E>, EntityMetamodel<? extends E>> concreteMetamodels;
@@ -154,7 +153,7 @@ public class PolymorphicEntityMetamodel<E> implements EntityMetamodel<E>, Descri
             return superTypeMetamodel.handleInstance(message, entity, context);
         }
 
-        //noinspection unchecked
+        @SuppressWarnings("unchecked")
         List<Class<E>> supportingEntityTypes = this.concreteMetamodels
                 .values()
                 .stream()

@@ -1,9 +1,7 @@
 package org.axonframework.extension.reactor.messaging.commandhandling.gateway;
 
 import org.axonframework.common.infra.ComponentDescriptor;
-import org.axonframework.messaging.commandhandling.CommandBus;
 import org.axonframework.messaging.commandhandling.CommandMessage;
-import org.axonframework.messaging.commandhandling.CommandResultMessage;
 import org.axonframework.messaging.commandhandling.gateway.FutureCommandResult;
 import org.axonframework.messaging.commandhandling.GenericCommandMessage;
 import org.axonframework.messaging.commandhandling.GenericCommandResultMessage;

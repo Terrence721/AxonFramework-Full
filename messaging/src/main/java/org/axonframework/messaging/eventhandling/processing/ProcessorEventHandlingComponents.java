@@ -268,7 +268,7 @@ public class ProcessorEventHandlingComponents implements DescribableComponent {
      */
     public boolean supportsReset() {
         return components.stream()
-                         .anyMatch(EventHandlingComponent::supportsReset);
+                         .anyMatch(component -> component.supportsReset());
     }
 
     /**
@@ -299,11 +299,11 @@ public class ProcessorEventHandlingComponents implements DescribableComponent {
                      .thenApply(FutureUtils::ignoreResult);
     }
 
+    @SuppressWarnings("unchecked")
     private static ProcessingContext withEntryResources(MessageStream.Entry<?> entry,
                                                         ProcessingContext context) {
         ProcessingContext result = context;
         for (var resource : entry.resources().entrySet()) {
-            //noinspection unchecked
             result = result.withResource((Context.ResourceKey<Object>) resource.getKey(),
                                          resource.getValue());
         }

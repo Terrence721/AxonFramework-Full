@@ -113,13 +113,13 @@ class ConcatenatingMessageStream<M extends Message> extends AbstractMessageStrea
     @Override
     protected void onCompleted() {
         active.close();
-        streams.forEach(MessageStream::close);
+        streams.forEach(stream -> stream.close());
     }
 
     @Override
     protected String describeDelegates() {
-        return Stream.concat(Stream.of(active), streams.stream()).map(Object::toString).collect(Collectors.joining(", ",
-                                                                                                                   "*",
-                                                                                                                   ""));
+        return Stream.concat(Stream.of(active), streams.stream())
+                     .map(String::valueOf)
+                     .collect(Collectors.joining(", ", "*", ""));
     }
 }

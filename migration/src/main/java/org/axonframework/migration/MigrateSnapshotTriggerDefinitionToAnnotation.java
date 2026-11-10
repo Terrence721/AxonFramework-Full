@@ -16,6 +16,7 @@
 
 package org.axonframework.migration;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
@@ -31,15 +32,18 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TextComment;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.kotlin.tree.K;
 import org.openrewrite.marker.Markers;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Migrates the AF4 Spring Boot snapshotting configuration to the AF5 {@code @Snapshotting} annotation.
@@ -62,11 +66,11 @@ import java.util.Map;
  *             <li>{@code EventCountSnapshotTriggerDefinition} → adds {@code @Snapshotting(afterEvents = N)}</li>
  *             <li>{@code AggregateLoadTimeSnapshotTriggerDefinition} → adds
  *             {@code @Snapshotting(afterSourcingTime = "PTxS")}</li>
- *             <li>Custom implementation → prepends a {@code TODO(axon4to5):} comment for manual review</li>
+ *             <li>Custom implementation → prepends a manual-review note</li>
  *         </ul>
  *         In all cases, the {@code snapshotTriggerDefinition} attribute is removed from the annotation.
  *         Known-type {@code @Bean} methods are deleted from the configuration class; custom ones receive a
- *         {@code TODO(axon4to5):} comment and are left in place.</li>
+ *         manual-review comment and are left in place.</li>
  * </ol>
  *
  * @since 5.1.1
@@ -114,12 +118,12 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
     }
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Migrate SnapshotTriggerDefinition @Bean to @Snapshotting";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Replaces AF4 Spring Boot @Bean methods returning SnapshotTriggerDefinition with the"
                 + " AF5 @Snapshotting annotation on the corresponding aggregate class."
                 + " EventCountSnapshotTriggerDefinition maps to afterEvents;"
@@ -128,7 +132,7 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
     }
 
     @Override
-    public Accumulator getInitialValue(ExecutionContext ctx) {
+    public Accumulator getInitialValue(@NonNull ExecutionContext ctx) {
         return new Accumulator();
     }
 
@@ -137,11 +141,11 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
     // -------------------------------------------------------------------------
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+    public @NonNull TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new JavaIsoVisitor<>() {
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method,
-                                                               ExecutionContext ctx) {
+            public J.@NonNull MethodDeclaration visitMethodDeclaration(J.@NonNull MethodDeclaration method,
+                                                               @NonNull ExecutionContext ctx) {
                 if (hasBeanAnnotation(method) && isSnapshotTriggerDefinitionMethod(method)) {
                     String beanName = extractBeanName(method);
                     acc.beans.put(beanName, detectTriggerType(method));
@@ -156,12 +160,12 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
     // -------------------------------------------------------------------------
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+    public @NonNull TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
         return new JavaIsoVisitor<>() {
 
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl,
-                                                             ExecutionContext ctx) {
+            public J.@NonNull ClassDeclaration visitClassDeclaration(J.@NonNull ClassDeclaration classDecl,
+                                                                     @NonNull ExecutionContext ctx) {
                 // Detect before super processes children (annotation args not yet modified).
                 String beanName = findSnapshotTriggerBeanName(classDecl.getLeadingAnnotations());
 
@@ -196,47 +200,46 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
                 }
 
                 // ── Handle the configuration class side ───────────────────────
-                cd = processSnapshotBeanMethods(cd);
-
-                return cd;
+                if (cd == null) {
+                    throw new IllegalStateException("Class declaration visitor returned null");
+                }
+                return processSnapshotBeanMethods(cd);
             }
 
             private J.ClassDeclaration applySnapshottingTemplate(J.ClassDeclaration cd,
-                                                                   String template) {
-                return JavaTemplate.builder(template)
+                                                                   @NonNull String template) {
+                JavaParser.Builder<?, ?> parser = JavaParser.fromJavaVersion();
+                parser.classpath(JavaParser.runtimeClasspath());
+                return Objects.requireNonNull(JavaTemplate.builder(template)
                         .imports(SNAPSHOTTING_FQN)
-                        .javaParser(JavaParser.fromJavaVersion()
-                                             .classpath(JavaParser.runtimeClasspath()))
+                        .javaParser(parser)
                         .build()
                         .apply(getCursor(),
                                cd.getCoordinates().addAnnotation(
-                                       Comparator.comparing(J.Annotation::getSimpleName)));
+                                   (Comparator<J.Annotation>) (first, second) ->
+                                       first.getSimpleName().compareTo(second.getSimpleName()))));
             }
 
-            private J.ClassDeclaration processSnapshotBeanMethods(J.ClassDeclaration cd) {
-                if (cd.getBody() == null) {
-                    return cd;
-                }
+            private J.@NonNull ClassDeclaration processSnapshotBeanMethods(J.@NonNull ClassDeclaration cd) {
                 boolean[] removedABean = {false};
-                J.Block body = cd.getBody().withStatements(
-                        ListUtils.map(cd.getBody().getStatements(), stmt -> {
-                            if (!(stmt instanceof J.MethodDeclaration method)) {
-                                return stmt;
-                            }
-                            if (!hasBeanAnnotation(method)
-                                    || !isSnapshotTriggerDefinitionMethod(method)) {
-                                return stmt;
-                            }
-                            String name = extractBeanName(method);
-                            SnapshotBeanInfo info = acc.beans.get(name);
-                            if (info == null || info.type() == TriggerType.CUSTOM) {
-                                return prependTodoOnBeanMethod(method, name);
-                            }
-                            // Remove known-type bean method and schedule import cleanup.
-                            removedABean[0] = true;
-                            return null;
-                        })
-                );
+                List<Statement> statements = new ArrayList<>();
+                for (Statement stmt : cd.getBody().getStatements()) {
+                    if (!(stmt instanceof J.MethodDeclaration method)
+                            || !hasBeanAnnotation(method)
+                            || !isSnapshotTriggerDefinitionMethod(method)) {
+                        statements.add(stmt);
+                        continue;
+                    }
+                    String name = extractBeanName(method);
+                    SnapshotBeanInfo info = acc.beans.get(name);
+                    if (info == null || info.type() == TriggerType.CUSTOM) {
+                        statements.add(prependTodoOnBeanMethod(method, name));
+                        continue;
+                    }
+                    // Remove known-type bean method and schedule import cleanup.
+                    removedABean[0] = true;
+                }
+                J.Block body = cd.getBody().withStatements(statements);
                 if (removedABean[0]) {
                     maybeRemoveImport(SNAPSHOTTER_FQN);
                     maybeRemoveImport(SNAPSHOTTER_AF5_FQN);
@@ -284,22 +287,24 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
      * appears in the method body.
      */
     private static boolean isSnapshotTriggerDefinitionMethod(J.MethodDeclaration method) {
-        if (method.getReturnTypeExpression() != null) {
-            JavaType returnType = method.getReturnTypeExpression().getType();
+        TypeTree returnTypeExpression = method.getReturnTypeExpression();
+        if (returnTypeExpression != null) {
+            JavaType returnType = returnTypeExpression.getType();
             if (TypeUtils.isOfClassType(returnType, SNAPSHOT_TRIGGER_DEFINITION_FQN)
                     || TypeUtils.isOfClassType(returnType, EVENT_COUNT_FQN)
                     || TypeUtils.isOfClassType(returnType, LOAD_TIME_FQN)) {
                 return true;
             }
             // Simple-name fallback for unresolved types.
-            if (method.getReturnTypeExpression() instanceof J.Identifier id
+            if (returnTypeExpression instanceof J.Identifier id
                     && id.getSimpleName().endsWith("SnapshotTriggerDefinition")) {
                 return true;
             }
         }
         // Body check: look for a new-class or Kotlin constructor call returning a known type.
-        if (method.getBody() != null) {
-            for (Statement stmt : method.getBody().getStatements()) {
+        J.Block body = method.getBody();
+        if (body != null) {
+            for (Statement stmt : body.getStatements()) {
                 Expression returnExpr = null;
                 if (stmt instanceof J.Return ret) {
                     returnExpr = ret.getExpression();
@@ -318,17 +323,18 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
     }
 
     private static boolean isSnapshotNewClass(J.NewClass nc) {
-        if (nc.getClazz() == null) {
+        TypeTree clazz = nc.getClazz();
+        if (clazz == null) {
             return false;
         }
-        JavaType type = nc.getClazz().getType();
+        JavaType type = clazz.getType();
         if (TypeUtils.isOfClassType(type, EVENT_COUNT_FQN)
                 || TypeUtils.isOfClassType(type, LOAD_TIME_FQN)
                 || TypeUtils.isOfClassType(type, SNAPSHOT_TRIGGER_DEFINITION_FQN)) {
             return true;
         }
         // Simple-name fallback.
-        if (nc.getClazz() instanceof J.Identifier id
+        if (clazz instanceof J.Identifier id
                 && id.getSimpleName().endsWith("SnapshotTriggerDefinition")) {
             return true;
         }
@@ -343,10 +349,11 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
                                  && "Bean".equals(id.getSimpleName()))) {
                 continue;
             }
-            if (ann.getArguments() == null || ann.getArguments().isEmpty()) {
+            List<Expression> arguments = ann.getArguments();
+            if (arguments == null || arguments.isEmpty()) {
                 break;
             }
-            J firstArg = ann.getArguments().get(0);
+            J firstArg = arguments.get(0);
             // @Bean("name")
             if (firstArg instanceof J.Literal lit && lit.getValue() instanceof String name) {
                 return name;
@@ -364,10 +371,11 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
     }
 
     private static SnapshotBeanInfo detectTriggerType(J.MethodDeclaration method) {
-        if (method.getBody() == null) {
+        J.Block body = method.getBody();
+        if (body == null) {
             return new SnapshotBeanInfo(TriggerType.CUSTOM, 0, 0);
         }
-        for (Statement stmt : method.getBody().getStatements()) {
+        for (Statement stmt : body.getStatements()) {
             Expression returnExpr = null;
             if (stmt instanceof J.Return ret) {
                 returnExpr = ret.getExpression();
@@ -404,13 +412,14 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
     }
 
     private static boolean isOfNewClassType(J.NewClass nc, String simpleName, String fqn) {
-        if (nc.getClazz() == null) {
+        J clazz = nc.getClazz();
+        if (clazz == null) {
             return false;
         }
-        if (TypeUtils.isOfClassType(nc.getClazz().getType(), fqn)) {
+        if (fqn != null && TypeUtils.isOfClassType(nc.getType(), fqn)) {
             return true;
         }
-        return nc.getClazz() instanceof J.Identifier id && simpleName.equals(id.getSimpleName());
+        return clazz instanceof J.Identifier id && simpleName.equals(id.getSimpleName());
     }
 
     // -------------------------------------------------------------------------
@@ -424,10 +433,11 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
     @Nullable
     private static String findSnapshotTriggerBeanName(List<J.Annotation> annotations) {
         for (J.Annotation ann : annotations) {
-            if (!isAggregateOrEventSourced(ann) || ann.getArguments() == null) {
+            List<Expression> arguments = ann.getArguments();
+            if (!isAggregateOrEventSourced(ann) || arguments == null) {
                 continue;
             }
-            for (J arg : ann.getArguments()) {
+            for (Expression arg : arguments) {
                 if (arg instanceof J.Assignment assign
                         && assign.getVariable() instanceof J.Identifier id
                         && "snapshotTriggerDefinition".equals(id.getSimpleName())
@@ -468,31 +478,35 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
 
     /** Removes the {@code snapshotTriggerDefinition = "..."} argument from the {@code @Aggregate} annotation. */
     private static J.ClassDeclaration removeSnapshotTriggerAttribute(J.ClassDeclaration cd) {
-        return cd.withLeadingAnnotations(
-                ListUtils.map(cd.getLeadingAnnotations(), ann -> {
-                    if (!isAggregateOrEventSourced(ann) || ann.getArguments() == null) {
-                        return ann;
-                    }
-                    ann = ann.withArguments(
-                            ListUtils.map(ann.getArguments(), arg -> {
-                                if (arg instanceof J.Assignment assign
-                                        && assign.getVariable() instanceof J.Identifier id
-                                        && "snapshotTriggerDefinition".equals(id.getSimpleName())) {
-                                    return null;
-                                }
-                                return arg;
-                            })
-                    );
-                    if (ann.getArguments() == null || ann.getArguments().isEmpty()) {
-                        return ann.withArguments(null);
-                    }
+        List<J.Annotation> leadingAnnotations = cd.getLeadingAnnotations();
+        if (leadingAnnotations == null || leadingAnnotations.isEmpty()) {
+            return cd;
+        }
+        List<J.Annotation> updatedAnnotations = new ArrayList<>(leadingAnnotations.size());
+        for (J.Annotation ann : leadingAnnotations) {
+            List<Expression> arguments = ann.getArguments();
+            if (isAggregateOrEventSourced(ann) && arguments != null) {
+                ann = ann.withArguments(
+                        ListUtils.map(arguments, arg -> {
+                            if (arg instanceof J.Assignment assign
+                                    && assign.getVariable() instanceof J.Identifier id
+                                    && "snapshotTriggerDefinition".equals(id.getSimpleName())) {
+                                return null;
+                            }
+                            return arg;
+                        })
+                );
+                List<Expression> remainingArguments = ann.getArguments();
+                if (remainingArguments == null || remainingArguments.isEmpty()) {
+                    ann = ann.withArguments(null);
+                } else {
                     // Strip leading whitespace from the first surviving argument. When the removed
                     // attribute was not the last in the list (e.g. "snapshotTriggerDefinition = x,
                     // repository = y"), the next argument keeps its " " prefix that came after the
                     // comma — producing @Aggregate( repository = "y") instead of @Aggregate(repository = "y").
                     boolean[] first = {true};
                     ann = ann.withArguments(
-                            ListUtils.map(ann.getArguments(), arg -> {
+                            ListUtils.map(remainingArguments, arg -> {
                                 if (first[0]) {
                                     first[0] = false;
                                     if (!arg.getPrefix().getWhitespace().isEmpty()) {
@@ -503,34 +517,41 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
                                 return arg;
                             })
                     );
-                    return ann;
-                })
-        );
+                }
+            }
+            updatedAnnotations.add(ann);
+        }
+        return cd.withLeadingAnnotations(updatedAnnotations);
     }
 
     /**
-     * Prepends a {@code // TODO(axon4to5):} line comment above the {@code @Aggregate}/{@code @EventSourced}
-     * annotation on the class for the custom-trigger case.
+    * Prepends a migration note as a line comment above the {@code @Aggregate}/{@code @EventSourced}
+    * annotation on the class for the custom-trigger case.
      */
     private static J.ClassDeclaration prependTodoOnAggregateAnnotation(J.ClassDeclaration cd,
                                                                          String beanName) {
-        boolean[] done = {false};
-        return cd.withLeadingAnnotations(
-                ListUtils.map(cd.getLeadingAnnotations(), ann -> {
-                    if (!done[0] && isAggregateOrEventSourced(ann)) {
-                        done[0] = true;
-                        return prependLineComment(ann,
-                                " TODO(axon4to5): Custom SnapshotTriggerDefinition \""
-                                        + beanName
-                                        + "\" cannot be migrated automatically.");
-                    }
-                    return ann;
-                })
-        );
+        List<J.Annotation> leadingAnnotations = cd.getLeadingAnnotations();
+        if (leadingAnnotations == null || leadingAnnotations.isEmpty()) {
+            return cd;
+        }
+        List<J.Annotation> updatedAnnotations = new ArrayList<>(leadingAnnotations.size());
+        boolean done = false;
+        for (J.Annotation ann : leadingAnnotations) {
+            if (!done && isAggregateOrEventSourced(ann)) {
+                done = true;
+                updatedAnnotations.add(prependLineComment(ann,
+                        " TODO(axon4to5): Custom SnapshotTriggerDefinition \""
+                                + beanName
+                                + "\" cannot be migrated automatically."));
+            } else {
+                updatedAnnotations.add(ann);
+            }
+        }
+        return cd.withLeadingAnnotations(updatedAnnotations);
     }
 
     /**
-     * Prepends a {@code // TODO(axon4to5):} line comment above the bean method for custom trigger types.
+    * Prepends a line comment above the bean method for custom trigger types.
      */
     private static J.MethodDeclaration prependTodoOnBeanMethod(J.MethodDeclaration method,
                                                                  String beanName) {
@@ -557,7 +578,7 @@ public class MigrateSnapshotTriggerDefinitionToAnnotation
      * Prepends a {@code //}-style line comment to {@code ann}, placed on its own line above the
      * annotation at the same indent level.
      */
-    private static J.Annotation prependLineComment(J.Annotation ann, String text) {
+    private static J.Annotation prependLineComment(J.Annotation ann, @NonNull String text) {
         Space prefix = ann.getPrefix();
         String leading = prefix.getWhitespace();
         String indent = leading.contains("\n")

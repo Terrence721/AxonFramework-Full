@@ -20,7 +20,6 @@ import org.axonframework.common.configuration.DecoratorDefinition;
 import org.axonframework.extension.reactor.messaging.core.interception.ReactorDispatchInterceptorRegistry;
 import org.axonframework.extension.reactor.messaging.core.ReactorMessageDispatchInterceptor;
 import org.axonframework.messaging.commandhandling.CommandMessage;
-import org.axonframework.messaging.core.Message;
 import org.axonframework.messaging.eventhandling.EventMessage;
 import org.axonframework.messaging.queryhandling.QueryMessage;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

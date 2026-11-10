@@ -121,7 +121,7 @@ public interface MessageHandlingMember<T> {
      * @return the declaring class of this Message Handling Member
      */
     default Class<?> declaringClass() {
-        return unwrap(Member.class).map(Member::getDeclaringClass)
+        return unwrap(Member.class).map(member -> member.getDeclaringClass())
                                    .orElseThrow(() -> new UnsupportedOperationException(
                                            "This implementation of MessageHandlingMember does not wrap a "
                                                    + "java.lang.reflect.Member. Please provide a different way of "
@@ -135,7 +135,7 @@ public interface MessageHandlingMember<T> {
      * @return the signature of the handling member
      */
     default String signature() {
-        return unwrap(Executable.class).map(Executable::toGenericString)
+        return unwrap(Executable.class).map(executable -> executable.toGenericString())
                                        .orElse("__unknown__");
     }
 

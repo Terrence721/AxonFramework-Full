@@ -126,6 +126,7 @@ public class JdbcTokenStore implements TokenStore {
         return connectionExecutor(context).apply(connection -> {
             try (PreparedStatement statement = selectForUpdate(connection, processorName, 0);
                  ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
                 List<Segment> segments = Segment.splitBalanced(Segment.ROOT_SEGMENT, segmentCount - 1);
                 for (Segment segment : segments) {
                     insertTokenEntry(connection, initialToken, processorName, segment);
@@ -149,6 +150,7 @@ public class JdbcTokenStore implements TokenStore {
         return connectionExecutor(context).accept(connection -> {
             try (PreparedStatement preparedStatement = selectForUpdate(connection, processorName, 0);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSet.next();
                 insertTokenEntry(connection, token, processorName, segment);
             } catch (SQLException e1) {
                 throw new UnableToInitializeTokenException(
@@ -427,7 +429,7 @@ public class JdbcTokenStore implements TokenStore {
                 List<JdbcTokenEntry> tokenEntries = result;
                 return tokenEntries.stream()
                                    .filter(tokenEntry -> tokenEntry.mayClaim(nodeId, claimTimeout))
-                                   .map(JdbcTokenEntry::getSegment).toList();
+                                   .map(tokenEntry -> tokenEntry.getSegment()).toList();
             } catch (SQLException e) {
                 throw new JdbcException(String.format("Could not load segments for processor [%s]", processorName), e);
             }

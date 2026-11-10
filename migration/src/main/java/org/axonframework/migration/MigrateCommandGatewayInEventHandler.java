@@ -26,7 +26,9 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,12 +77,12 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
     private static final String DISPATCHER_PARAM_NAME = "commandDispatcher";
 
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return "Replace class-level CommandGateway with method-parameter CommandDispatcher in @EventHandler methods";
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return "Inside every `@EventHandler` method in the class, rewrites calls of the form "
                 + "`commandGateway.send(...)` / `commandGateway.sendAndWait(...)` (where `commandGateway` is a "
                 + "class-level `CommandGateway` field) to `commandDispatcher.send(...)` on a method-level "
@@ -92,11 +94,11 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
+    public @NonNull TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            public J.@NonNull ClassDeclaration visitClassDeclaration(J.@NonNull ClassDeclaration classDecl, @NonNull ExecutionContext ctx) {
                 String gatewayFieldName = findCommandGatewayField(classDecl);
                 boolean hasGatewayWork = gatewayFieldName != null
                         && classHasEventHandlerCallingGateway(classDecl, gatewayFieldName);
@@ -104,7 +106,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                 if (!hasGatewayWork && !hasDispatcherOnlyWork) {
                     return super.visitClassDeclaration(classDecl, ctx);
                 }
-                if (hasGatewayWork) {
+                if (hasGatewayWork && gatewayFieldName != null) {
                     getCursor().putMessage("axon.gatewayFieldName", gatewayFieldName);
                 }
 
@@ -116,7 +118,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                     cd = removeGatewayFromConstructors(cd, gatewayFieldName);
                     maybeRemoveImport(COMMAND_GATEWAY_AF5_FQN);
                 }
-                return cd;
+                return java.util.Objects.requireNonNull(cd);
             }
 
             /**
@@ -137,8 +139,8 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                     boolean[] found = {false};
                     new JavaIsoVisitor<ExecutionContext>() {
                         @Override
-                        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi,
-                                                                        ExecutionContext c) {
+                        public J.@NonNull MethodInvocation visitMethodInvocation(J.@NonNull MethodInvocation mi,
+                                                                                 @NonNull ExecutionContext c) {
                             if (isGatewayCall(mi, gatewayName)
                                     && ("send".equals(mi.getSimpleName())
                                             || "sendAndWait".equals(mi.getSimpleName()))) {
@@ -184,11 +186,12 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                 boolean[] found = {false};
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi,
-                                                                    ExecutionContext c) {
+                    public J.@NonNull MethodInvocation visitMethodInvocation(J.@NonNull MethodInvocation mi,
+                                                                             @NonNull ExecutionContext c) {
+                        Expression select = mi.getSelect();
                         if ("send".equals(mi.getSimpleName())
-                                && mi.getSelect() instanceof J.Identifier
-                                && ((J.Identifier) mi.getSelect()).getSimpleName().equals(dispatcherName)) {
+                                && select instanceof J.Identifier
+                                && ((J.Identifier) select).getSimpleName().equals(dispatcherName)) {
                             found[0] = true;
                         }
                         return super.visitMethodInvocation(mi, c);
@@ -198,7 +201,8 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
             }
 
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+            public J.@NonNull MethodDeclaration visitMethodDeclaration(J.@NonNull MethodDeclaration method,
+                                                               @NonNull ExecutionContext ctx) {
                 if (!isAnnotatedAsEventHandler(method)) {
                     return super.visitMethodDeclaration(method, ctx);
                 }
@@ -217,7 +221,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
 
                 final String paramName = dispatcherParamName != null ? dispatcherParamName : DISPATCHER_PARAM_NAME;
 
-                J.MethodDeclaration md = method;
+                J.@NonNull MethodDeclaration md = method;
                 if (callsGateway && dispatcherParamName == null) {
                     md = addCommandDispatcherParameter(md, ctx);
                 }
@@ -227,7 +231,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                     final String gatewayName = gatewayFieldName;
                     md = (J.MethodDeclaration) new JavaIsoVisitor<ExecutionContext>() {
                         @Override
-                        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, ExecutionContext c) {
+                        public J.@NonNull MethodInvocation visitMethodInvocation(J.@NonNull MethodInvocation mi, @NonNull ExecutionContext c) {
                             J.MethodInvocation invocation = super.visitMethodInvocation(mi, c);
                             if (!isGatewayCall(invocation, gatewayName)) {
                                 return invocation;
@@ -236,15 +240,16 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                             if (!"send".equals(name) && !"sendAndWait".equals(name)) {
                                 return invocation;
                             }
+                                Expression select = invocation.getSelect();
                             return invocation
                                     .withSelect(
                                             new J.Identifier(
                                                     org.openrewrite.Tree.randomId(),
-                                                    invocation.getSelect() == null
+                                            select == null
                                                             ? org.openrewrite.java.tree.Space.EMPTY
-                                                            : invocation.getSelect().getPrefix(),
+                                                : select.getPrefix(),
                                                     org.openrewrite.marker.Markers.EMPTY,
-                                                    java.util.Collections.emptyList(),
+                                                    java.util.Collections.<J.@NonNull Annotation>emptyList(),
                                                     paramName,
                                                     null,
                                                     null
@@ -276,17 +281,18 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         continue;
                     }
                     J.VariableDeclarations vd = (J.VariableDeclarations) s;
-                    if (vd.getTypeExpression() == null || vd.getVariables().isEmpty()) {
+                    TypeTree typeExpression = vd.getTypeExpression();
+                    if (typeExpression == null || vd.getVariables().isEmpty()) {
                         continue;
                     }
-                    JavaType.FullyQualified type = TypeUtils.asFullyQualified(vd.getTypeExpression().getType());
+                    JavaType.FullyQualified type = TypeUtils.asFullyQualified(typeExpression.getType());
                     if (type != null && COMMAND_GATEWAY_AF5_FQN.equals(type.getFullyQualifiedName())) {
                         return vd.getVariables().get(0).getSimpleName();
                     }
                     // Fallback: type binding is missing (typical on test inputs without classpath)
                     // — fall back to the simple type name. Both `CommandGateway` and the AF5 FQN form
                     // are accepted.
-                    String typeText = vd.getTypeExpression().toString();
+                    String typeText = typeExpression.toString();
                     if ("CommandGateway".equals(typeText) || COMMAND_GATEWAY_AF5_FQN.equals(typeText)) {
                         return vd.getVariables().get(0).getSimpleName();
                     }
@@ -315,7 +321,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                 boolean[] found = {false};
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.Identifier visitIdentifier(J.Identifier id, ExecutionContext c) {
+                    public J.@NonNull Identifier visitIdentifier(J.@NonNull Identifier id, @NonNull ExecutionContext c) {
                         if (id.getSimpleName().equals(name)) {
                             found[0] = true;
                         }
@@ -345,16 +351,17 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         continue;
                     }
                     J.VariableDeclarations vd = (J.VariableDeclarations) p;
-                    if (vd.getTypeExpression() == null) {
+                    org.openrewrite.java.tree.TypeTree typeExpression = vd.getTypeExpression();
+                    if (typeExpression == null) {
                         continue;
                     }
-                    JavaType.FullyQualified t = TypeUtils.asFullyQualified(vd.getTypeExpression().getType());
+                    JavaType.FullyQualified t = TypeUtils.asFullyQualified(typeExpression.getType());
                     if (t != null && COMMAND_DISPATCHER_FQN.equals(t.getFullyQualifiedName())
                             && !vd.getVariables().isEmpty()) {
                         return vd.getVariables().get(0).getSimpleName();
                     }
                     // Fallback by simple-name — type binding can be missing on test inputs.
-                    if (vd.getTypeExpression().toString().equals("CommandDispatcher")
+                    if (typeExpression.toString().equals("CommandDispatcher")
                             && !vd.getVariables().isEmpty()) {
                         return vd.getVariables().get(0).getSimpleName();
                     }
@@ -364,7 +371,8 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
 
             // ── Method-level transformations ─────────────────────────────────────
 
-            private J.MethodDeclaration addCommandDispatcherParameter(J.MethodDeclaration md, ExecutionContext ctx) {
+            @SuppressWarnings("null")
+            private J.@NonNull MethodDeclaration addCommandDispatcherParameter(J.MethodDeclaration md, ExecutionContext ctx) {
                 List<Object> templateArgs = new ArrayList<>();
                 StringBuilder template = new StringBuilder();
                 List<Statement> existing = md.getParameters();
@@ -381,24 +389,29 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                 } else {
                     template.append("CommandDispatcher ").append(DISPATCHER_PARAM_NAME);
                 }
-                return JavaTemplate.builder(template.toString())
+                J.MethodDeclaration transformed = JavaTemplate.builder(template.toString())
                         .imports(COMMAND_DISPATCHER_FQN)
                         .javaParser(JavaParser.fromJavaVersion().classpath(JavaParser.runtimeClasspath()))
                         .build()
-                        .apply(getCursor(), md.getCoordinates().replaceParameters(), templateArgs.toArray());
+                    .apply(getCursor(), md.getCoordinates().replaceParameters(), templateArgs.toArray());
+                if (transformed == null) {
+                    throw new IllegalStateException("Failed to add CommandDispatcher parameter");
+                }
+                return transformed;
             }
 
             private boolean isVoidReturn(J.MethodDeclaration md) {
-                if (md.getReturnTypeExpression() == null) {
+                TypeTree returnTypeExpression = md.getReturnTypeExpression();
+                if (returnTypeExpression == null) {
                     return false;
                 }
-                JavaType type = md.getReturnTypeExpression().getType();
+                JavaType type = returnTypeExpression.getType();
                 if (type instanceof JavaType.Primitive
                         && ((JavaType.Primitive) type).equals(JavaType.Primitive.Void)) {
                     return true;
                 }
                 // Fallback by simple name — covers test inputs where types aren't fully bound.
-                return "void".equals(md.getReturnTypeExpression().toString());
+                return "void".equals(returnTypeExpression.toString());
             }
 
             /**
@@ -411,10 +424,11 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
              *     trailing {@code return CompletableFuture.completedFuture(null);}.
              */
             private boolean bodyShapeIsConvertible(J.MethodDeclaration md, String dispatcherName) {
-                if (md.getBody() == null) {
+                J.Block body = md.getBody();
+                if (body == null) {
                     return false;
                 }
-                List<Statement> stmts = md.getBody().getStatements();
+                List<Statement> stmts = body.getStatements();
                 if (stmts.isEmpty()) {
                     return false;
                 }
@@ -432,8 +446,9 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
             }
 
             private boolean ifShapeIsConvertible(J.If ifStmt, String dispatcherName) {
-                if (ifStmt.getElsePart() != null) {
-                    Statement elseBody = ifStmt.getElsePart().getBody();
+                J.If.Else elsePart = ifStmt.getElsePart();
+                if (elsePart != null) {
+                    Statement elseBody = elsePart.getBody();
                     if (elseBody instanceof J.Block && !((J.Block) elseBody).getStatements().isEmpty()) {
                         return false;
                     }
@@ -456,7 +471,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         || !isDispatchExpressionStatement(tryStmts.get(tryStmts.size() - 1), dispatcherName)) {
                     return false;
                 }
-                if (tryStmt.getCatches() == null || tryStmt.getCatches().isEmpty()) {
+                if (tryStmt.getCatches().isEmpty()) {
                     return false;
                 }
                 for (J.Try.Catch c : tryStmt.getCatches()) {
@@ -482,7 +497,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         && ((J.Identifier) select).getSimpleName().equals(dispatcherName);
             }
 
-            private J.MethodDeclaration changeReturnTypeToCompletableFuture(J.MethodDeclaration md, ExecutionContext ctx) {
+            private J.@NonNull MethodDeclaration changeReturnTypeToCompletableFuture(J.MethodDeclaration md, ExecutionContext ctx) {
                 if (md.getReturnTypeExpression() == null) {
                     return md;
                 }
@@ -507,7 +522,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         org.openrewrite.Tree.randomId(),
                         org.openrewrite.java.tree.Space.EMPTY,
                         org.openrewrite.marker.Markers.EMPTY,
-                        java.util.Collections.emptyList(),
+                        new ArrayList<>(),
                         "CompletableFuture",
                         cfType,
                         null);
@@ -540,11 +555,11 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
              * {@code return CompletableFuture.completedFuture(null);} so the void-returning false branch
              * still produces a future.
              */
-            private J.MethodDeclaration wrapDispatchesInReturn(J.MethodDeclaration md, String dispatcherName,
-                                                                ExecutionContext ctx) {
+            private J.@NonNull MethodDeclaration wrapDispatchesInReturn(J.@NonNull MethodDeclaration md, String dispatcherName,
+                                                                        ExecutionContext ctx) {
                 return (J.MethodDeclaration) new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.Block visitBlock(J.Block block, ExecutionContext c) {
+                    public J.@NonNull Block visitBlock(J.@NonNull Block block, @NonNull ExecutionContext c) {
                         J.Block b = super.visitBlock(block, c);
                         List<Statement> stmts = b.getStatements();
                         if (stmts.isEmpty()) {
@@ -569,7 +584,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                                         org.openrewrite.Tree.randomId(),
                                         org.openrewrite.java.tree.Space.EMPTY,
                                         org.openrewrite.marker.Markers.EMPTY,
-                                        java.util.Collections.emptyList(),
+                                        new ArrayList<>(),
                                         "getResultMessage",
                                         null,
                                         null),
@@ -586,13 +601,14 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                     }
 
                     @Override
-                    public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration meth,
-                                                                      ExecutionContext c) {
+                    public J.@NonNull MethodDeclaration visitMethodDeclaration(J.@NonNull MethodDeclaration meth,
+                                                                                @NonNull ExecutionContext c) {
                         J.MethodDeclaration m = super.visitMethodDeclaration(meth, c);
-                        if (m.getBody() == null) {
+                        J.Block body = m.getBody();
+                        if (body == null) {
                             return m;
                         }
-                        List<Statement> bodyStmts = m.getBody().getStatements();
+                        List<Statement> bodyStmts = body.getStatements();
                         if (bodyStmts.isEmpty() || !(bodyStmts.get(bodyStmts.size() - 1) instanceof J.If)) {
                             return m;
                         }
@@ -610,7 +626,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         // fully covered.
                         List<Statement> appended = new ArrayList<>(bodyStmts);
                         appended.add(buildCompletedFutureReturn(guardIf.getPrefix()));
-                        return m.withBody(m.getBody().withStatements(appended));
+                        return m.withBody(body.withStatements(appended));
                     }
                 }.visitNonNull(md, ctx, getCursor().getParentOrThrow());
             }
@@ -629,7 +645,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         org.openrewrite.Tree.randomId(),
                         org.openrewrite.java.tree.Space.EMPTY,
                         org.openrewrite.marker.Markers.EMPTY,
-                        java.util.Collections.emptyList(),
+                        new ArrayList<>(),
                         "CompletableFuture",
                         cfType,
                         null);
@@ -637,7 +653,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         org.openrewrite.Tree.randomId(),
                         org.openrewrite.java.tree.Space.EMPTY,
                         org.openrewrite.marker.Markers.EMPTY,
-                        java.util.Collections.emptyList(),
+                        new ArrayList<>(),
                         "completedFuture",
                         null,
                         null);
@@ -657,7 +673,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                                 org.openrewrite.marker.Markers.EMPTY);
                 J.MethodInvocation call = new J.MethodInvocation(
                         org.openrewrite.Tree.randomId(),
-                        org.openrewrite.java.tree.Space.format(" "),
+                        java.util.Objects.requireNonNull(org.openrewrite.java.tree.Space.format(" ")),
                         org.openrewrite.marker.Markers.EMPTY,
                         org.openrewrite.java.tree.JRightPadded.<Expression>build(cfIdentifier),
                         null,
@@ -666,7 +682,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         null);
                 return new J.Return(
                         org.openrewrite.Tree.randomId(),
-                        prefix,
+                    java.util.Objects.requireNonNull(prefix),
                         org.openrewrite.marker.Markers.EMPTY,
                         call);
             }
@@ -677,8 +693,8 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                 boolean[] referenced = {false};
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd,
-                                                                            ExecutionContext c) {
+                    public J.@NonNull VariableDeclarations visitVariableDeclarations(J.@NonNull VariableDeclarations vd,
+                                                                                     @NonNull ExecutionContext c) {
                         // Skip the field declaration itself; we only care about references.
                         if (isClassLevelGatewayField(vd, fieldName)) {
                             return vd;
@@ -687,7 +703,8 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                     }
 
                     @Override
-                    public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration m, ExecutionContext c) {
+                    public J.@NonNull MethodDeclaration visitMethodDeclaration(J.@NonNull MethodDeclaration m,
+                                                                             @NonNull ExecutionContext c) {
                         if (isCanonicalGatewayConstructor(m, fieldName)) {
                             // Skip the constructor that exists solely to set this.field = field;
                             return m;
@@ -696,7 +713,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                     }
 
                     @Override
-                    public J.Identifier visitIdentifier(J.Identifier id, ExecutionContext c) {
+                    public J.@NonNull Identifier visitIdentifier(J.@NonNull Identifier id, @NonNull ExecutionContext c) {
                         if (id.getSimpleName().equals(fieldName)) {
                             referenced[0] = true;
                         }
@@ -713,11 +730,15 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                 if (!vd.getVariables().get(0).getSimpleName().equals(fieldName)) {
                     return false;
                 }
-                JavaType.FullyQualified t = TypeUtils.asFullyQualified(vd.getTypeExpression().getType());
+                org.openrewrite.java.tree.TypeTree typeExpr = vd.getTypeExpression();
+                if (typeExpr == null) {
+                    return false;
+                }
+                JavaType.FullyQualified t = TypeUtils.asFullyQualified(typeExpr.getType());
                 if (t != null && COMMAND_GATEWAY_AF5_FQN.equals(t.getFullyQualifiedName())) {
                     return true;
                 }
-                return vd.getTypeExpression().toString().equals("CommandGateway");
+                return typeExpr.toString().equals("CommandGateway");
             }
 
             /**
@@ -734,10 +755,11 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                 boolean hasGatewayParam = params.stream().anyMatch(s -> {
                     if (!(s instanceof J.VariableDeclarations)) return false;
                     J.VariableDeclarations vd = (J.VariableDeclarations) s;
-                    if (vd.getTypeExpression() == null) return false;
-                    JavaType.FullyQualified t = TypeUtils.asFullyQualified(vd.getTypeExpression().getType());
+                    org.openrewrite.java.tree.TypeTree typeExpression = vd.getTypeExpression();
+                    if (typeExpression == null) return false;
+                    JavaType.FullyQualified t = TypeUtils.asFullyQualified(typeExpression.getType());
                     boolean typeOk = (t != null && COMMAND_GATEWAY_AF5_FQN.equals(t.getFullyQualifiedName()))
-                            || vd.getTypeExpression().toString().equals("CommandGateway");
+                        || typeExpression.toString().equals("CommandGateway");
                     return typeOk && !vd.getVariables().isEmpty()
                             && vd.getVariables().get(0).getSimpleName().equals(fieldName);
                 });
@@ -765,31 +787,31 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                     }
                     J.MethodDeclaration m = (J.MethodDeclaration) s;
                     if (m.getReturnTypeExpression() != null) {
-                        rebuilt.add(s);
+                        rebuilt.add(m);
                         continue;
                     }
                     // Strip the gateway parameter.
                     List<Statement> newParams = new ArrayList<>();
                     boolean removedAny = false;
-                    for (Statement p : m.getParameters()) {
-                        if (p instanceof J.VariableDeclarations) {
-                            J.VariableDeclarations vd = (J.VariableDeclarations) p;
+                    for (Statement parameter : m.getParameters()) {
+                        if (parameter instanceof J.VariableDeclarations) {
+                            J.VariableDeclarations vd = (J.VariableDeclarations) parameter;
+                            TypeTree typeExpression = vd.getTypeExpression();
+                            JavaType.FullyQualified parameterType = typeExpression == null
+                                    ? null
+                                    : TypeUtils.asFullyQualified(typeExpression.getType());
+                            boolean isCommandGateway = (parameterType != null
+                                    && COMMAND_GATEWAY_AF5_FQN.equals(parameterType.getFullyQualifiedName()))
+                                    || (typeExpression != null
+                                    && typeExpression.toString().equals("CommandGateway"));
                             if (!vd.getVariables().isEmpty()
                                     && vd.getVariables().get(0).getSimpleName().equals(fieldName)
-                                    && (TypeUtils.asFullyQualified(vd.getTypeExpression() == null
-                                                                          ? null
-                                                                          : vd.getTypeExpression().getType()) != null
-                                                && COMMAND_GATEWAY_AF5_FQN.equals(
-                                                        TypeUtils.asFullyQualified(
-                                                                vd.getTypeExpression().getType())
-                                                                .getFullyQualifiedName())
-                                        || vd.getTypeExpression() != null
-                                                && vd.getTypeExpression().toString().equals("CommandGateway"))) {
+                                    && isCommandGateway) {
                                 removedAny = true;
                                 continue;
                             }
                         }
-                        newParams.add(p);
+                        newParams.add(parameter);
                     }
                     if (!removedAny) {
                         rebuilt.add(s);
@@ -802,15 +824,16 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                     }
                     m = m.withParameters(newParams);
                     // Strip the matching this.field = field assignment.
-                    if (m.getBody() != null) {
+                    J.Block bodyBlock = m.getBody();
+                    if (bodyBlock != null) {
                         List<Statement> body = new ArrayList<>();
-                        for (Statement bs : m.getBody().getStatements()) {
+                        for (Statement bs : bodyBlock.getStatements()) {
                             if (isFieldAssignment(bs, fieldName)) {
                                 continue;
                             }
                             body.add(bs);
                         }
-                        m = m.withBody(m.getBody().withStatements(body));
+                        m = m.withBody(bodyBlock.withStatements(body));
                     }
                     rebuilt.add(m);
                 }

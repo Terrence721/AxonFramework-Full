@@ -36,7 +36,6 @@ import org.axonframework.messaging.core.MessageStream;
 import org.axonframework.messaging.core.VersionedType;
 import org.axonframework.messaging.core.unitofwork.ProcessingContext;
 import org.axonframework.messaging.eventhandling.EventMessage;
-import org.axonframework.messaging.eventhandling.GenericEventMessage;
 import org.axonframework.messaging.eventstreaming.EventCriteria;
 import org.axonframework.modelling.repository.ManagedEntity;
 import org.slf4j.Logger;
@@ -178,11 +177,12 @@ public class SnapshottingEntityLifecycleHandler<I, E> implements EntityLifecycle
 
         return source
             .reduce(null, accumulator)
-            .exceptionallyCompose(e -> switch (e) {
-                case SnapshotIncompatibleException sce ->
-                    transaction.source(SourcingCondition.conditionFor(Position.START, criteria), positionRef::set)
+            .exceptionallyCompose(e -> {
+                if (e instanceof SnapshotIncompatibleException) {
+                    return transaction.source(SourcingCondition.conditionFor(Position.START, criteria), positionRef::set)
                         .reduce(null, accumulator);
-                default -> CompletableFuture.failedFuture(e);
+                }
+                return CompletableFuture.failedFuture(e);
             })
             .thenApply(entity -> {
                 if (evolutionCount.get() > 0) {

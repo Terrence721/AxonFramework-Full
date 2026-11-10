@@ -17,7 +17,6 @@
 package org.axonframework.modelling.entity;
 
 import org.axonframework.common.infra.ComponentDescriptor;
-import org.axonframework.common.infra.DescribableComponent;
 import org.axonframework.messaging.commandhandling.CommandHandler;
 import org.axonframework.messaging.commandhandling.CommandMessage;
 import org.axonframework.messaging.commandhandling.CommandResultMessage;
@@ -55,7 +54,7 @@ import static java.util.Objects.requireNonNull;
  * @param <E> The type of the entity this metamodel describes.
  * @since 5.0.0
  */
-public class ConcreteEntityMetamodel<E> implements DescribableComponent, EntityMetamodel<E> {
+public class ConcreteEntityMetamodel<E> implements EntityMetamodel<E> {
 
     private final Class<E> entityType;
     private final List<EntityChildMetamodel<?, E>> children = new LinkedList<>();

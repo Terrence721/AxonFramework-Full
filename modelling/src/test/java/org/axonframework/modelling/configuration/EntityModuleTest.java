@@ -18,7 +18,6 @@ package org.axonframework.modelling.configuration;
 
 import org.axonframework.common.configuration.Configuration;
 import org.axonframework.common.configuration.LifecycleRegistry;
-import org.axonframework.common.configuration.Module;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

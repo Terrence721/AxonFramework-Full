@@ -21,7 +21,6 @@ import org.axonframework.messaging.core.unitofwork.ProcessingContext;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
-import java.util.function.Predicate;
 
 /**
  * {@link RoutingKeySequencingPolicy} that requires sequential processing of commands targeting the same
@@ -49,7 +48,7 @@ public class RoutingKeySequencingPolicy implements SequencingPolicy<CommandMessa
     public Optional<Object> sequenceIdentifierFor(@NonNull CommandMessage message,
                                                   @NonNull ProcessingContext context) {
         return message.routingKey()
-                      .filter(Predicate.not(String::isEmpty))
+                      .filter(routingKey -> !routingKey.isEmpty())
                       .map(Object.class::cast);
     }
 }

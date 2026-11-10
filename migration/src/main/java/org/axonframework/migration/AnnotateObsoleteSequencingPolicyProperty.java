@@ -20,6 +20,8 @@ import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.properties.PropertiesIsoVisitor;
 import org.openrewrite.properties.tree.Properties;
 import org.openrewrite.yaml.YamlIsoVisitor;
@@ -57,11 +59,13 @@ public class AnnotateObsoleteSequencingPolicyProperty extends Recipe {
     );
 
     @Override
+    @NonNull
     public String getDisplayName() {
         return "Annotate obsolete `axon.eventhandling.processors.<group>.sequencing-policy` properties";
     }
 
     @Override
+    @NonNull
     public String getDescription() {
         return "Inserts a one-line `# TODO(axon4to5): ...` comment above any "
                 + "`axon.eventhandling.processors.<group>.sequencing-policy` entry in "
@@ -72,10 +76,11 @@ public class AnnotateObsoleteSequencingPolicyProperty extends Recipe {
     }
 
     @Override
+    @NonNull
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new TreeVisitor<org.openrewrite.Tree, ExecutionContext>() {
             @Override
-            public org.openrewrite.Tree visit(org.openrewrite.Tree tree, ExecutionContext ctx) {
+            public org.openrewrite.Tree visit(org.openrewrite.@Nullable Tree tree, ExecutionContext ctx) {
                 if (tree instanceof Properties.File) {
                     return new PropertiesEntryVisitor().visit(tree, ctx);
                 }
@@ -89,7 +94,7 @@ public class AnnotateObsoleteSequencingPolicyProperty extends Recipe {
 
     private static class PropertiesEntryVisitor extends PropertiesIsoVisitor<ExecutionContext> {
         @Override
-        public Properties.File visitFile(Properties.File file, ExecutionContext ctx) {
+        public Properties.@NonNull File visitFile(Properties.@NonNull File file, @NonNull ExecutionContext ctx) {
             Properties.File f = super.visitFile(file, ctx);
             java.util.List<Properties.Content> source = f.getContent();
             java.util.List<Properties.Content> rebuilt = null;
@@ -123,7 +128,7 @@ public class AnnotateObsoleteSequencingPolicyProperty extends Recipe {
                     && ((Properties.Comment) previous).getMessage().contains(COMMENT_MARKER);
         }
 
-        private Properties.Comment buildMarkerComment(String entryPrefix) {
+        private Properties.Comment buildMarkerComment(@NonNull String entryPrefix) {
             // The new comment node steals the entry's leading newline+indent so it lands on its own
             // line. The entry then keeps its original prefix — the comment node's trailing newline
             // (which is implicit in Properties LST printing) brings us back to the entry's column.
@@ -139,7 +144,7 @@ public class AnnotateObsoleteSequencingPolicyProperty extends Recipe {
 
     private static class YamlEntryVisitor extends YamlIsoVisitor<ExecutionContext> {
         @Override
-        public Yaml.Mapping.Entry visitMappingEntry(Yaml.Mapping.Entry entry, ExecutionContext ctx) {
+        public Yaml.Mapping.@NonNull Entry visitMappingEntry(Yaml.Mapping.@NonNull Entry entry, @NonNull ExecutionContext ctx) {
             Yaml.Mapping.Entry e = super.visitMappingEntry(entry, ctx);
             if (!"sequencing-policy".equals(e.getKey().getValue())) {
                 return e;
@@ -187,7 +192,7 @@ public class AnnotateObsoleteSequencingPolicyProperty extends Recipe {
         }
     }
 
-    private static String prependComment(String existingPrefix) {
+    private static @NonNull String prependComment(@NonNull String existingPrefix) {
         // existingPrefix typically contains the newline + indentation that precedes the entry.
         // Insert the comment as its own line, preserving that newline + indentation so the
         // entry stays where it was.

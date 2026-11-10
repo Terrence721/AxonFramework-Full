@@ -84,6 +84,7 @@ public class Jackson2Converter implements Converter {
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T convert(@Nullable Object input,
                          Type targetType) {

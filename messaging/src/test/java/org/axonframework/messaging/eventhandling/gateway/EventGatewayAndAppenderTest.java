@@ -161,7 +161,7 @@ class EventGatewayAndAppenderTest {
 
         inContext(context -> gateway.publish(context, "first", 2L).join());
 
-        assertEquals(List.of("first", 2L), sink.published.stream().map(EventMessage::payload).toList());
+        assertEquals(List.of("first", 2L), sink.published.stream().map(event -> event.payload()).toList());
         assertEquals(1, sink.contexts.size());
     }
 
@@ -228,7 +228,7 @@ class EventGatewayAndAppenderTest {
 
             appender.append("first", "second");
 
-            assertEquals(List.of("first", "second"), sink.published.stream().map(EventMessage::payload).toList());
+            assertEquals(List.of("first", "second"), sink.published.stream().map(event -> event.payload()).toList());
             assertSame(context, sink.contexts.get(0));
         });
     }

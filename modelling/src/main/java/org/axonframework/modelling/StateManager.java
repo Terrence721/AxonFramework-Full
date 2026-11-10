@@ -97,7 +97,7 @@ public interface StateManager extends DescribableComponent {
     default <I, T> CompletableFuture<@Nullable T> loadEntity(Class<T> type,
                                                              I id,
                                                              ProcessingContext context) {
-        return loadManagedEntity(type, id, context).thenApply(ManagedEntity::entity);
+        return loadManagedEntity(type, id, context).thenApply(managedEntity -> managedEntity.entity());
     }
 
     /**

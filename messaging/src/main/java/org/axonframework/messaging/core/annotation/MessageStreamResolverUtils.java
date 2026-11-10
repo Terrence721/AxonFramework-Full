@@ -135,7 +135,7 @@ public class MessageStreamResolverUtils {
             case Optional<?> optional when optional.isPresent() -> resolve(optional.get(),
                                                                            typeResolver,
                                                                            spreadIterables);
-            case Optional<?> empty -> MessageStream.empty();
+            case Optional<?> optional when optional.isEmpty() -> MessageStream.empty();
             case Iterable<?> iterable when spreadIterables -> MessageStream.fromStream(
                     StreamSupport.stream(iterable.spliterator(), false)
                                  .map(r -> new GenericMessage(typeResolver.resolveOrThrow(r), r))

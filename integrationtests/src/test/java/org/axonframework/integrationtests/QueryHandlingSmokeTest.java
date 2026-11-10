@@ -1,13 +1,11 @@
 package org.axonframework.integrationtests;
 
-import org.axonframework.messaging.commandhandling.GenericCommandMessage;
 import org.axonframework.messaging.core.MessageStream;
 import org.axonframework.messaging.core.MessageType;
 import org.axonframework.messaging.core.QualifiedName;
 import org.axonframework.messaging.core.EmptyApplicationContext;
 import org.axonframework.messaging.core.unitofwork.SimpleUnitOfWorkFactory;
 import org.axonframework.messaging.queryhandling.GenericQueryMessage;
-import org.axonframework.messaging.queryhandling.QueryHandler;
 import org.axonframework.messaging.queryhandling.QueryResponseMessage;
 import org.axonframework.messaging.queryhandling.SimpleQueryBus;
 import org.junit.jupiter.api.Test;

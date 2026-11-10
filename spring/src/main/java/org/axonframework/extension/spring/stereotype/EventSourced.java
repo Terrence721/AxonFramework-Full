@@ -109,7 +109,7 @@ public @interface EventSourced {
      * @return The definition to construct an {@link EventSourcedEntityFactory}.
      */
     @AliasFor(annotation = EventSourcedEntity.class, attribute = "entityFactoryDefinition")
-    Class<? extends EventSourcedEntityFactoryDefinition> entityFactoryDefinition() default AnnotationBasedEventSourcedEntityFactoryDefinition.class;
+    Class<? extends EventSourcedEntityFactoryDefinition<?, ?>> entityFactoryDefinition() default AnnotationBasedEventSourcedEntityFactoryDefinition.class;
 
     /**
      * The definition of the {@link EntityIdResolverDefinition} to use to resolve the entity id from a

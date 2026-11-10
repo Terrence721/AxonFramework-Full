@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -168,7 +169,6 @@ public class PooledStreamingEventProcessor implements StreamingEventProcessor {
                                       .processingStatusUpdater(this::statusUpdater)
                                       .tokenClaimInterval(configuration.tokenClaimInterval())
                                       .claimExtensionThreshold(configuration.claimExtensionThreshold())
-                                      .clock(configuration.clock())
                                       .maxSegmentProvider(configuration.maxSegmentProvider())
                                       .initialSegmentCount(configuration.initialSegmentCount())
                                       .initialToken(configuration.initialToken())
@@ -234,7 +234,7 @@ public class PooledStreamingEventProcessor implements StreamingEventProcessor {
     @Override
     public CompletableFuture<Void> releaseSegment(int segmentId, long releaseDuration, TimeUnit unit) {
         coordinator.releaseUntil(
-                segmentId, configuration.clock().instant().plusMillis(unit.toMillis(releaseDuration))
+            segmentId, Instant.now().plusMillis(unit.toMillis(releaseDuration))
         );
         return FutureUtils.emptyCompletedFuture();
     }
@@ -333,7 +333,7 @@ public class PooledStreamingEventProcessor implements StreamingEventProcessor {
                                                         .toList();
                              return CompletableFuture.allOf(tokenFutures.toArray(CompletableFuture[]::new))
                                                      .thenApply(ignored -> tokenFutures.stream()
-                                                                                       .map(CompletableFuture::join)
+                                                                                       .map(future -> future.join())
                                                                                        .toList());
                          });
     }
@@ -382,15 +382,14 @@ public class PooledStreamingEventProcessor implements StreamingEventProcessor {
 
     private static boolean replayHasStarted(List<SegmentToken> segmentTokens) {
         return segmentTokens.stream()
-                            .map(SegmentToken::token)
-                            .anyMatch(token -> token instanceof ReplayToken);
+                    .anyMatch(segmentToken -> segmentToken.token() instanceof ReplayToken);
     }
 
     private CompletableFuture<Void> storeReplayTokens(
             List<SegmentToken> segmentTokens,
             ProcessingContext processingContext
     ) {
-        List<Segment> segments = segmentTokens.stream().map(SegmentToken::segment).toList();
+        List<Segment> segments = segmentTokens.stream().map(st -> st.segment()).toList();
         logger.debug("Processor [{}] will try to reset tokens for segments [{}].", name, segments);
         var storeFutures = segmentTokens.stream()
                                         .map(st -> tokenStore.storeToken(
@@ -435,7 +434,6 @@ public class PooledStreamingEventProcessor implements StreamingEventProcessor {
         WorkPackage.BatchProcessor batchProcessor = (entries, context) -> processWithErrorHandling(entries, context);
         var batchSize = configuration.batchSize();
         var claimExtensionThreshold = configuration.claimExtensionThreshold();
-        var clock = configuration.clock();
         return WorkPackage.builder()
                           .name(name)
                           .tokenStore(tokenStore)
@@ -451,7 +449,6 @@ public class PooledStreamingEventProcessor implements StreamingEventProcessor {
                           .segmentStatusUpdater(singleStatusUpdater(
                                   segment.getSegmentId(), new TrackerStatus(segment, initialToken)
                           ))
-                          .clock(clock)
                           .schedulingProcessingContextProvider(configuration.schedulingProcessingContextProvider())
                           .build();
     }
@@ -464,7 +461,7 @@ public class PooledStreamingEventProcessor implements StreamingEventProcessor {
                                       .onErrorContinue(ex -> {
                                           try {
                                               configuration.errorHandler()
-                                                           .handleError(new ErrorContext(name, ex, entries.stream().map(MessageStream.Entry::message).toList(), context));
+                                                           .handleError(new ErrorContext(name, ex, entries.stream().map(entry -> entry.message()).toList(), context));
                                           } catch (RuntimeException re) {
                                               return MessageStream.failed(re);
                                           } catch (Exception e) {
@@ -502,7 +499,7 @@ public class PooledStreamingEventProcessor implements StreamingEventProcessor {
      * @param segmentUpdater the lambda which receives the current {@link TrackerStatus} and returns the updated
      *                       {@code TrackerStatus}
      */
-    private void statusUpdater(int segmentId, UnaryOperator<TrackerStatus> segmentUpdater) {
+    private void statusUpdater(Integer segmentId, UnaryOperator<TrackerStatus> segmentUpdater) {
         processingStatus.computeIfPresent(segmentId, (s, ts) -> segmentUpdater.apply(ts));
     }
 

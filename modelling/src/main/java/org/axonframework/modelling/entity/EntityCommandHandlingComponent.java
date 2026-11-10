@@ -17,7 +17,6 @@
 package org.axonframework.modelling.entity;
 
 import org.axonframework.common.infra.ComponentDescriptor;
-import org.axonframework.common.infra.DescribableComponent;
 import org.axonframework.messaging.commandhandling.CommandHandlingComponent;
 import org.axonframework.messaging.commandhandling.CommandMessage;
 import org.axonframework.messaging.commandhandling.CommandResultMessage;
@@ -45,7 +44,7 @@ import java.util.concurrent.CompletableFuture;
  * @param <E>  The type of the entity.
  * @since 5.0.0
  */
-public class EntityCommandHandlingComponent<ID, E> implements CommandHandlingComponent, DescribableComponent {
+public class EntityCommandHandlingComponent<ID, E> implements CommandHandlingComponent {
 
     private final Repository<ID, E> repository;
     private final EntityMetamodel<E> metamodel;

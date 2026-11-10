@@ -16,7 +16,6 @@
 
 package org.axonframework.messaging.eventstreaming;
 
-import org.axonframework.messaging.core.MessageType;
 import org.axonframework.messaging.core.MessageTypeResolver;
 import org.axonframework.messaging.core.QualifiedName;
 
@@ -67,7 +66,7 @@ public sealed interface EventTypeRestrictableEventCriteria extends EventCriteria
     default EventCriteria andBeingOneOfTypes(MessageTypeResolver typeResolver, Class<?>... types) {
         return andBeingOneOfTypes(Arrays.stream(types)
                                         .map(typeResolver::resolveOrThrow)
-                                        .map(MessageType::qualifiedName)
+                                        .map(messageType -> messageType.qualifiedName())
                                         .collect(Collectors.toSet()));
     }
 

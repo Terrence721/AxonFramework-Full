@@ -27,7 +27,6 @@ import org.axonframework.conversion.Converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Map;
@@ -38,10 +37,9 @@ import java.util.stream.Collectors;
  * A {@link MessageDispatchInterceptor} that adds the {$code username} and {$code authorities} from the authorized
  * principle.
  *
- * @param <T> The message type this interceptor can process
  * @since 4.11.0
  */
-public class MessageAuthorizationDispatchInterceptor<T extends Message> implements MessageDispatchInterceptor<T> {
+public class MessageAuthorizationDispatchInterceptor implements MessageDispatchInterceptor<Message> {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageAuthorizationDispatchInterceptor.class);
 
@@ -61,9 +59,9 @@ public class MessageAuthorizationDispatchInterceptor<T extends Message> implemen
     }
 
     @Override
-    public MessageStream<?> interceptOnDispatch(T message,
+    public MessageStream<?> interceptOnDispatch(Message message,
                                                 @Nullable ProcessingContext context,
-                                                MessageDispatchInterceptorChain<T> interceptorChain) {
+                                                MessageDispatchInterceptorChain<Message> interceptorChain) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
             logger.debug("No authentication found.");
@@ -75,10 +73,10 @@ public class MessageAuthorizationDispatchInterceptor<T extends Message> implemen
         authenticationDetails.put("username", converter.convert(authentication.getPrincipal(), String.class));
         String authorities = authentication.getAuthorities()
                                            .stream()
-                                           .map(GrantedAuthority::getAuthority)
+                                           .map(authority -> Objects.requireNonNull(authority, "Granted authority must not be null.")
+                                                                    .getAuthority())
                                            .collect(Collectors.joining(","));
         authenticationDetails.put("authorities", authorities);
-        //noinspection unchecked
-        return interceptorChain.proceed((T) message.andMetadata(authenticationDetails), context);
+        return interceptorChain.proceed(message.andMetadata(authenticationDetails), context);
     }
 }

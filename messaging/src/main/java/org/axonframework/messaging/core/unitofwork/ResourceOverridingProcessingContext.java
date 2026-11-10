@@ -186,8 +186,8 @@ public class ResourceOverridingProcessingContext<R> implements ProcessingContext
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getResource(ResourceKey<T> key) {
-        //noinspection unchecked
         return this.key.equals(key) ? (T) resource.get() : delegate.getResource(key);
     }
 
@@ -199,56 +199,56 @@ public class ResourceOverridingProcessingContext<R> implements ProcessingContext
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T putResource(ResourceKey<T> key,
                              T resource) {
-        //noinspection unchecked
         return this.key.equals(key)
                 ? (T) this.resource.getAndSet((R) resource)
                 : delegate.putResource(key, resource);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T updateResource(ResourceKey<T> key,
                                 UnaryOperator<T> resourceUpdater) {
-        //noinspection unchecked
         return this.key.equals(key)
                 ? (T) resource.updateAndGet((UnaryOperator<R>) resourceUpdater)
                 : delegate.updateResource(key, resourceUpdater);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T computeResourceIfAbsent(ResourceKey<T> key,
                                          Supplier<T> resourceSupplier) {
         if (this.key.equals(key)) {
-            //noinspection unchecked
             return (T) resource.updateAndGet(current -> current == null ? (R) resourceSupplier.get() : current);
         }
         return delegate.computeResourceIfAbsent(key, resourceSupplier);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T putResourceIfAbsent(ResourceKey<T> key,
                                      T resource) {
         if (this.key.equals(key)) {
-            //noinspection unchecked
             return (T) this.resource.getAndUpdate(current -> current == null ? (R) resource : current);
         }
         return delegate.putResourceIfAbsent(key, resource);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T removeResource(ResourceKey<T> key) {
         if (!this.key.equals(key)) {
             return delegate.removeResource(key);
         }
-        //noinspection unchecked
         return (T) resource.getAndSet(null);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> boolean removeResource(ResourceKey<T> key,
                                       T expectedResource) {
-        //noinspection unchecked
         return this.key.equals(key)
                 ? resource.compareAndSet((R) expectedResource, null)
                 : delegate.removeResource(key, expectedResource);
