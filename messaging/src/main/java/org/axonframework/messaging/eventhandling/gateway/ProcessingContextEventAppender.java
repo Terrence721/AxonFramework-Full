@@ -26,7 +26,7 @@ import org.axonframework.messaging.eventhandling.EventSink;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 /**
  * Component that publishes events to an {@link EventSink} in the context of a {@link ProcessingContext}. The events
@@ -64,22 +64,18 @@ public class ProcessingContextEventAppender implements EventAppender {
     @Override
     public void append(List<?> events) {
         Objects.requireNonNull(events, "Events may not be null");
-        List<EventMessage> eventMessages = events
-                .stream()
-                .map(e -> EventPublishingUtils.asEventMessage(e, messageTypeResolver))
-                .collect(Collectors.toList());
-        eventSink.publish(processingContext, eventMessages)
-                 .join();
+        publish(events, e -> EventPublishingUtils.asEventMessage(e, messageTypeResolver));
     }
 
     @Override
     public void append(List<?> events, Metadata metadata) {
         Objects.requireNonNull(events, "Events may not be null");
         Objects.requireNonNull(metadata, "Metadata may not be null");
-        List<EventMessage> eventMessages =
-                events.stream()
-                      .map(e -> EventPublishingUtils.asEventMessage(e, metadata, messageTypeResolver))
-                      .toList();
+        publish(events, e -> EventPublishingUtils.asEventMessage(e, metadata, messageTypeResolver));
+    }
+
+    private void publish(List<?> events, Function<Object, EventMessage> toEventMessage) {
+        List<EventMessage> eventMessages = events.stream().map(toEventMessage).toList();
         eventSink.publish(processingContext, eventMessages).join();
     }
 

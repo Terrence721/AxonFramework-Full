@@ -62,6 +62,7 @@ public interface EventAppender extends DescribableComponent {
      * @return A fresh appender specific for the given {@code context}.
      */
     static EventAppender forContext(ProcessingContext context) {
+        Objects.requireNonNull(context, "ProcessingContext may not be null");
         return forContext(context, context.component(EventSink.class), context.component(MessageTypeResolver.class));
     }
 
