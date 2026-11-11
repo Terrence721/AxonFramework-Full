@@ -76,19 +76,19 @@ public class Jackson2MapperAutoConfiguration {
             super(ConfigurationPhase.REGISTER_BEAN);
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.general", havingValue = "jackson2")
         static class GeneralJacksonCondition {
 
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.messages", havingValue = "jackson2")
         static class MessagesJacksonCondition {
 
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.events", havingValue = "jackson2")
         static class EventsJacksonCondition {
 

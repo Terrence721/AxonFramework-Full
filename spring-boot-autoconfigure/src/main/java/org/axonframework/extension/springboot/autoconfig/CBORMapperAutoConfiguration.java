@@ -68,19 +68,19 @@ public class CBORMapperAutoConfiguration {
             super(ConfigurationPhase.REGISTER_BEAN);
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.general", havingValue = "cbor")
         static class GeneralJacksonCondition {
 
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.messages", havingValue = "cbor")
         static class MessagesJacksonCondition {
 
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.events", havingValue = "cbor")
         static class EventsJacksonCondition {
 

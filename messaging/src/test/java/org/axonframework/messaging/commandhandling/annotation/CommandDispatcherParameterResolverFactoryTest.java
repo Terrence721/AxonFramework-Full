@@ -42,7 +42,7 @@ class CommandDispatcherParameterResolverFactoryTest {
 
     private final CommandDispatcherParameterResolverFactory factory = new CommandDispatcherParameterResolverFactory();
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("java:S119")
     void handler(CommandDispatcher dispatcher, String other) {
     }
 

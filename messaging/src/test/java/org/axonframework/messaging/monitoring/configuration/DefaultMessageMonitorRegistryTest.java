@@ -215,7 +215,7 @@ class DefaultMessageMonitorRegistryTest {
         assertTrue(description.contains("subscriptionQueryUpdateMonitorFactories"), description);
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     private static Message unused() {
         return null;
     }

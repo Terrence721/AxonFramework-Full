@@ -40,7 +40,6 @@ import java.util.concurrent.ScheduledExecutorService;
  *
  * @since 4.11.0
  */
-// TODO revisit as part of #3559
 public class UnitOfWorkTimeoutInterceptorBuilder {
 
     private static final String TRANSACTION_TIME_LIMIT_RESOURCE_KEY = "_transactionTimeLimit";

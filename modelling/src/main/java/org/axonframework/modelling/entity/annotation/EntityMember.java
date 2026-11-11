@@ -75,7 +75,7 @@ public @interface EntityMember {
      * @return the class defining the {@link EventTargetMatcher} for this child entity
      */
     // Used by AbstractEntityChildModelDefinition based on name
-    @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
     Class<? extends EventTargetMatcherDefinition> eventTargetMatcher()
             default RoutingKeyEventTargetMatcherDefinition.class;
 
@@ -97,7 +97,7 @@ public @interface EntityMember {
      * @return the class defining {@link CommandTargetResolver} for this child entity
      */
     // Used by AbstractEntityChildModelDefinition based on name
-    @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
     Class<? extends CommandTargetResolverDefinition> commandTargetResolver()
             default RoutingKeyCommandTargetResolverDefinition.class;
 }

@@ -43,6 +43,7 @@ import org.axonframework.modelling.entity.EntityMetamodel;
 public class AnnotatedEntityIdResolverDefinition implements EntityIdResolverDefinition {
 
     @Override
+    @Deprecated(since = "5.3.0")
     public <E, ID> EntityIdResolver<ID> createIdResolver(Class<E> entityType,
                                                          Class<ID> idType,
                                                          EntityMetamodel<E> entityMetamodel,

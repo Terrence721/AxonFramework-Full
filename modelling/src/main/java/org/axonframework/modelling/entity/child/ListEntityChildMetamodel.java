@@ -118,7 +118,7 @@ public class ListEntityChildMetamodel<C, P> extends AbstractEntityChildMetamodel
         @SuppressWarnings("NotNullFieldNotInitialized") // Ensured by validate()
         private ChildEntityFieldDefinition<P, List<C>> childEntityFieldDefinition;
 
-        @SuppressWarnings("unused") // Is used for generics
+        @SuppressWarnings("java:S119") // Is used for generics
         private Builder(Class<P> parentClass, EntityMetamodel<C> metamodel) {
             super(parentClass, metamodel);
         }

@@ -63,7 +63,7 @@ import java.util.Map;
  *       matches the entity's identifier field name and annotates it with
  *       {@code @EventTag(key = "<EntitySimpleName>")}. If no field with that exact name is found,
  *       the recipe falls back to the first declared field and emits a
- *       {@code // TODO(axon4to5):} comment so a human reviewer can verify the choice.</li>
+ *       review comment so a human reviewer can verify the choice.</li>
  * </ol>
  *
  * <p><b>Must run before {@code @AggregateIdentifier} is removed</b> (i.e. before the
@@ -323,7 +323,7 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                     // We still annotate it because leaving an event without @EventTag would cause
                     // a runtime failure; the LLM must verify the field choice.
                     if (!hasExactFieldByName(enclosingClass, target.idFieldName)) {
-                        // Annotate and add a TODO comment via the JavaTemplate approach.
+                        
                         return annotateWithEventTag(vd, target.tagKey,
                                                     " // TODO(axon4to5): verify this is the aggregate-id field");
                     }
@@ -335,7 +335,7 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
 
             private J.@NonNull VariableDeclarations annotateWithEventTag(J.@NonNull VariableDeclarations vd,
                                                                          String tagKey,
-                                                                         @SuppressWarnings("unused") String todoComment) {
+                                                                         @SuppressWarnings("java:S119") String todoComment) {
                 if (isKotlinSource()) {
                     // Kotlin path — JavaTemplate.addAnnotation produces inconsistent layout on
                     // data class primary-constructor params (annotation lost or pushed to a
@@ -352,7 +352,8 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                     return annotated;
                 }
                 J.VariableDeclarations annotated = JavaTemplate.builder(
-                                "@EventTag(key = \"" + tagKey + "\")")
+                        "@EventTag(key = \"" + tagKey + "\")"
+                            + (todoComment == null ? "" : todoComment + "\n"))
                         .imports(EVENT_TAG_FQN)
                         .javaParser(JavaParser.fromJavaVersion())
                         .build()
@@ -415,6 +416,7 @@ public class AddEventTagAnnotation extends ScanningRecipe<AddEventTagAnnotation.
                                 keyValue,
                                 Markers.EMPTY),
                         null);
+                @SuppressWarnings("null")
                 org.openrewrite.java.tree.JContainer<org.openrewrite.java.tree.Expression> args =
                         org.openrewrite.java.tree.JContainer.build(
                                 Space.EMPTY,

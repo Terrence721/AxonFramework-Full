@@ -76,7 +76,7 @@ public abstract class BaseModule<S extends BaseModule<S>> implements Module {
      *
      * @param moduleConfiguration The configuration for this module.
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     protected Configuration postProcessConfiguration(Configuration moduleConfiguration) {
         return moduleConfiguration;
     }

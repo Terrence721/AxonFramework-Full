@@ -105,7 +105,7 @@ public interface Context {
      * should be shared.
      *
      */
-    @SuppressWarnings("unused") // Suppresses the warning that the generic type is not used.
+    @SuppressWarnings("java:S119") // Suppresses the warning that the generic type is not used.
     final class ResourceKey<T> {
 
         private static final String RESOURCE_KEY_PREFIX = "ResourceKey@";

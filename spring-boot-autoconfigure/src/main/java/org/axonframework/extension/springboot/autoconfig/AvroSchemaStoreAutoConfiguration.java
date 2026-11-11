@@ -117,13 +117,13 @@ public class AvroSchemaStoreAutoConfiguration {
             super(ConfigurationPhase.REGISTER_BEAN);
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.messages", havingValue = "avro")
         static class MessagesAvroCondition {
 
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.events", havingValue = "avro")
         static class EventsAvroCondition {
 
@@ -140,7 +140,7 @@ public class AvroSchemaStoreAutoConfiguration {
         }
 
         @ConditionalOnMissingBean(SchemaStore.class)
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         static class SchemaStoreIsMissingCondition {
 
         }

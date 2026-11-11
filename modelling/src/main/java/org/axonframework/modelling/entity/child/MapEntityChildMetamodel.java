@@ -114,7 +114,7 @@ public class MapEntityChildMetamodel<K, C, P> extends AbstractEntityChildMetamod
         @SuppressWarnings("NotNullFieldNotInitialized")
         private ChildEntityFieldDefinition<P, Map<K, C>> childEntityFieldDefinition;
 
-        @SuppressWarnings("unused") // Is used for generics
+        @SuppressWarnings("java:S119") // Is used for generics
         private Builder(Class<P> parentClass, EntityMetamodel<C> metamodel) {
             super(parentClass, metamodel);
         }

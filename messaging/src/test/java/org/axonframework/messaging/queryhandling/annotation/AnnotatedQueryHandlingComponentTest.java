@@ -247,7 +247,7 @@ class AnnotatedQueryHandlingComponentTest {
 
     // --- MethodQueryHandlerDefinition ---
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("java:S119")
     static class ResultTypes {
 
         @QueryHandler(queryName = "plain")
@@ -286,7 +286,7 @@ class AnnotatedQueryHandlingComponentTest {
         }
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("java:S119")
     static class VoidHandler {
 
         @QueryHandler(queryName = "void")
@@ -294,7 +294,7 @@ class AnnotatedQueryHandlingComponentTest {
         }
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("java:S119")
     static class BoxedVoidHandler {
 
         @QueryHandler(queryName = "boxedVoid")

@@ -217,6 +217,7 @@ public class ReplaceAggregateLifecycleApply extends Recipe {
                 return null;
             }
 
+            @SuppressWarnings("null")
             private J.MethodDeclaration addEventAppenderParameter(J.MethodDeclaration md, ExecutionContext c) {
                 if (isKotlinSource()) {
                     return addEventAppenderParameterKotlin(md);
@@ -246,7 +247,7 @@ public class ReplaceAggregateLifecycleApply extends Recipe {
                     .javaParser(JavaParser.fromJavaVersion())
                         .build()
                            .apply(getCursor(), md.getCoordinates().replaceParameters(),
-                               templateArgs.toArray(new Object[templateArgs.size()]));
+                               templateArgs.toArray(new Object[0]));
             }
 
             /**
