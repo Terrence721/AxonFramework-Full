@@ -115,7 +115,6 @@ import java.lang.annotation.Target;
  * @see EventSourcedEntityFactory
  * @since 5.0.0
  */
-@SuppressWarnings("unused")
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EventSourcedEntity {

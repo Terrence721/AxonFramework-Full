@@ -116,7 +116,7 @@ class AvroConverterTest {
         assertTrue(exception.getMessage().contains("target type must be a class"), exception.getMessage());
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     private List<String> typed;
 
     // --- serialization ---

@@ -380,7 +380,7 @@ class InterceptingQueryBusTest {
         assertTrue(properties.containsKey("updateDispatchInterceptors"));
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     private QueryBus asQueryBus() {
         return plainBus();
     }

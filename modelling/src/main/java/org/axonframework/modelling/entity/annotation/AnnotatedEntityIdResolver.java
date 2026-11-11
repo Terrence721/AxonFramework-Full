@@ -61,6 +61,7 @@ public class AnnotatedEntityIdResolver<ID> implements EntityIdResolver<ID>, Desc
      * @param converter The {@link MessageConverter} to use.
      * @param delegate  The {@link EntityIdResolver} to use on the message after conversion.
      */
+    @Deprecated(since = "5.3.0")
     public AnnotatedEntityIdResolver(AnnotatedEntityMetamodel<?> metamodel,
                                      Class<ID> idType,
                                      MessageConverter converter,
@@ -72,6 +73,7 @@ public class AnnotatedEntityIdResolver<ID> implements EntityIdResolver<ID>, Desc
     }
 
     @Override
+    @Deprecated(since = "5.3.0")
     public ID resolve(Message message, ProcessingContext context) throws EntityIdResolutionException {
         Class<?> expectedRepresentation = metamodel.getExpectedRepresentation(message.type().qualifiedName());
         if (expectedRepresentation != null) {
@@ -83,6 +85,7 @@ public class AnnotatedEntityIdResolver<ID> implements EntityIdResolver<ID>, Desc
     }
 
     @Override
+    @Deprecated(since = "5.3.0")
     public void describeTo(ComponentDescriptor descriptor) {
         descriptor.describeWrapperOf(delegate);
         descriptor.describeProperty("converter", converter);

@@ -50,7 +50,7 @@ class EventParameterResolverFactoriesTest {
 
     private final SimpleUnitOfWorkFactory unitOfWorkFactory = new SimpleUnitOfWorkFactory(EmptyApplicationContext.INSTANCE);
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("java:S119")
     void handler(@Timestamp Instant timestamp,
                  @Timestamp String wrongType,
                  Instant unannotated,

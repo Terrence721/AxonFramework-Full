@@ -304,14 +304,7 @@ public class MigrateAxonTestFixtureFluentApi extends Recipe {
                         newName,
                         null,
                         null);
-                org.openrewrite.java.tree.JContainer<Expression> argContainer = args.isEmpty()
-                        ? org.openrewrite.java.tree.JContainer.empty()
-                        : org.openrewrite.java.tree.JContainer.build(
-                                Space.EMPTY,
-                                args.stream()
-                                        .map(org.openrewrite.java.tree.JRightPadded::<Expression>build)
-                                        .toList(),
-                                org.openrewrite.marker.Markers.EMPTY);
+                org.openrewrite.java.tree.JContainer<Expression> argContainer = buildArgumentContainer(args);
                 return new J.MethodInvocation(
                         org.openrewrite.Tree.randomId(),
                         mi.getPrefix(),
@@ -321,6 +314,16 @@ public class MigrateAxonTestFixtureFluentApi extends Recipe {
                         outerName,
                         argContainer,
                         null);
+            }
+
+                private org.openrewrite.java.tree.@NonNull JContainer<Expression> buildArgumentContainer(
+                    List<Expression> args) {
+                List<JRightPadded<Expression>> paddedArgs = new ArrayList<>(args.size());
+                for (Expression arg : args) {
+                    paddedArgs.add(JRightPadded.build(arg));
+                }
+                return org.openrewrite.java.tree.JContainer.build(
+                        Space.EMPTY, paddedArgs, org.openrewrite.marker.Markers.EMPTY);
             }
 
             /**

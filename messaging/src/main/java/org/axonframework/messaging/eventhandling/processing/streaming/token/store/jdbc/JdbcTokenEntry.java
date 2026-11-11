@@ -84,7 +84,7 @@ public class JdbcTokenEntry {
     /**
      * Default constructor required for JPA
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings("java:S119")
     protected JdbcTokenEntry() {
     }
 

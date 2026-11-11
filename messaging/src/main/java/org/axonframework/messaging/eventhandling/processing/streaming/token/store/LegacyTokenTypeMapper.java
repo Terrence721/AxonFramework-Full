@@ -50,5 +50,6 @@ public interface LegacyTokenTypeMapper {
      * @return the Axon Framework 4 token class names mapped to their current Axon Framework 5 classes, never
      * {@code null}
      */
+    @Deprecated(since = "5.2.0", forRemoval = true)
     Map<String, Class<? extends TrackingToken>> mappings();
 }

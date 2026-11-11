@@ -117,7 +117,7 @@ public class SingleEntityChildMetamodel<C, P> extends AbstractEntityChildMetamod
         @SuppressWarnings("NotNullFieldNotInitialized") // Ensured by validate()
         private ChildEntityFieldDefinition<P, C> childEntityFieldDefinition;
 
-        @SuppressWarnings("unused") // Uses for generics
+        @SuppressWarnings("java:S119") // Uses for generics
         private Builder(Class<P> parentClass, EntityMetamodel<C> childEntityMetamodel) {
             super(parentClass, childEntityMetamodel);
             this.commandTargetResolver = CommandTargetResolver.MATCH_ANY();

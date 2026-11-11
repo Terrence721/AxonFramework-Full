@@ -72,27 +72,27 @@ class AnnotationBasedNullabilityResolverTest {
 
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     static void typeUseNullable(@Nullable String value) {
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     static void declarationNullable(@Declaration.Nullable String value) {
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     static void upperCaseNullable(@UpperCase.NULLABLE String value) {
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     static void nonNullAnnotated(@NonNull String value) {
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     static void unrelatedAnnotation(@Unrelated String value) {
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     static void unannotated(String value) {
     }
 

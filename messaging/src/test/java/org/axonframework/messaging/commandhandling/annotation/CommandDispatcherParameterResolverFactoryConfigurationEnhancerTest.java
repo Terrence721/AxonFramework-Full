@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  */
 class CommandDispatcherParameterResolverFactoryConfigurationEnhancerTest {
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("java:S119")
     void handler(CommandDispatcher dispatcher, String other) {
     }
 

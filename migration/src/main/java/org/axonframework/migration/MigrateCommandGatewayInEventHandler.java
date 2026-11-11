@@ -110,7 +110,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                     getCursor().putMessage("axon.gatewayFieldName", gatewayFieldName);
                 }
 
-                J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
+                J.@NonNull ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
 
                 // After visiting all methods, drop the now-orphan gateway field, ctor parameter, assignment.
                 if (hasGatewayWork && !isFieldStillReferenced(cd, gatewayFieldName)) {
@@ -118,7 +118,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                     cd = removeGatewayFromConstructors(cd, gatewayFieldName);
                     maybeRemoveImport(COMMAND_GATEWAY_AF5_FQN);
                 }
-                return java.util.Objects.requireNonNull(cd);
+                return cd;
             }
 
             /**
@@ -249,7 +249,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                                                             ? org.openrewrite.java.tree.Space.EMPTY
                                                 : select.getPrefix(),
                                                     org.openrewrite.marker.Markers.EMPTY,
-                                                    java.util.Collections.<J.@NonNull Annotation>emptyList(),
+                                                    new java.util.ArrayList<J.Annotation>(),
                                                     paramName,
                                                     null,
                                                     null
@@ -513,6 +513,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         buildCompletableFutureWildcardType((Expression) md.getReturnTypeExpression()));
             }
 
+            @SuppressWarnings("null")
             private J.ParameterizedType buildCompletableFutureWildcardType(Expression existing) {
                 JavaType.Class cfType = JavaType.ShallowClass.build(COMPLETABLE_FUTURE_FQN);
                 // Inner J.Identifier holds its own (empty) prefix; the ParameterizedType wrapper
@@ -639,7 +640,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
              * caller has already applied. The supplied {@code prefix} is the leading whitespace from the
              * preceding guard-{@code if}, which keeps the new return aligned with the rest of the body.
              */
-            private J.Return buildCompletedFutureReturn(org.openrewrite.java.tree.Space prefix) {
+            private J.Return buildCompletedFutureReturn(org.openrewrite.java.tree.@NonNull Space prefix) {
                 JavaType.Class cfType = JavaType.ShallowClass.build(COMPLETABLE_FUTURE_FQN);
                 J.Identifier cfIdentifier = new J.Identifier(
                         org.openrewrite.Tree.randomId(),
@@ -665,6 +666,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         "null",
                         null,
                         JavaType.Primitive.Null);
+                @SuppressWarnings("null")
                 org.openrewrite.java.tree.JContainer<Expression> args =
                         org.openrewrite.java.tree.JContainer.build(
                                 org.openrewrite.java.tree.Space.EMPTY,
@@ -673,7 +675,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                                 org.openrewrite.marker.Markers.EMPTY);
                 J.MethodInvocation call = new J.MethodInvocation(
                         org.openrewrite.Tree.randomId(),
-                        java.util.Objects.requireNonNull(org.openrewrite.java.tree.Space.format(" ")),
+                        org.openrewrite.java.tree.Space.format(" "),
                         org.openrewrite.marker.Markers.EMPTY,
                         org.openrewrite.java.tree.JRightPadded.<Expression>build(cfIdentifier),
                         null,
@@ -682,7 +684,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                         null);
                 return new J.Return(
                         org.openrewrite.Tree.randomId(),
-                    java.util.Objects.requireNonNull(prefix),
+                        prefix,
                         org.openrewrite.marker.Markers.EMPTY,
                         call);
             }
@@ -766,7 +768,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                 return hasGatewayParam;
             }
 
-            private J.ClassDeclaration removeGatewayField(J.ClassDeclaration cd, String fieldName) {
+            private J.@NonNull ClassDeclaration removeGatewayField(J.ClassDeclaration cd, String fieldName) {
                 List<Statement> remaining = new ArrayList<>();
                 for (Statement s : cd.getBody().getStatements()) {
                     if (s instanceof J.VariableDeclarations
@@ -778,7 +780,7 @@ public class MigrateCommandGatewayInEventHandler extends Recipe {
                 return cd.withBody(cd.getBody().withStatements(remaining));
             }
 
-            private J.ClassDeclaration removeGatewayFromConstructors(J.ClassDeclaration cd, String fieldName) {
+            private J.@NonNull ClassDeclaration removeGatewayFromConstructors(J.ClassDeclaration cd, String fieldName) {
                 List<Statement> rebuilt = new ArrayList<>();
                 for (Statement s : cd.getBody().getStatements()) {
                     if (!(s instanceof J.MethodDeclaration)) {

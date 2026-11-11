@@ -111,25 +111,25 @@ public class ObjectMapperAutoConfiguration {
             super(ConfigurationPhase.REGISTER_BEAN);
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.general", havingValue = "default", matchIfMissing = true)
         static class GeneralDefaultCondition {
 
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.general", havingValue = "jackson", matchIfMissing = true)
         static class GeneralJacksonCondition {
 
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.messages", havingValue = "jackson")
         static class MessagesJacksonCondition {
 
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         @ConditionalOnProperty(name = "axon.converter.events", havingValue = "jackson")
         static class EventsJacksonCondition {
 

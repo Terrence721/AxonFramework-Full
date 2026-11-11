@@ -162,7 +162,7 @@ public abstract class AbstractEntityChildMetamodel<C, P> implements EntityChildM
         @SuppressWarnings("NotNullFieldNotInitialized") // Ensured by validate()
         protected EventTargetMatcher<C> eventTargetMatcher;
 
-        @SuppressWarnings("unused") // Is used for generics
+        @SuppressWarnings("java:S119") // Is used for generics
         protected Builder(Class<P> parentClass, EntityMetamodel<C> metamodel) {
             assertNonNull(parentClass, "The parentClass may not be null.");
             assertNonNull(metamodel, "The metamodel may not be null.");

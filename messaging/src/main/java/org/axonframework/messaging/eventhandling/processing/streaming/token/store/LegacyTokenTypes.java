@@ -94,6 +94,7 @@ public final class LegacyTokenTypes {
      * @return the matching Axon Framework 5 token class, or {@code null} if unknown
      */
     @Nullable
+    @Deprecated(since = "5.2.0", forRemoval = true)
     public static Class<? extends TrackingToken> currentTypeFor(String tokenType) {
         return AXON_4_TO_AXON_5.get(tokenType);
     }
@@ -109,6 +110,7 @@ public final class LegacyTokenTypes {
      * @return the deserialized tracking token
      * @since 5.2.0
      */
+    @Deprecated(since = "5.2.0", forRemoval = true)
     public static TrackingToken deserialize(Converter converter, byte[] token, String tokenType) {
         Class<? extends TrackingToken> axon5Type = currentTypeFor(tokenType);
         if (axon5Type != null) {

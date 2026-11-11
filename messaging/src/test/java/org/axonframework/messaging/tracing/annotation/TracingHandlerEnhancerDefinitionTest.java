@@ -73,7 +73,7 @@ class TracingHandlerEnhancerDefinitionTest {
      */
     static class Orders {
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings("java:S119")
         void on(String payload, int version) {
         }
     }

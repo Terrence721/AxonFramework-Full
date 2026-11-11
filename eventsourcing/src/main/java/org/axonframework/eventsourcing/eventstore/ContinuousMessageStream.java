@@ -24,6 +24,9 @@ import org.axonframework.messaging.eventhandling.EventMessage;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -52,11 +55,12 @@ public final class ContinuousMessageStream<E> extends AbstractMessageStream<Even
     private final BiFunction<ContinuousMessageStream<?>, Runnable, Registration> callbackTracker;
     private final Function<E, Entry<EventMessage>> converter;
 
-    private List<E> data = List.of();
-    private Throwable error;
+    private volatile List<E> data = List.of();
+    private volatile Throwable error;
     private int position;  // position within data
     private Registration callbackRegistration;
-    private boolean sealed;
+    private volatile boolean sealed;
+    private final AtomicBoolean fetchInProgress = new AtomicBoolean();
 
     /**
      * Creates a new {@code ContinuousMessageStream} instance configured with the given strategies.
@@ -91,9 +95,9 @@ public final class ContinuousMessageStream<E> extends AbstractMessageStream<Even
         }
 
         if (position >= data.size()) {
-            fetchMore();  // TODO #3854 - ContinuousMessageStream may block in its MessageStream::peek call (and methods that rely on it) which is not allowed
+            fetchMore();
 
-            if (sealed) {  // can happen if closed explicitely or because there was an error
+            if (sealed) {  // can happen if closed explicitly or because there was an error
                 return error == null ? FetchResult.completed() : FetchResult.error(error);
             }
 
@@ -110,16 +114,20 @@ public final class ContinuousMessageStream<E> extends AbstractMessageStream<Even
     }
 
     private void fetchMore() {
-        if (!sealed) {
-            try {
-                this.data = fetcher.get();
-                this.position = 0;
-            } catch (Exception e) {
-                error = e;
-
-                seal();
+        if (!sealed && fetchInProgress.compareAndSet(false, true)) {
+            CompletableFuture.supplyAsync(fetcher).whenComplete((fetchedData, fetchError) -> {
+                if (fetchError != null) {
+                    error = fetchError instanceof CompletionException && fetchError.getCause() != null
+                            ? fetchError.getCause()
+                            : fetchError;
+                    seal();
+                } else if (!sealed) {
+                    position = 0;
+                    data = Objects.requireNonNull(fetchedData, "fetcher result");
+                }
+                fetchInProgress.set(false);
                 signalProgress();
-            }
+            });
         }
     }
 

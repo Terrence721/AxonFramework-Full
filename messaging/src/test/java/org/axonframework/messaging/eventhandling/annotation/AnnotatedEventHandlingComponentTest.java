@@ -401,7 +401,7 @@ class AnnotatedEventHandlingComponentTest {
         return current;
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     private static MessageStream<?> unused() {
         return MessageStream.empty();
     }

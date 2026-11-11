@@ -332,7 +332,7 @@ class SimpleQueryUpdateEmitterTest {
 
     // --- QueryUpdateEmitterParameterResolverFactory ---
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("java:S119")
     void handler(QueryUpdateEmitter emitter, String other) {
     }
 

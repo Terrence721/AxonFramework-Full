@@ -46,6 +46,7 @@ public class EntityMissingAfterLoadOrCreateException extends RuntimeException {
      *
      * @param identifier The identifier of the entity that was attempted to be loaded or created.
      */
+    @Deprecated(forRemoval = true, since = "5.3.0")
     public EntityMissingAfterLoadOrCreateException(Object identifier) {
         super(("The EventSourcedEntityFactory returned a null entity while loadOrCreate was called for identifier: [%s]. "
                 + "Adjust your EventSourcedEntityFactory to return a non-null entity when no event message is present.").formatted(

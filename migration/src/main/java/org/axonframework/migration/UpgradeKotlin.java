@@ -102,7 +102,7 @@ public class UpgradeKotlin extends Recipe {
     }
 
     @Override
-    public @NonNull List<Recipe> getRecipeList() {
+    public @NonNull List<@NonNull Recipe> getRecipeList() {
         String target = targetVersion != null ? targetVersion : DEFAULT_TARGET_VERSION;
         if (majorVersion(target) < MINIMUM_MAJOR_VERSION) {
             throw new IllegalArgumentException(

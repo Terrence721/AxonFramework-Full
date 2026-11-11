@@ -30,7 +30,7 @@ class NoCacheTest {
         assertTrue(NoCache.INSTANCE.registerCacheEntryListener(new Cache.EntryListenerAdapter()).cancel());
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "java:S119"})
     private static Supplier<String> unusedSupplier() {
         return () -> "unused";
     }

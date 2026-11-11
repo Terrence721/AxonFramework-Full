@@ -102,7 +102,7 @@ public class TokenEntry {
     /**
      * Default constructor for JPA.
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings("java:S119")
     protected TokenEntry() {
     }
 
