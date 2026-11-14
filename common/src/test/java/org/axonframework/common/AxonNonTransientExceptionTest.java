@@ -18,7 +18,9 @@ package org.axonframework.common;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AxonNonTransientExceptionTest {
@@ -46,5 +48,25 @@ class AxonNonTransientExceptionTest {
     @Test
     void isCauseOfReturnsFalseForNull() {
         assertFalse(AxonNonTransientException.isCauseOf(null));
+    }
+
+    @Test
+    void isCauseOfReturnsFalseForUnrelatedException() {
+        // RuntimeException is NOT an AxonNonTransientException and doesn't wrap one
+        assertFalse(AxonNonTransientException.isCauseOf(new RuntimeException("plain")));
+    }
+
+    @Test
+    void messageConstructor() {
+        Example example = new Example("boom");
+        assertEquals("boom", example.getMessage());
+    }
+
+    @Test
+    void messageAndCauseConstructor() {
+        RuntimeException cause = new RuntimeException("root");
+        Example example = new Example("boom", cause);
+        assertEquals("boom", example.getMessage());
+        assertSame(cause, example.getCause());
     }
 }

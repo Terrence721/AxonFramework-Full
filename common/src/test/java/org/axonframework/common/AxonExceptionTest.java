@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class AxonExceptionTest {
 
@@ -30,6 +32,10 @@ class AxonExceptionTest {
 
         ExampleException(String message, Throwable cause) {
             super(message, cause);
+        }
+
+        ExampleException(String message, Throwable cause, boolean writableStackTrace) {
+            super(message, cause, writableStackTrace);
         }
     }
 
@@ -45,6 +51,25 @@ class AxonExceptionTest {
         RuntimeException cause = new RuntimeException("root");
         ExampleException exception = new ExampleException("boom", cause);
 
+        assertSame(cause, exception.getCause());
+    }
+
+    @Test
+    void writableStackTraceConstructorWithTrue() {
+        RuntimeException cause = new RuntimeException("root");
+        ExampleException exception = new ExampleException("boom", cause, true);
+        assertEquals("boom", exception.getMessage());
+        assertSame(cause, exception.getCause());
+        assertNotNull(exception.getStackTrace());
+        assertTrue(exception.getStackTrace().length > 0);
+    }
+
+    @Test
+    void writableStackTraceConstructorWithFalse() {
+        RuntimeException cause = new RuntimeException("root");
+        // With writableStackTrace=false, getMessage() still works
+        ExampleException exception = new ExampleException("boom", cause, false);
+        assertEquals("boom", exception.getMessage());
         assertSame(cause, exception.getCause());
     }
 }

@@ -19,17 +19,60 @@ package org.axonframework.common;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AxonThreadFactoryTest {
 
     @Test
+    void newThreadUsesGroupName() {
+        AxonThreadFactory factory = new AxonThreadFactory("axon-group");
+        Thread thread = factory.newThread(() -> {});
+        assertTrue(thread.getName().startsWith("axon-group-"));
+        assertEquals(Thread.NORM_PRIORITY, thread.getPriority());
+    }
+
+    @Test
+    void newThreadUsesThreadGroup() {
+        ThreadGroup group = new ThreadGroup("group-from-ref");
+        AxonThreadFactory factory = new AxonThreadFactory(group);
+        Thread thread = factory.newThread(() -> {});
+        assertTrue(thread.getName().startsWith("group-from-ref-"));
+        assertEquals(Thread.NORM_PRIORITY, thread.getPriority());
+        assertEquals(group, thread.getThreadGroup());
+    }
+
+    @Test
     void newThreadUsesGroupNameAndPriority() {
         AxonThreadFactory factory = new AxonThreadFactory(Thread.NORM_PRIORITY, new ThreadGroup("axon-test"));
-
-        Thread thread = factory.newThread(() -> { });
-
+        Thread thread = factory.newThread(() -> {});
         assertTrue(thread.getName().startsWith("axon-test-"));
         assertEquals(Thread.NORM_PRIORITY, thread.getPriority());
+    }
+
+    @Test
+    void customPriorityIsApplied() {
+        AxonThreadFactory factory = new AxonThreadFactory(Thread.MIN_PRIORITY, new ThreadGroup("low-prio"));
+        Thread thread = factory.newThread(() -> {});
+        assertEquals(Thread.MIN_PRIORITY, thread.getPriority());
+    }
+
+    @Test
+    void maxPriorityIsAccepted() {
+        AxonThreadFactory factory = new AxonThreadFactory(Thread.MAX_PRIORITY, new ThreadGroup("max-prio"));
+        Thread thread = factory.newThread(() -> {});
+        assertEquals(Thread.MAX_PRIORITY, thread.getPriority());
+    }
+
+    @Test
+    void tooLowPriorityThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new AxonThreadFactory(Thread.MIN_PRIORITY - 1, new ThreadGroup("too-low")));
+    }
+
+    @Test
+    void tooHighPriorityThrows() {
+        assertThrows(IllegalArgumentException.class, () ->
+                new AxonThreadFactory(Thread.MAX_PRIORITY + 1, new ThreadGroup("too-high")));
     }
 }

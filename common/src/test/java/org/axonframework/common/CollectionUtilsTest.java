@@ -23,8 +23,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Spliterator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class CollectionUtilsTest {
@@ -69,6 +71,61 @@ class CollectionUtilsTest {
         assertEquals(List.of(), CollectionUtils.asCollection(null));
         assertEquals(List.of("a", "b"), CollectionUtils.asCollection(List.of("a", "b").stream()));
         assertEquals(List.of("x"), CollectionUtils.asCollection("x"));
+    }
+
+    @Test
+    void mergeReturnsFirstWhenSecondEmpty() {
+        List<String> first = List.of("a", "b");
+
+        List<String> result = CollectionUtils.merge(first, new ArrayList<>(), ArrayList::new);
+
+        assertSame(first, result);
+    }
+
+    @Test
+    void mergeReturnsFirstWhenSecondNull() {
+        List<String> first = List.of("a", "b");
+
+        List<String> result = CollectionUtils.merge(first, null, ArrayList::new);
+
+        assertSame(first, result);
+    }
+
+    @Test
+    void asCollectionReturnsSameInstanceWhenInputIsCollection() {
+        List<String> input = List.of("a", "b");
+
+        Collection<String> result = CollectionUtils.asCollection(input);
+
+        assertSame(input, result);
+    }
+
+    @Test
+    void asCollectionHandlesSpliteratorInput() {
+        Spliterator<String> spliterator = List.of("a", "b").spliterator();
+
+        Collection<String> result = CollectionUtils.asCollection(spliterator);
+
+        assertEquals(List.of("a", "b"), result);
+    }
+
+    @Test
+    void asCollectionHandlesIterableInput() {
+        Iterable<String> iterable = List.of("a", "b");
+
+        Collection<String> result = CollectionUtils.asCollection(iterable);
+
+        assertEquals(List.of("a", "b"), result);
+    }
+
+    @Test
+    void asCollectionHandlesNonCollectionIterable() {
+        // A non-Collection Iterable that goes through the StreamSupport.stream(spliterator) path
+        Iterable<String> iterable = () -> List.of("a", "b").iterator();
+
+        Collection<String> result = CollectionUtils.asCollection(iterable);
+
+        assertEquals(List.of("a", "b"), result);
     }
 
     @Test

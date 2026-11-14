@@ -22,6 +22,10 @@ import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.core.Ehcache;
+import org.ehcache.config.CacheRuntimeConfiguration;
+import org.ehcache.event.CacheEvent;
+import org.ehcache.event.CacheEventListener;
+import org.ehcache.event.EventType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -140,6 +144,67 @@ class EhCacheAdapterTest {
         testSubject.put("key", "value");
 
         assertTrue(events.isEmpty());
+    }
+
+    @Test
+    void listenerAdapterForwardsExpiredEvents() {
+        List<String> events = new ArrayList<>();
+        Cache.EntryListener listener = recordingListener(events);
+        @SuppressWarnings("unchecked")
+        CacheEventListener<Object, Object> adapter = testSubject.createListenerAdapter(listener);
+
+        CacheEvent<Object, Object> event = mockCacheEvent(EventType.EXPIRED, "expired-key", null);
+
+        adapter.onEvent(event);
+
+        assertEquals(List.of("expired:expired-key"), events);
+    }
+
+    @Test
+    void listenerAdapterForwardsEvictedEventsAsRemoved() {
+        List<String> events = new ArrayList<>();
+        Cache.EntryListener listener = recordingListener(events);
+        @SuppressWarnings("unchecked")
+        CacheEventListener<Object, Object> adapter = testSubject.createListenerAdapter(listener);
+
+        CacheEvent<Object, Object> event = mockCacheEvent(EventType.EVICTED, "evicted-key", null);
+
+        adapter.onEvent(event);
+
+        assertEquals(List.of("removed:evicted-key"), events);
+    }
+
+    @Test
+    void cancellingRegistrationWhenDeregistrationFailsReturnsTrue() {
+        EhCacheAdapter failingAdapter = new EhCacheAdapter(failingEhcache());
+
+        Registration registration = failingAdapter.registerCacheEntryListener(new Cache.EntryListenerAdapter());
+
+        // The outer registration handle returns true (the underlying handle exists), but the
+        // underlying doRegisterListener lambda's cancel() hits the catch block and returns
+        // false internally — that path is exercised here.
+        assertTrue(registration.cancel());
+    }
+
+    private static CacheEvent<Object, Object> mockCacheEvent(EventType type, Object key, Object value) {
+        @SuppressWarnings("unchecked")
+        CacheEvent<Object, Object> event = org.mockito.Mockito.mock(CacheEvent.class);
+        org.mockito.Mockito.when(event.getType()).thenReturn(type);
+        org.mockito.Mockito.when(event.getKey()).thenReturn(key);
+        org.mockito.Mockito.when(event.getNewValue()).thenReturn(value);
+        return event;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Ehcache<Object, Object> failingEhcache() {
+        Ehcache<Object, Object> ehcache = org.mockito.Mockito.mock(Ehcache.class);
+        CacheRuntimeConfiguration<Object, Object> runtimeConfig =
+                org.mockito.Mockito.mock(CacheRuntimeConfiguration.class);
+        org.mockito.Mockito.when(ehcache.getRuntimeConfiguration()).thenReturn(runtimeConfig);
+        org.mockito.Mockito.doThrow(new IllegalStateException("already deregistered"))
+                .when(runtimeConfig).deregisterCacheEventListener(
+                        org.mockito.Mockito.any(CacheEventListener.class));
+        return ehcache;
     }
 
     private static Cache.EntryListener recordingListener(List<String> events) {

@@ -55,6 +55,7 @@ class BuilderUtilsTest {
         BuilderUtils.assertPositive(0, "x");
         BuilderUtils.assertPositive(1L, "x");
         assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertPositive(-1, "x"));
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertPositive(-1L, "x"));
     }
 
     @Test

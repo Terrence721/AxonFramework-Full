@@ -110,6 +110,6 @@ public class UpgradeJava extends Recipe {
                     "Axon Framework 5 requires Java " + MINIMUM_TARGET_VERSION + " or higher, "
                             + "but targetVersion was " + target);
         }
-        return List.of(new UpgradeJavaVersion(target));
+        return java.util.Objects.requireNonNull(List.of(new UpgradeJavaVersion(target)));
     }
 }

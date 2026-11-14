@@ -1,13 +1,15 @@
 package org.axonframework.common.annotation;
 
+import org.axonframework.common.AxonConfigurationException;
 import org.junit.jupiter.api.Test;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Annotation;
 import java.lang.annotation.Target;
 import java.lang.reflect.Member;
+import java.lang.reflect.Proxy;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -15,6 +17,7 @@ import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnnotationUtilsTest {
@@ -97,6 +100,46 @@ class AnnotationUtilsTest {
         static class Deep {
         }
     }
+
+    // Test helpers for partial-branch coverage ---------------------------------------------------------
+
+    /** Marker meta-annotation: has no attributes of its own, used as a parent. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.ANNOTATION_TYPE)
+    @interface ParentOnly {}
+
+    /** Annotation that carries ParentOnly — tests the meta-loop false branch. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @ParentOnly
+    @interface ChildOfParentOnly {
+        String value() default "child";
+    }
+
+    /** Bare marker: no meta-annotations, no matching sibling in lookups. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @interface BareMarker {}
+
+    /** Annotated element whose only annotation is BareMarker (no wrapper/meta chain). */
+    @BareMarker
+    static class BareAnnotated {}
+
+    /** Empty target for "find what's NOT there" assertions. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @interface NotPresent {}
+
+    /** Simple name mismatch: this is NOT named "wrapper". */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @interface ExplicitlyNamedFoo {}
+
+    @ExplicitlyNamedFoo
+    static class FooNamed {}
+
+    /** Predicate input that is not an AnnotatedElement. */
+    static final String NON_ANNOTATED_MEMBER = "not-an-element";
 
     @Test
     void metaAnnotationIsPresent() {
@@ -300,7 +343,6 @@ class AnnotationUtilsTest {
         assertFalse(predicate.test(new Annotated()));
     }
 
-
     @Test
     void findOnTypeFallsBackToPackage() {
         Optional<Map<String, Object>> attributes = AnnotationUtils.findAnnotationAttributesOnType(
@@ -317,4 +359,134 @@ class AnnotationUtilsTest {
         assertFalse(attributes.isPresent());
     }
 
+    // Catch-block coverage -------------------------------------------------------------------------------
+
+    @Test
+    void catchBlockForInvocationTargetException() {
+        // Proxy throws RuntimeException from value(); JVM wraps it in InvocationTargetException
+        // which the collectAttributes catch block catches and re-throws as AxonConfigurationException.
+        Wrapper proxyWrapper = (Wrapper) Proxy.newProxyInstance(
+                Wrapper.class.getClassLoader(),
+                new Class<?>[]{Wrapper.class},
+                (proxy, method, args) -> {
+                    if ("value".equals(method.getName())) {
+                        throw new RuntimeException("Simulated invocation failure");
+                    }
+                    if ("annotationType".equals(method.getName())) {
+                        return Wrapper.class;
+                    }
+                    return "wrapper-value";
+                });
+
+        java.lang.reflect.AnnotatedElement mockElement =
+                (java.lang.reflect.AnnotatedElement) Proxy.newProxyInstance(
+                        java.lang.reflect.AnnotatedElement.class.getClassLoader(),
+                        new Class<?>[]{java.lang.reflect.AnnotatedElement.class},
+                        (p, m, a) -> {
+                            if ("getAnnotations".equals(m.getName())) {
+                                return new Annotation[]{proxyWrapper};
+                            }
+                            return null;
+                        });
+
+        assertThrows(AxonConfigurationException.class, () ->
+                AnnotationUtils.findAnnotationAttributes(mockElement, Wrapper.class));
+    }
+
+    @Test
+    void catchBlockForIllegalAccessException() {
+        // Proxy throws IllegalAccessException directly (checked reflection exception).
+        Wrapper proxyWrapper = (Wrapper) Proxy.newProxyInstance(
+                Wrapper.class.getClassLoader(),
+                new Class<?>[]{Wrapper.class},
+                (proxy, method, args) -> {
+                    if ("annotationType".equals(method.getName())) {
+                        return Wrapper.class;
+                    }
+                    if ("value".equals(method.getName())) {
+                        throw new IllegalAccessException("Access denied");
+                    }
+                    return "wrapper-value";
+                });
+
+        java.lang.reflect.AnnotatedElement mockElement =
+                (java.lang.reflect.AnnotatedElement) Proxy.newProxyInstance(
+                        java.lang.reflect.AnnotatedElement.class.getClassLoader(),
+                        new Class<?>[]{java.lang.reflect.AnnotatedElement.class},
+                        (p, m, a) -> {
+                            if ("getAnnotations".equals(m.getName())) {
+                                return new Annotation[]{proxyWrapper};
+                            }
+                            return null;
+                        });
+
+        assertThrows(AxonConfigurationException.class, () ->
+                AnnotationUtils.findAnnotationAttributes(mockElement, Wrapper.class));
+    }
+
+    // Partial-branch coverage ----------------------------------------------------------------------------
+
+    @Test
+    void findAnnotationAttributesMetaLoopMisses() {
+        // Element carries a meta-annotated annotation but not the target.
+        // CollectAnnotationAttributes must recurse into the meta chain; here we
+        // verify it exits cleanly (no found match, so returned Optional is empty).
+        assertFalse(AnnotationUtils.findAnnotationAttributes(FooNamed.class, NotPresent.class).isPresent());
+    }
+
+    @Test
+    void resolveNameFallbackOnNonValueMethod() throws NoSuchMethodException {
+        // resolveName falls through to the else branch (line 330) when methodName != "value".
+        java.lang.reflect.Method textMethod = Wrapper.class.getMethod("text");
+        assertEquals("text", invokeResolveName(textMethod));
+
+        java.lang.reflect.Method numberMethod = Wrapper.class.getMethod("number");
+        assertEquals("number", invokeResolveName(numberMethod));
+    }
+
+    @Test
+    void hasAnnotationNamedCaseInsensitiveMatches() {
+        // Wrapper simple name matches via equalsIgnoreCase — exercises the true branch on line 405.
+        assertTrue(AnnotationUtils.hasAnnotationNamed(Annotated.class, "wrapper"));
+        assertTrue(AnnotationUtils.hasAnnotationNamed(Annotated.class, "WRAPPER"));
+    }
+
+    @Test
+    void hasAnnotationNamedNoMatchInLoop() {
+        // Element carries ExplicitlyNamedFoo but we look for "wrapper"; loop runs, predicate
+        // evaluates false (line 405), falls through to return false.
+        assertFalse(AnnotationUtils.hasAnnotationNamed(FooNamed.class, "wrapper"));
+    }
+
+    @Test
+    void isAnnotatedWithRejectsUnannotatedMember() throws NoSuchMethodException {
+        // Line 427: lambda `it instanceof AnnotatedElement && ...`
+        // Provide a Member that IS an AnnotatedElement but does NOT carry Wrapper.
+        // Both sides of the short-circuiting && must execute:
+        //   - first conjunct (instanceof) => true
+        //   - second conjunct (isAnnotationPresent) => false
+        java.lang.reflect.Method unannotated = Annotated.class.getDeclaredMethod("unannotated");
+        Predicate<Member> pred = AnnotationUtils.isAnnotatedWith(Wrapper.class);
+        assertFalse(pred.test(unannotated));
+    }
+
+    @Test
+    void isTypeAnnotatedWithHavingAttributeValueNullExpectationMissingKey() {
+        // Wrapper does NOT expose "nonexistent". The filter evaluates containsKey=false for both
+        // branches (lines 455 and 456): the value-equals path and the null-comparison path.
+        Predicate<Object> pred = AnnotationUtils.isTypeAnnotatedWithHavingAttributeValue(
+                Wrapper.class, "nonexistent", null);
+        assertFalse(pred.test(new Annotated()));
+    }
+
+    private static String invokeResolveName(java.lang.reflect.Method method) {
+        try {
+            java.lang.reflect.Method m = AnnotationUtils.class.getDeclaredMethod(
+                    "resolveName", java.lang.reflect.Method.class);
+            m.setAccessible(true);
+            return (String) m.invoke(null, method);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
