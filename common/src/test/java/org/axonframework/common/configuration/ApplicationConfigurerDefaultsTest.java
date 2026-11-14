@@ -10,88 +10,129 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and limitations
- * under the License.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.axonframework.common.configuration;
 
+import org.axonframework.common.TypeReference;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Test class validating the default {@link ApplicationConfigurer#start()}.
+ * Test class validating the default {@link ApplicationConfigurer#start()} method.
+ * Uses anonymous implementations to ensure JaCoCo tracks the default method bytecode execution.
  */
 class ApplicationConfigurerDefaultsTest {
 
-    private final List<String> events = new ArrayList<>();
-
-    private final AxonConfiguration configuration = (AxonConfiguration) Proxy.newProxyInstance(
-            getClass().getClassLoader(), new Class<?>[]{AxonConfiguration.class},
-            (proxy, method, args) -> {
-                switch (method.getName()) {
-                    case "start":
-                        events.add("start");
-                        return null;
-                    case "hashCode":
-                        return System.identityHashCode(proxy);
-                    case "equals":
-                        return proxy == args[0];
-                    case "toString":
-                        return "TestConfiguration";
-                    default:
-                        throw new UnsupportedOperationException(method.getName());
-                }
-            });
-
-    /**
-     * An {@link ApplicationConfigurer} that runs the real default methods and only intercepts {@code build()}.
-     */
-    private ApplicationConfigurer configurerBuilding(java.util.function.Supplier<AxonConfiguration> build) {
-        return (ApplicationConfigurer) Proxy.newProxyInstance(
-                getClass().getClassLoader(), new Class<?>[]{ApplicationConfigurer.class},
-                (proxy, method, args) -> {
-                    if (method.isDefault()) {
-                        return InvocationHandler.invokeDefault(proxy, method, args);
-                    }
-                    if ("build".equals(method.getName())) {
-                        return build.get();
-                    }
-                    throw new UnsupportedOperationException(method.getName());
-                });
-    }
-
     @Test
     void startBuildsTheConfigurationThenStartsItAndReturnsIt() {
-        ApplicationConfigurer testSubject = configurerBuilding(() -> {
-            events.add("build");
-            return configuration;
-        });
+        boolean[] started = {false};
 
-        AxonConfiguration result = testSubject.start();
+        AxonConfiguration mockConfiguration = new AxonConfiguration() {
+            @Override
+            public void start() {
+                started[0] = true;
+            }
 
-        assertSame(configuration, result);
-        assertEquals(List.of("build", "start"), events);
+            @Override
+            public void shutdown() {}
+
+            @Override
+            public <C> Optional<C> getOptionalComponent(Class<C> type, String name) {
+                return Optional.empty();
+            }
+
+            @Override
+            public <C> Optional<C> getOptionalComponent(TypeReference<C> typeReference, String name) {
+                return Optional.empty();
+            }
+
+            @Override
+            public <C> C getComponent(Class<C> type, String name, Supplier<C> defaultImpl) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public List<Configuration> getModuleConfigurations() {
+                return List.of();
+            }
+
+            @Override
+            public Optional<Configuration> getModuleConfiguration(String name) {
+                return Optional.empty();
+            }
+
+            @Override
+            public <C> Map<String, C> getComponents(Class<C> type) {
+                return Map.of();
+            }
+
+            @Override
+            public Configuration getParent() {
+                return null;
+            }
+
+            @Override
+            public void describeTo(org.axonframework.common.infra.ComponentDescriptor descriptor) {}
+        };
+
+        ApplicationConfigurer configurer = new ApplicationConfigurer() {
+            @Override
+            public AxonConfiguration build() {
+                return mockConfiguration;
+            }
+
+            @Override
+            public ApplicationConfigurer componentRegistry(Consumer<ComponentRegistry> componentRegistrar) {
+                return this;
+            }
+
+            @Override
+            public ApplicationConfigurer lifecycleRegistry(Consumer<LifecycleRegistry> lifecycleRegistrar) {
+                return this;
+            }
+        };
+
+        AxonConfiguration result = configurer.start();
+
+        assertSame(mockConfiguration, result);
+        assertEquals(true, started[0]);
     }
 
     @Test
     void startDoesNotStartAnythingWhenBuildingFails() {
         IllegalStateException failure = new IllegalStateException("cannot build");
-        ApplicationConfigurer testSubject = configurerBuilding(() -> {
-            throw failure;
-        });
 
-        IllegalStateException thrown = assertThrows(IllegalStateException.class, testSubject::start);
+        ApplicationConfigurer configurer = new ApplicationConfigurer() {
+            @Override
+            public AxonConfiguration build() {
+                throw failure;
+            }
+
+            @Override
+            public ApplicationConfigurer componentRegistry(Consumer<ComponentRegistry> componentRegistrar) {
+                return this;
+            }
+
+            @Override
+            public ApplicationConfigurer lifecycleRegistry(Consumer<LifecycleRegistry> lifecycleRegistrar) {
+                return this;
+            }
+        };
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, configurer::start);
 
         assertSame(failure, thrown);
-        assertEquals(List.of(), events);
     }
 }

@@ -58,13 +58,15 @@ public abstract class AbstractMethodPropertyAccessStrategy extends PropertyAcces
     }
 
     private boolean isNotReturningVoid(Method method) {
-        boolean returnsVoid = method.getReturnType().equals(Void.TYPE);
-        if (returnsVoid && logger.isDebugEnabled()) {
-            logger.debug(
-                    "Method with name '{}' in '{}' cannot be accepted as a property accessor, as it returns void",
-                    method.getName(), method.getDeclaringClass().getName());
+        if (method.getReturnType().equals(Void.TYPE)) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Method with name '{}' in '{}' cannot be accepted as a property accessor, as it returns void",
+                        method.getName(), method.getDeclaringClass().getName());
+            }
+            return false;
         }
-        return !returnsVoid;
+        return true;
     }
 
     /**
