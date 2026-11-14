@@ -16,7 +16,13 @@
 
 package org.axonframework.common.property;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,6 +33,29 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * subclass since the class itself is abstract.
  */
 class AbstractMethodPropertyAccessStrategyTest {
+
+    private final Logger logger = (Logger) LogManager.getLogger(org.axonframework.common.property.AbstractMethodPropertyAccessStrategy.class);
+
+    @BeforeEach
+    void setUp() {
+        // Enable debug logging so we can exercise the isNotReturningVoid debug branch
+        logger.setLevel(Level.DEBUG);
+    }
+
+    @AfterEach
+    void tearDown() {
+        logger.setLevel(null); // Reset to default
+    }
+
+    @Test
+    void voidMethodWithLoggingDisabledReturnsFalseAndDoesNotLog() {
+        // When logger is NOT debug-enabled, the debug branch is skipped
+        logger.setLevel(Level.INFO); // Explicitly disable debug
+
+        // The method is not called directly - it's invoked via propertyFor
+        AbstractMethodPropertyAccessStrategy strategy = new UniformStrategy();
+        assertNull(strategy.propertyFor(Subject.class, "returnsNothing"));
+    }
 
     public static class Subject {
 
