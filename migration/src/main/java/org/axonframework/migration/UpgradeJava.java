@@ -103,6 +103,7 @@ public class UpgradeJava extends Recipe {
     }
 
     @Override
+    @SuppressWarnings("null")
     public @NonNull List<Recipe> getRecipeList() {
         int target = targetVersion != null ? targetVersion : DEFAULT_TARGET_VERSION;
         if (target < MINIMUM_TARGET_VERSION) {
