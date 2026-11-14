@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -385,7 +384,9 @@ class ComponentDescriptorTest {
         }
 
         TestDescriptor descriptor = new TestDescriptor();
-        descriptor.describeWrapperOf(new ComplexObject());
+        ComplexObject complexObject = new ComplexObject();
+        descriptor.describeWrapperOf(complexObject);
+        assertEquals("complex", complexObject.field);
 
         String call = descriptor.getCalls().get(0);
         assertTrue(call.startsWith("describeProperty(name=\"delegate\", object="));

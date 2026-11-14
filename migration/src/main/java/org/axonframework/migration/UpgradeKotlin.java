@@ -102,14 +102,14 @@ public class UpgradeKotlin extends Recipe {
     }
 
     @Override
-    public @NonNull List<@NonNull Recipe> getRecipeList() {
+    public @NonNull List<Recipe> getRecipeList() {
         String target = targetVersion != null ? targetVersion : DEFAULT_TARGET_VERSION;
         if (majorVersion(target) < MINIMUM_MAJOR_VERSION) {
             throw new IllegalArgumentException(
                     "Axon Framework 5 requires Kotlin " + MINIMUM_MAJOR_VERSION + ".0 or higher, "
                             + "but targetVersion was \"" + target + "\"");
         }
-        java.util.ArrayList<@NonNull Recipe> recipeList = new java.util.ArrayList<>();
+        java.util.ArrayList<Recipe> recipeList = new java.util.ArrayList<>();
         recipeList.add(new UpgradeDependencyVersion("org.jetbrains.kotlin", "*", target, null, true, null));
         recipeList.add(new UpgradePluginVersion("org.jetbrains.kotlin", "kotlin-maven-plugin", target, null, null, null));
         return recipeList;

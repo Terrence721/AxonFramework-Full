@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import org.jspecify.annotations.NullMarked;
-
 /**
  * Annotations and markers used within the common module.
  */
-@NullMarked
+@org.jspecify.annotations.NullMarked
 package org.axonframework.common.annotation;
