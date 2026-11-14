@@ -261,9 +261,17 @@ public interface Configuration extends DescribableComponent {
      * @return The component declared under the given {@code type} and {@code name}, reverting to the given
      * {@code defaultImpl} if no such component is defined.
      */
-    <C> C getComponent(Class<C> type,
-                       @Nullable String name,
-                       Supplier<C> defaultImpl);
+    default <C> C getComponent(Class<C> type,
+                               @Nullable String name,
+                               Supplier<C> defaultImpl) {
+        // Check if component exists with the specified name (may be null for unnamed components)
+        Optional<C> existing = getOptionalComponent(type, name);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+        // Return the default implementation if no component found
+        return defaultImpl.get();
+    }
 
     /**
      * Returns all {@code Configurations} from the {@link Module Modules} that have been
