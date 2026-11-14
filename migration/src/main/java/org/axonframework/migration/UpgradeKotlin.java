@@ -109,10 +109,10 @@ public class UpgradeKotlin extends Recipe {
                     "Axon Framework 5 requires Kotlin " + MINIMUM_MAJOR_VERSION + ".0 or higher, "
                             + "but targetVersion was \"" + target + "\"");
         }
-        return List.of(
-                new UpgradeDependencyVersion("org.jetbrains.kotlin", "*", target, null, true, null),
-                new UpgradePluginVersion("org.jetbrains.kotlin", "kotlin-maven-plugin", target, null, null, null)
-        );
+        java.util.ArrayList<@NonNull Recipe> recipeList = new java.util.ArrayList<>();
+        recipeList.add(new UpgradeDependencyVersion("org.jetbrains.kotlin", "*", target, null, true, null));
+        recipeList.add(new UpgradePluginVersion("org.jetbrains.kotlin", "kotlin-maven-plugin", target, null, null, null));
+        return recipeList;
     }
 
     /**
