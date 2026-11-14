@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-package org.axonframework.common.annotation;
-
 import org.jspecify.annotations.NullMarked;
 
 /**
