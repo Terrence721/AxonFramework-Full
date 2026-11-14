@@ -206,7 +206,6 @@ class ComponentFactoryTest {
     @Test
     void describeToDescribesNameAndCollection() {
         TestableComponentFactory factory = new TestableComponentFactory();
-        StringBuilder sb = new StringBuilder();
         List<String> properties = new java.util.ArrayList<>();
 
         org.axonframework.common.infra.ComponentDescriptor descriptor = new org.axonframework.common.infra.ComponentDescriptor() {
