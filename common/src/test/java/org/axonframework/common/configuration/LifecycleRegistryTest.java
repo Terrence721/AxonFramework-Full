@@ -64,10 +64,11 @@ class LifecycleRegistryTest {
     @Test
     void registerLifecyclePhaseTimeoutRecordsPhaseAndTimeUnit() {
         RecordingRegistry testSubject = new RecordingRegistry();
+        long expectedTimeout = 5;
 
-        testSubject.registerLifecyclePhaseTimeout(5, TimeUnit.SECONDS);
+        testSubject.registerLifecyclePhaseTimeout(expectedTimeout, TimeUnit.SECONDS);
 
-        assertSame(5, testSubject.recordedTimeout);
+        assertSame(expectedTimeout, testSubject.recordedTimeout);
         assertSame(TimeUnit.SECONDS, testSubject.recordedTimeoutUnit);
     }
 
