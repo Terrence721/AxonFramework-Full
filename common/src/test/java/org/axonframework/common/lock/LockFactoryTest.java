@@ -18,8 +18,12 @@ package org.axonframework.common.lock;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test class for the {@link LockFactory} functional interface to achieve 100% coverage.
@@ -41,7 +45,7 @@ class LockFactoryTest {
         Lock result = lockFactory.obtainLock("resource-1");
 
         assertNotNull(result);
-        assertSame(true, result.isHeld());
+        assertTrue(result.isHeld());
     }
 
     @Test
