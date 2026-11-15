@@ -192,7 +192,10 @@ public class EventProcessorConfiguration implements ExtendedConfiguration, Exten
             Class<T> extensionType,
             Supplier<? extends T> factory
     ) {
-        extensions.extend(extensionType, factory);
+        // Cast factory to raw Supplier to avoid type checking issues
+        @SuppressWarnings("unchecked")
+        java.util.function.Supplier<? extends T> rawFactory = factory;
+        extensions.extend(extensionType, rawFactory);
         return this;
     }
 
