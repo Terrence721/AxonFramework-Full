@@ -31,7 +31,6 @@ import org.openrewrite.kotlin.tree.K;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Rewrites Kotlin DSL Spring Dependency Management {@code mavenBom(...)}
@@ -250,6 +249,6 @@ public class MigrateKotlinDslBomImport extends Recipe {
         String oldSource = valueLiteral.getValueSource();
         String newSource = oldSource == null ? "\"" + newValue + "\"" : oldSource.replace((String) oldValue, newValue);
         J.Literal newValueLiteral = valueLiteral.withValue(newValue).withValueSource(newSource);
-        return Objects.requireNonNull(assignment.withAssignment(newValueLiteral));
+        return assignment.withAssignment(newValueLiteral);
     }
 }
