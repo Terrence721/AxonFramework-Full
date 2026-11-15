@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
@@ -64,11 +65,10 @@ class LifecycleRegistryTest {
     @Test
     void registerLifecyclePhaseTimeoutRecordsPhaseAndTimeUnit() {
         RecordingRegistry testSubject = new RecordingRegistry();
-        long expectedTimeout = 5;
 
-        testSubject.registerLifecyclePhaseTimeout(expectedTimeout, TimeUnit.SECONDS);
+        testSubject.registerLifecyclePhaseTimeout(5, TimeUnit.SECONDS);
 
-        assertSame(expectedTimeout, testSubject.recordedTimeout);
+        assertEquals(5L, testSubject.recordedTimeout);
         assertSame(TimeUnit.SECONDS, testSubject.recordedTimeoutUnit);
     }
 
