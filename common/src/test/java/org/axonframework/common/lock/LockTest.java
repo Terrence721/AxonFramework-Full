@@ -49,15 +49,16 @@ class LockTest {
 
     @Test
     void isHeldReturnsFalseAfterRelease() {
+        AtomicInteger released = new AtomicInteger(0);
         Lock lock = new Lock() {
             @Override
             public void release() {
-                // no-op
+                released.incrementAndGet();
             }
 
             @Override
             public boolean isHeld() {
-                return false;
+                return released.get() == 0;
             }
         };
 
