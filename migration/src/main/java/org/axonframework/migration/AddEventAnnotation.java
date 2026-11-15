@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.nio.file.Path;
 
 /**
  * Scans for methods annotated with {@code @EventSourcingHandler} and annotates their event payload
@@ -138,9 +139,11 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
                 String annotationText = revisionValue != null
                         ? "@Event(version = \"" + revisionValue + "\")"
                         : "@Event";
-                String[] runtimeClasspath = Objects.requireNonNull(JavaParser.runtimeClasspath().stream()
-                    .map(Objects::requireNonNull)
-                    .toArray(String[]::new));
+                List<Path> runtimeClasspathEntries = JavaParser.runtimeClasspath();
+                String @NonNull[] runtimeClasspath = new String @NonNull[runtimeClasspathEntries.size()];
+                for (int i = 0; i < runtimeClasspathEntries.size(); i++) {
+                    runtimeClasspath[i] = Objects.requireNonNull(runtimeClasspathEntries.get(i)).toString();
+                }
 
                 var parserBuilder = JavaParser.fromJavaVersion().classpath(runtimeClasspath);
                 if (parserBuilder == null) {
@@ -251,6 +254,6 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
             J.Annotation newFirst = remaining.get(0).withPrefix(removedFirstPrefix);
             remaining.set(0, newFirst);
         }
-        return Objects.requireNonNull(cd.withLeadingAnnotations(remaining));
+        return cd.withLeadingAnnotations(remaining);
     }
 }

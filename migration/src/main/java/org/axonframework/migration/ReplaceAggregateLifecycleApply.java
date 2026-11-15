@@ -134,7 +134,7 @@ public class ReplaceAggregateLifecycleApply extends Recipe {
 
                 // Now visit the body to swap apply(X) → eventAppender.append(X). We rebuild the method declaration
                 // with the rewritten body so the cursor sees the freshly-added parameter.
-                J.MethodDeclaration finalMd = md;
+                J.@NonNull MethodDeclaration finalMd = md;
                 J.MethodDeclaration result = (J.MethodDeclaration) new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.@NonNull MethodInvocation visitMethodInvocation(J.@NonNull MethodInvocation mi,
@@ -218,7 +218,7 @@ public class ReplaceAggregateLifecycleApply extends Recipe {
             }
 
             @SuppressWarnings("null")
-            private J.MethodDeclaration addEventAppenderParameter(J.MethodDeclaration md, ExecutionContext c) {
+            private J.@NonNull MethodDeclaration addEventAppenderParameter(J.MethodDeclaration md, ExecutionContext c) {
                 if (isKotlinSource()) {
                     return addEventAppenderParameterKotlin(md);
                 }
