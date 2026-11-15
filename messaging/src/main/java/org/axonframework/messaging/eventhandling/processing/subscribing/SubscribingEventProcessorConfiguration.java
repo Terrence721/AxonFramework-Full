@@ -200,7 +200,7 @@ public class SubscribingEventProcessorConfiguration extends EventProcessorConfig
     @Override
     public <T extends ConfigurationExtension<?>> SubscribingEventProcessorConfiguration extend(
             Class<T> extensionType,
-            Supplier<T> factory
+            Supplier<? extends T> factory
     ) {
         super.extend(extensionType, factory);
         return this;

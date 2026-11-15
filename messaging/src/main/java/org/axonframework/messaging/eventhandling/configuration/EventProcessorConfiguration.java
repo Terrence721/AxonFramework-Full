@@ -190,7 +190,7 @@ public class EventProcessorConfiguration implements ExtendedConfiguration, Exten
     @Override
     public <T extends ConfigurationExtension<?>> EventProcessorConfiguration extend(
             Class<T> extensionType,
-            Supplier<T> factory
+            Supplier<? extends T> factory
     ) {
         extensions.extend(extensionType, factory);
         return this;
