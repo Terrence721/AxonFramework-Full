@@ -46,17 +46,19 @@ class LifecycleHandlerInvocationExceptionTest {
 
     @Test
     void constructorWithEmptyMessageAndCause() {
-        LifecycleHandlerInvocationException testSubject = new LifecycleHandlerInvocationException("", new RuntimeException("error"));
+        RuntimeException cause = new RuntimeException("error");
+        LifecycleHandlerInvocationException testSubject = new LifecycleHandlerInvocationException("", cause);
 
         assertEquals("", testSubject.getMessage());
-        assertSame(new RuntimeException("error"), testSubject.getCause());
+        assertSame(cause, testSubject.getCause());
     }
 
     @Test
     void constructorWithNullMessageAndCause() {
-        LifecycleHandlerInvocationException testSubject = new LifecycleHandlerInvocationException(null, new RuntimeException());
+        RuntimeException cause = new RuntimeException();
+        LifecycleHandlerInvocationException testSubject = new LifecycleHandlerInvocationException(null, cause);
 
         assertNull(testSubject.getMessage());
-        assertSame(new RuntimeException(), testSubject.getCause());
+        assertSame(cause, testSubject.getCause());
     }
 }
