@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Proxy;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test class for the {@link Module} interface to achieve 100% coverage.
