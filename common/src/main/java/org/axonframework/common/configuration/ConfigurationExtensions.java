@@ -84,7 +84,7 @@ public class ConfigurationExtensions implements DescribableComponent {
      */
     public <T extends ConfigurationExtension<?>> ExtensibleConfigurer extend(
             Class<T> extensionType,
-            Supplier<T> factory
+            Supplier<? extends T> factory
     ) {
         extensions.put(extensionType, factory.get());
         return parentConfigurer;

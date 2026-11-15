@@ -729,7 +729,7 @@ public class PooledStreamingEventProcessorConfiguration extends EventProcessorCo
     @Override
     public <T extends ConfigurationExtension<?>> PooledStreamingEventProcessorConfiguration extend(
             Class<T> extensionType,
-            Supplier<T> factory
+            Supplier<? extends T> factory
     ) {
         super.extend(extensionType, factory);
         return this;
