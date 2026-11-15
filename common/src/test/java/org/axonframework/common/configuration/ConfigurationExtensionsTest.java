@@ -2,7 +2,7 @@ package org.axonframework.common.configuration;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.function.Supplier;
+
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -40,7 +40,7 @@ class ConfigurationExtensionsTest {
     void extendAndRetrieve() {
         ConfigurationExtensions extensions = new ConfigurationExtensions(new ExtensibleConfigurer() {
             @Override
-            public <T extends ConfigurationExtension<?>> ExtensibleConfigurer extend(Class<T> extensionType, Supplier<T> factory) {
+            public <T extends ConfigurationExtension<?>> ExtensibleConfigurer extend(Class<T> extensionType, java.util.function.Supplier<? extends T> factory) {
                 return this;
             }
         });
@@ -54,7 +54,7 @@ class ConfigurationExtensionsTest {
     void missingExtensionIsNull() {
         ExtensibleConfigurer parent = new ExtensibleConfigurer() {
             @Override
-            public <T extends ConfigurationExtension<?>> ExtensibleConfigurer extend(Class<T> extensionType, Supplier<T> factory) {
+            public <T extends ConfigurationExtension<?>> ExtensibleConfigurer extend(Class<T> extensionType, java.util.function.Supplier<? extends T> factory) {
                 return this;
             }
         };
@@ -66,7 +66,7 @@ class ConfigurationExtensionsTest {
     void extendReturnsParent() {
         ExtensibleConfigurer parent = new ExtensibleConfigurer() {
             @Override
-            public <T extends ConfigurationExtension<?>> ExtensibleConfigurer extend(Class<T> extensionType, Supplier<T> factory) {
+            public <T extends ConfigurationExtension<?>> ExtensibleConfigurer extend(Class<T> extensionType, java.util.function.Supplier<? extends T> factory) {
                 return this;
             }
         };
