@@ -19,9 +19,6 @@ package org.axonframework.common;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,8 +61,14 @@ class ClockUtilsTest {
         assertEquals(ZoneId.of("UTC"), returned.getZone());
     }
 
+
     @Test
     void setWithNullThrowsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ClockUtils.set(null));
+    }
+
+    @Test
+    void setWithNullThrowsNullPointerExceptionAfterReset() {
         assertThrows(NullPointerException.class, () -> ClockUtils.set(null));
     }
 
@@ -95,13 +98,6 @@ class ClockUtilsTest {
         assertEquals(customClock, returned);
     }
 
-    @Test
-    void resetReturnsDefaultClockAfterSet() {
-        ClockUtils.set(Clock.systemUTC());
-        Clock returned = ClockUtils.reset();
-        assertNotNull(returned);
-        assertEquals(ZoneId.of("UTC"), returned.getZone());
-    }
 
     @Test
     void getUpdatesCorrectly() {
