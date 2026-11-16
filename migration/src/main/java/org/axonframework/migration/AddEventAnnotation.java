@@ -240,7 +240,7 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
         String annotationText = revisionValue != null
                 ? "@Event(version = \"" + revisionValue + "\")"
                 : "@Event";
-        String[] runtimeClasspath = JavaParser.runtimeClasspath().stream()
+        @NonNull String[] runtimeClasspath = JavaParser.runtimeClasspath().stream()
                 .toArray(String[]::new);
 
         JavaParser.Builder<?, ?> parserBuilder = JavaParser.fromJavaVersion().classpath(runtimeClasspath);
