@@ -37,7 +37,7 @@ class ClockUtilsTest {
 
         ClockUtils.reset();
         assertNotNull(ClockUtils.get());
-        assertEquals(ZoneId.of("UTC"), ClockUtils.get().getZone());
+        assertEquals(Clock.systemUTC(), ClockUtils.get());
     }
 
     @Test
@@ -58,7 +58,7 @@ class ClockUtilsTest {
     void resetReturnsDefaultClock() {
         Clock returned = ClockUtils.reset();
         assertNotNull(returned);
-        assertEquals(ZoneId.of("UTC"), returned.getZone());
+        assertEquals(Clock.systemUTC(), returned);
     }
 
 
