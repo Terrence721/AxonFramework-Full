@@ -21,20 +21,40 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class DateTimeUtilsTest {
 
     @Test
     void parseInstantParsesOffsetDate() {
         Instant instant = DateTimeUtils.parseInstant("2024-01-01T01:02:03+02:00");
-
         assertEquals(Instant.parse("2023-12-31T23:02:03Z"), instant);
+    }
+
+    @Test
+    void parseInstantParsesUtcZ() {
+        Instant instant = DateTimeUtils.parseInstant("2024-01-01T00:00:00Z");
+        assertEquals(Instant.parse("2024-01-01T00:00:00Z"), instant);
     }
 
     @Test
     void formatInstantFormatsUtcWithThreeFractions() {
         String formatted = DateTimeUtils.formatInstant(Instant.parse("2024-01-01T00:00:00.123456Z"));
-
         assertEquals("2024-01-01T00:00:00.123Z", formatted);
+    }
+
+    @Test
+    void formatInstantFormatsZeroMillis() {
+        String formatted = DateTimeUtils.formatInstant(Instant.parse("2024-01-01T00:00:00Z"));
+        assertEquals("2024-01-01T00:00:00.000Z", formatted);
+    }
+
+    @Test
+    void privateConstructorIsCovered() throws Exception {
+        java.lang.reflect.Constructor<DateTimeUtils> ctor = DateTimeUtils.class.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        // instantiate to ensure coverage of constructor
+        Object instance = ctor.newInstance();
+        assertNotNull(instance);
     }
 }
