@@ -91,7 +91,35 @@ public final class ConstructorUtils {
             return true;
         }
         // We want a constructor that can accept the argument
-        return constructor.getParameterCount() == 1 && constructor.getParameterTypes()[0].isAssignableFrom(argument);
+        // Check both direct assignment and primitive-to-wrapper compatibility
+        Class<?> paramType = constructor.getParameterTypes()[0];
+        return constructor.getParameterCount() == 1 &&
+               (paramType.isAssignableFrom(argument) ||
+                (paramType.isPrimitive() && argument != null && isAssignableToPrimitive(paramType, argument)));
+    }
+
+    private static boolean isAssignableToPrimitive(Class<?> primitiveType, Class<?> argumentClass) {
+        if (argumentClass == null) {
+            return false;
+        }
+        if (primitiveType == int.class) {
+            return argumentClass == Integer.class || argumentClass == int.class;
+        } else if (primitiveType == long.class) {
+            return argumentClass == Long.class || argumentClass == long.class;
+        } else if (primitiveType == double.class) {
+            return argumentClass == Double.class || argumentClass == double.class;
+        } else if (primitiveType == boolean.class) {
+            return argumentClass == Boolean.class || argumentClass == boolean.class;
+        } else if (primitiveType == char.class) {
+            return argumentClass == Character.class || argumentClass == char.class;
+        } else if (primitiveType == byte.class) {
+            return argumentClass == Byte.class || argumentClass == byte.class;
+        } else if (primitiveType == short.class) {
+            return argumentClass == Short.class || argumentClass == short.class;
+        } else if (primitiveType == float.class) {
+            return argumentClass == Float.class || argumentClass == float.class;
+        }
+        return false;
     }
 
     private static <T> T doConstructionWithOptionalArgument(Class<T> type,
