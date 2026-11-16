@@ -1,0 +1,4 @@
+- [no-co-author-commits](no-co-author-commits.md) — Never add co-author trailer to git commits
+- [no-direct-main-fixes](no-direct-main-fixes.md) — Never make fixes directly on main; always use feature branches
+- [LifecycleHandlerInvocationExceptionTest](LifecycleHandlerInvocationExceptionTest.md) — LifecycleHandlerInvocationException test coverage at 100%
+- [cleanup-notes](cleanup-notes.md) — Track cleanup operations
