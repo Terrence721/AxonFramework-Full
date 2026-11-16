@@ -73,6 +73,11 @@ class ConstructorUtilsTest {
         final String value;
         final int number;
 
+        public MultiArg() {
+            this.value = "zero";
+            this.number = 0;
+        }
+
         public MultiArg(String value, int number) {
             this.value = value;
             this.number = number;
@@ -143,6 +148,7 @@ class ConstructorUtilsTest {
     @Test
     void factoryWithOptionalArgumentFallsBackToIntWhenStringNotFound() {
         Function<Integer, MultipleConstructors> factory = ConstructorUtils.factoryForTypeWithOptionalArgument(MultipleConstructors.class, Integer.class);
+        // Should prefer Int constructor over zero-arg
         assertEquals("int", factory.apply(42).value);
         assertEquals(42, factory.apply(42).number);
     }
