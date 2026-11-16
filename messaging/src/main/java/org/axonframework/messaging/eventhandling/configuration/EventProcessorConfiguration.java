@@ -188,7 +188,7 @@ public class EventProcessorConfiguration implements ExtendedConfiguration, Exten
     }
 
     @Override
-    public <T extends ConfigurationExtension<?>> EventProcessorConfiguration extend(
+    public <T extends ConfigurationExtension<?>> ExtensibleConfigurer extend(
             Class<T> extensionType,
             Supplier<? extends T> factory
     ) {
