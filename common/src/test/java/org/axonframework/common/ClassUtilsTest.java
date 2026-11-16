@@ -44,6 +44,13 @@ class ClockUtilsTest {
     }
 
     @Test
+    void getReturnsDefaultClockAfterReset() {
+        Clock clock = ClockUtils.get();
+        assertNotNull(clock);
+        assertEquals(ZoneId.of("UTC"), clock.getZone());
+    }
+
+    @Test
     void setAndGetClock() {
         Clock customClock = Clock.fixed(Instant.EPOCH, ZoneId.systemDefault());
         ClockUtils.set(customClock);
@@ -66,6 +73,11 @@ class ClockUtilsTest {
 
     @Test
     void setWithNullThrowsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ClockUtils.set(null));
+    }
+
+    @Test
+    void setWithNullThrowsNullPointerExceptionAfterReset() {
         assertThrows(NullPointerException.class, () -> ClockUtils.set(null));
     }
 
@@ -104,6 +116,15 @@ class ClockUtilsTest {
     }
 
     @Test
+    void resetReturnsDefaultClockAfterSet() {
+        ClockUtils.set(Clock.systemUTC());
+        Clock returned = ClockUtils.reset();
+
+        assertNotNull(returned);
+        assertEquals(ZoneId.of("UTC"), returned.getZone());
+    }
+
+    @Test
     void supplierReturnsNonNullInstant() {
         Instant instant = ClockUtils.SUPPLIER.get();
         assertNotNull(instant);
@@ -130,6 +151,18 @@ class ClockUtilsTest {
 
     @Test
     void setUpdatesGlobalClockImmediately() {
+        Clock customClock = Clock.fixed(Instant.parse("2020-01-01T12:00:00Z"), ZoneId.systemDefault());
+        ClockUtils.set(customClock);
+
+        Instant instant = ClockUtils.instant();
+        assertEquals(Instant.parse("2020-01-01T12:00:00Z"), instant);
+
+        ClockUtils.reset();
+    }
+
+    @Test
+    void setUpdatesGlobalClockImmediatelyAfterReset() {
+        ClockUtils.reset();
         Clock customClock = Clock.fixed(Instant.parse("2020-01-01T12:00:00Z"), ZoneId.systemDefault());
         ClockUtils.set(customClock);
 
