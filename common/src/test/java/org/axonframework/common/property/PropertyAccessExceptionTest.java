@@ -16,6 +16,7 @@
 
 package org.axonframework.common.property;
 
+import org.axonframework.common.AxonConfigurationException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -77,6 +78,6 @@ class PropertyAccessExceptionTest {
 
         assertNotNull(exception);
         // Verify it's an instance of the parent class
-        assertSame(exception.getClass().getSuperclass().getSimpleName(), "AxonConfigurationException");
+        assertSame(AxonConfigurationException.class, exception.getClass().getSuperclass());
     }
 }
