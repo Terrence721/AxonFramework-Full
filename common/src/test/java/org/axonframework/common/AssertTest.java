@@ -21,6 +21,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * Test class for the {@link Assert} class to achieve 100% coverage.
+ */
 class AssertTest {
 
     @Test
@@ -110,5 +113,36 @@ class AssertTest {
 
         assertThrows(IllegalArgumentException.class, () -> Assert.assertStrictPositive(0L, "msg"));
         assertThrows(IllegalArgumentException.class, () -> Assert.assertStrictPositive(-1L, "msg"));
+    }
+
+    @Test
+    void assertWithNegativeValues() {
+        assertThrows(IllegalArgumentException.class, () -> Assert.assertThat(-5, v -> v > 0, () -> new IllegalArgumentException("negative")));
+        assertThrows(IllegalArgumentException.class, () -> Assert.assertThat(-10, v -> v > 0, () -> new IllegalArgumentException("negative")));
+    }
+
+    @Test
+    void assertNonNullWithDifferentExceptions() {
+        assertThrows(RuntimeException.class, () -> Assert.assertNonNull(null, () -> new RuntimeException("runtime")));
+        assertThrows(IllegalStateException.class, () -> Assert.assertNonNull(null, () -> new IllegalStateException("state")));
+    }
+
+    @Test
+    void assertWithSupplierExceptions() {
+        assertThrows(IllegalArgumentException.class, () -> Assert.assertThat("test", v -> v.isEmpty(), () -> new IllegalArgumentException("empty")));
+    }
+
+    @Test
+    void nonEmptyWithVariousMessages() {
+        assertThrows(IllegalArgumentException.class, () -> Assert.nonEmpty("", "msg1"));
+        assertThrows(IllegalArgumentException.class, () -> Assert.nonEmpty(null, "msg2"));
+        assertEquals("test", Assert.nonEmpty("test", "msg3"));
+    }
+
+    @Test
+    void assertStrictPositiveLongEdgeCases() {
+        Assert.assertStrictPositive(1L, "msg");
+        assertThrows(IllegalArgumentException.class, () -> Assert.assertStrictPositive(0L, "msg"));
+        assertThrows(IllegalArgumentException.class, () -> Assert.assertStrictPositive(Long.MIN_VALUE, "msg"));
     }
 }
