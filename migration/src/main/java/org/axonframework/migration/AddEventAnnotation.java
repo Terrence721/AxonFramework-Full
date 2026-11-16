@@ -34,7 +34,6 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -241,8 +240,8 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
         String annotationText = revisionValue != null
                 ? "@Event(version = \"" + revisionValue + "\")"
                 : "@Event";
-        String @NonNull[] runtimeClasspath = JavaParser.runtimeClasspath().stream()
-                .toArray(String[]::new);
+        @NonNull String[] runtimeClasspath = JavaParser.runtimeClasspath().stream()
+                .toArray(@NonNull String[]::new);
 
         var parserBuilder = JavaParser.fromJavaVersion().classpath(runtimeClasspath);
         if (parserBuilder == null) {
