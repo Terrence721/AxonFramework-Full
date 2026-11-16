@@ -259,11 +259,10 @@ public class MigrateMessageInterceptorSignatures extends Recipe {
                 JavaParser.Builder<?, ?> builder = JavaParser.fromJavaVersion();
                 builder.classpath(JavaParser.runtimeClasspath());
                 JavaParser parser = Objects.requireNonNull(builder.build());
-                java.nio.file.Path stubPath = Objects.requireNonNull(
-                    java.nio.file.Paths.get("_Stub.java"));
-                java.nio.file.Path relativeTo = Objects.requireNonNull(java.nio.file.Paths.get("."));
+                java.nio.file.Path stubPath = java.nio.file.Paths.get("_Stub.java");
+                java.nio.file.Path relativeTo = java.nio.file.Paths.get(".");
                 Parser.Input stubInput = Parser.Input.fromString(stubPath, src);
-                @NonNull List<Parser.Input> inputs = new java.util.ArrayList<>();
+                List<Parser.Input> inputs = new java.util.ArrayList<>();
                 inputs.add(stubInput);
                 List<SourceFile> parsed = Objects.requireNonNull(parser)
                         .parseInputs(inputs,

@@ -29,13 +29,13 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.nio.file.Path;
 
 /**
  * Scans for methods annotated with {@code @EventSourcingHandler} and annotates their event payload
@@ -136,36 +136,16 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
                 }
 
                 String revisionValue = findRevisionValue(classDecl);
-                String annotationText = revisionValue != null
-                        ? "@Event(version = \"" + revisionValue + "\")"
-                        : "@Event";
-                List<Path> runtimeClasspathEntries = JavaParser.runtimeClasspath();
-                String @NonNull[] runtimeClasspath = new String @NonNull[runtimeClasspathEntries.size()];
-                for (int i = 0; i < runtimeClasspathEntries.size(); i++) {
-                    runtimeClasspath[i] = Objects.requireNonNull(runtimeClasspathEntries.get(i)).toString();
-                }
-
-                var parserBuilder = JavaParser.fromJavaVersion().classpath(runtimeClasspath);
-                if (parserBuilder == null) {
-                    throw new IllegalStateException("JavaParser classpath configuration returned null");
-                }
-
-                // Add @Event FIRST. JavaTemplate.apply walks the visitor's cursor (which still
-                // references the un-modified `classDecl`), so removing @Revision beforehand
-                // would be silently discarded by the apply.
-                J.@NonNull ClassDeclaration annotated = JavaTemplate.builder(annotationText)
-                        .imports(EVENT_FQN)
-                        .javaParser(parserBuilder)
-                        .build()
-                        .apply(getCursor(), classDecl.getCoordinates().addAnnotation((a, b) -> 0));
-                maybeAddImport(EVENT_FQN, null, false);
 
                 if (revisionValue != null) {
-                    annotated = removeClassAnnotation(annotated, REVISION_FQN);
+                    // Remove @Revision annotation
+                    classDecl = removeClassAnnotation(classDecl, REVISION_FQN);
                     maybeRemoveImport(REVISION_FQN);
                     maybeRemoveImport(REVISION_FQN_RENAMED);
                 }
-                return super.visitClassDeclaration(annotated, ctx);
+
+                // Add @Event annotation to the class
+                return addEventAnnotation(classDecl, revisionValue, this);
             }
         };
     }
@@ -255,5 +235,30 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
             remaining.set(0, newFirst);
         }
         return cd.withLeadingAnnotations(remaining);
+    }
+
+    private static J.@NonNull ClassDeclaration addEventAnnotation(J.@NonNull ClassDeclaration classDecl, @Nullable String revisionValue, @NonNull JavaIsoVisitor<?> visitor) {
+        String annotationText = revisionValue != null
+                ? "@Event(version = \"" + revisionValue + "\")"
+                : "@Event";
+        String[] runtimeClasspath = JavaParser.runtimeClasspath().stream()
+                .map(Objects::requireNonNull)
+                .toArray(String[]::new);
+
+        var parserBuilder = JavaParser.fromJavaVersion().classpath(runtimeClasspath);
+        if (parserBuilder == null) {
+            throw new IllegalStateException("JavaParser classpath configuration returned null");
+        }
+
+        // Add @Event FIRST. JavaTemplate.apply walks the visitor's cursor (which still
+        // references the un-modified `classDecl`), so removing @Revision beforehand
+        // would be silently discarded by the apply.
+        J.@NonNull ClassDeclaration annotated = JavaTemplate.builder(annotationText)
+                .imports(EVENT_FQN)
+                .javaParser(parserBuilder)
+                .build()
+                .apply(visitor.getCursor(), classDecl.getCoordinates().addAnnotation((a, b) -> 0));
+        visitor.maybeAddImport(EVENT_FQN, null, false);
+        return annotated;
     }
 }
