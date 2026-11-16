@@ -108,7 +108,7 @@ class PropertyTest {
     }
 
     // Factory methods to create Property instances without lambda compatibility issues
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "nullness", "rawtypes"})
     private static Property<TestBean> createStringProperty() {
         return new Property<TestBean>() {
             @Override
@@ -118,7 +118,7 @@ class PropertyTest {
         };
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "nullness", "rawtypes"})
     private static Property<TestBean> createIntegerProperty() {
         return new Property<TestBean>() {
             @Override
@@ -128,7 +128,7 @@ class PropertyTest {
         };
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "nullness", "rawtypes"})
     private static Property<TestBean> createNullableProperty() {
         return new Property<TestBean>() {
             @Override
@@ -138,7 +138,7 @@ class PropertyTest {
         };
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "nullness", "rawtypes"})
     private static Property<TestBean> createStringWithLambdaProperty() {
         return new Property<TestBean>() {
             @Override
@@ -148,7 +148,7 @@ class PropertyTest {
         };
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "nullness", "rawtypes"})
     private static Property<TestBean> createStringWithComplexMethodProperty() {
         return new Property<TestBean>() {
             @Override
@@ -158,7 +158,7 @@ class PropertyTest {
         };
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "nullness", "rawtypes"})
     private static Property<TestBean> createStringWithMethodChainingProperty() {
         return new Property<TestBean>() {
             @Override
