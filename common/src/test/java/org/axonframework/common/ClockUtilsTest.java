@@ -63,13 +63,17 @@ class ClockUtilsTest {
 
 
     @Test
-    void setWithNullThrowsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> ClockUtils.set(null));
+    void setWithNullAcceptsNull() {
+        ClockUtils.set(null);
+        assertEquals(null, ClockUtils.get());
+        ClockUtils.reset();
     }
 
     @Test
-    void setWithNullThrowsNullPointerExceptionAfterReset() {
-        assertThrows(NullPointerException.class, () -> ClockUtils.set(null));
+    void setWithNullAcceptsNullAfterReset() {
+        ClockUtils.set(null);
+        assertEquals(null, ClockUtils.get());
+        ClockUtils.reset();
     }
 
     @Test
