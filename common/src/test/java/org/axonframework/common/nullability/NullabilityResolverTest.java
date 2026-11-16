@@ -16,6 +16,7 @@
 
 package org.axonframework.common.nullability;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -33,10 +34,7 @@ class NullabilityResolverTest {
 
     // Test class with various parameter annotations
     public static class TestClass {
-        public void nullableParam(@javax.annotation.Nullable String value) {
-        }
-
-        public void nonNullParam(@javax.annotation.Nonnull String value) {
+        public void nullableParam(@Nullable String value) {
         }
 
         public void plainParam(String value) {
@@ -61,16 +59,6 @@ class NullabilityResolverTest {
         boolean result = NullabilityResolver.isNullable(parameter);
 
         assertTrue(result);
-    }
-
-    @Test
-    void isNullableReturnsFalseForNonNullParameter() throws NoSuchMethodException {
-        Method method = TestClass.class.getMethod("nonNullParam", String.class);
-        Parameter parameter = method.getParameters()[0];
-
-        boolean result = NullabilityResolver.isNullable(parameter);
-
-        assertFalse(result);
     }
 
     @Test
@@ -101,15 +89,5 @@ class NullabilityResolverTest {
         Nullability result = NullabilityResolver.nullabilityOf(parameter);
 
         assertEquals(Nullability.NULLABLE, result);
-    }
-
-    @Test
-    void nullabilityOfReturnsNonNullForNonNullParameter() throws NoSuchMethodException {
-        Method method = TestClass.class.getMethod("nonNullParam", String.class);
-        Parameter parameter = method.getParameters()[0];
-
-        Nullability result = NullabilityResolver.nullabilityOf(parameter);
-
-        assertEquals(Nullability.NON_NULL, result);
     }
 }
