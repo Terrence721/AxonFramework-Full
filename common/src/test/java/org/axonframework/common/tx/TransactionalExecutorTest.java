@@ -16,7 +16,6 @@
 
 package org.axonframework.common.tx;
 
-import org.axonframework.common.function.ThrowingConsumer;
 import org.axonframework.common.function.ThrowingFunction;
 import org.junit.jupiter.api.Test;
 
@@ -34,36 +33,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TransactionalExecutorTest {
 
     private static class TestTransactionalExecutor implements TransactionalExecutor<String> {
-        private final boolean executeSuccess;
         private final CompletableFuture<Object> returnedFuture;
 
-        TestTransactionalExecutor(boolean executeSuccess, CompletableFuture<Object> returnedFuture) {
-            this.executeSuccess = executeSuccess;
+        TestTransactionalExecutor(CompletableFuture<Object> returnedFuture) {
             this.returnedFuture = returnedFuture;
         }
 
         @Override
         public <R> CompletableFuture<R> apply(ThrowingFunction<String, R, Exception> function) {
-            if (executeSuccess) {
-                @SuppressWarnings("unchecked")
-                CompletableFuture<R> cast = (CompletableFuture<R>) returnedFuture;
-                return cast;
-            } else {
-                throw new RuntimeException("Execution failed");
-            }
+            java.util.Objects.requireNonNull(function, "function");
+            @SuppressWarnings("unchecked")
+            CompletableFuture<R> cast = (CompletableFuture<R>) returnedFuture;
+            return cast;
         }
     }
 
     @Test
     void acceptWithNullConsumerThrowsNullPointerException() {
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(true, CompletableFuture.completedFuture(null));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null));
 
         assertThrows(NullPointerException.class, () -> executor.accept(null));
     }
 
     @Test
     void acceptWithValidConsumerReturnsVoidFuture() {
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(true, CompletableFuture.completedFuture(null));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null));
 
         CompletableFuture<Void> future = executor.accept(resource -> {
             // Consume resource
@@ -77,10 +71,9 @@ class TransactionalExecutorTest {
 
     @Test
     void acceptWithThrowingConsumerPropagatesException() {
-        CompletableFuture<Void> future = new CompletableFuture<>();
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(false, CompletableFuture.completedFuture(null));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null));
 
-        future = executor.accept(resource -> {
+        CompletableFuture<Void> future = executor.accept(resource -> {
             throw new RuntimeException("Test exception");
         });
 
@@ -90,14 +83,14 @@ class TransactionalExecutorTest {
 
     @Test
     void applyWithNullFunctionThrowsNullPointerException() {
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(true, CompletableFuture.completedFuture(null));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null));
 
         assertThrows(NullPointerException.class, () -> executor.apply(null));
     }
 
     @Test
     void applyWithValidFunctionReturnsFuture() {
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(true, CompletableFuture.completedFuture("result"));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture("result"));
 
         CompletableFuture<String> future = executor.apply(resource -> {
             assertNotNull(resource);
@@ -111,10 +104,9 @@ class TransactionalExecutorTest {
 
     @Test
     void applyWithThrowingFunctionPropagatesException() {
-        CompletableFuture<String> future = new CompletableFuture<>();
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(false, CompletableFuture.completedFuture(null));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null));
 
-        future = executor.apply(resource -> {
+        CompletableFuture<String> future = executor.apply(resource -> {
             throw new RuntimeException("Test exception");
         });
 
