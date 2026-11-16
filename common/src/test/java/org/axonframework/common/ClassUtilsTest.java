@@ -16,52 +16,126 @@
 
 package org.axonframework.common;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ClassUtilsTest {
+class ClockUtilsTest {
 
     @Test
-    void loadClassReturnsRequestedClass() {
-        assertEquals(String.class, ClassUtils.loadClass("java.lang.String"));
+    void instantReturnsCurrentInstant() {
+        Instant instant = ClockUtils.instant();
+        assertNotNull(instant);
+        assertTrue(instant.getEpochSecond() > 0);
     }
 
     @Test
-    void loadClassReturnsRequestedClassWithDifferentType() {
-        assertEquals(Integer.class, ClassUtils.loadClass("java.lang.Integer"));
+    void getReturnsDefaultClock() {
+        Clock clock = ClockUtils.get();
+        assertNotNull(clock);
+        assertEquals(ZoneId.of("UTC"), clock.getZone());
     }
 
     @Test
-    void loadClassReturnsSameInstanceForSameClassName() {
-        Class<?> first = ClassUtils.loadClass("java.lang.String");
-        Class<?> second = ClassUtils.loadClass("java.lang.String");
-        assertSame(first, second);
+    void setAndGetClock() {
+        Clock customClock = Clock.fixed(Instant.EPOCH, ZoneId.systemDefault());
+        ClockUtils.set(customClock);
+
+        assertSame(customClock, ClockUtils.get());
+
+        ClockUtils.reset();
+        assertNotNull(ClockUtils.get());
     }
 
     @Test
-    void loadClassThrowsForMissingType() {
-        assertThrows(RuntimeException.class, () -> ClassUtils.loadClass("does.not.Exist"));
+    void resetRestoresDefaultClock() {
+        Clock customClock = Clock.fixed(Instant.parse("2020-01-01T00:00:00Z"), ZoneId.systemDefault());
+        ClockUtils.set(customClock);
+
+        ClockUtils.reset();
+        assertNotNull(ClockUtils.get());
+        assertEquals(ZoneId.of("UTC"), ClockUtils.get().getZone());
     }
 
     @Test
-    void loadClassThrowsForInvalidClassName() {
-        assertThrows(RuntimeException.class, () -> ClassUtils.loadClass(""));
+    void setWithNullThrowsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ClockUtils.set(null));
     }
 
     @Test
-    void loadClassWithNullName() {
-        assertThrows(NullPointerException.class, () -> ClassUtils.loadClass(null));
+    void instantReturnsInstantFromConfiguredClock() {
+        Clock customClock = Clock.fixed(Instant.parse("2020-01-01T00:00:00Z"), ZoneId.systemDefault());
+        ClockUtils.set(customClock);
+
+        Instant instant = ClockUtils.instant();
+        assertEquals(Instant.parse("2020-01-01T00:00:00Z"), instant);
+
+        ClockUtils.reset();
     }
 
     @Test
-    void loadClassCachedClassLoaderAndCacheAreNotNull() {
-        // These assertions ensure the static fields are initialized and used
-        assertNotNull(ClassUtils.class);
-        assertNotNull(ClassUtils.class.getClassLoader());
-        assertEquals(ClassUtils.class.getClassLoader(), ClassUtils.class.getClassLoader());
+    void getReturnsSameInstanceAfterSet() {
+        Clock clock1 = ClockUtils.get();
+        Clock clock2 = ClockUtils.get();
+        assertSame(clock1, clock2);
+    }
+
+    @Test
+    void setReturnsTheSetClock() {
+        Clock customClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        Clock returned = ClockUtils.set(customClock);
+
+        assertSame(customClock, returned);
+    }
+
+    @Test
+    void resetReturnsDefaultClock() {
+        Clock returned = ClockUtils.reset();
+
+        assertNotNull(returned);
+        assertEquals(ZoneId.of("UTC"), returned.getZone());
+    }
+
+    @Test
+    void supplierReturnsNonNullInstant() {
+        Instant instant = ClockUtils.SUPPLIER.get();
+        assertNotNull(instant);
+        assertTrue(instant.getEpochSecond() > 0);
+    }
+
+    @Test
+    void supplierUpdatesWithClockChanges() {
+        Clock customClock = Clock.fixed(Instant.EPOCH, ZoneId.systemDefault());
+        ClockUtils.set(customClock);
+
+        Instant instant = ClockUtils.SUPPLIER.get();
+        assertEquals(Instant.EPOCH, instant);
+
+        ClockUtils.reset();
+    }
+
+    @Test
+    void getIsThreadSafe() {
+        Clock clock1 = ClockUtils.get();
+        Clock clock2 = ClockUtils.get();
+        assertSame(clock1, clock2);
+    }
+
+    @Test
+    void setUpdatesGlobalClockImmediately() {
+        Clock customClock = Clock.fixed(Instant.parse("2020-01-01T12:00:00Z"), ZoneId.systemDefault());
+        ClockUtils.set(customClock);
+
+        Instant instant = ClockUtils.instant();
+        assertEquals(Instant.parse("2020-01-01T12:00:00Z"), instant);
+
+        ClockUtils.reset();
     }
 }
