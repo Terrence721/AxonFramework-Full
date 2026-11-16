@@ -258,7 +258,7 @@ public class AddEventAnnotation extends ScanningRecipe<AddEventAnnotation.Accumu
                 .javaParser(parserBuilder)
                 .build()
                 .apply(visitor.getCursor(), classDecl.getCoordinates().addAnnotation((a, b) -> 0));
-        visitor.maybeAddImport(EVENT_FQN, null, false);
+        visitor.maybeAddImport(EVENT_FQN);
         return annotated;
     }
 }
