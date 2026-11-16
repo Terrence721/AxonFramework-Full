@@ -77,9 +77,10 @@ class TransactionalExecutorTest {
 
     @Test
     void acceptWithThrowingConsumerPropagatesException() {
+        CompletableFuture<Void> future = new CompletableFuture<>();
         TransactionalExecutor<String> executor = new TestTransactionalExecutor(false, CompletableFuture.completedFuture(null));
 
-        CompletableFuture<Void> future = executor.accept(resource -> {
+        future = executor.accept(resource -> {
             throw new RuntimeException("Test exception");
         });
 
@@ -110,9 +111,10 @@ class TransactionalExecutorTest {
 
     @Test
     void applyWithThrowingFunctionPropagatesException() {
+        CompletableFuture<String> future = new CompletableFuture<>();
         TransactionalExecutor<String> executor = new TestTransactionalExecutor(false, CompletableFuture.completedFuture(null));
 
-        CompletableFuture<String> future = executor.apply(resource -> {
+        future = executor.apply(resource -> {
             throw new RuntimeException("Test exception");
         });
 
