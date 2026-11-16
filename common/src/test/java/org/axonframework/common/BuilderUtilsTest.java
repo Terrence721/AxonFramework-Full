@@ -35,9 +35,20 @@ class BuilderUtilsTest {
     }
 
     @Test
+    void assertNonBlankThrowsForNull() {
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonBlank(null, "x"));
+    }
+
+    @Test
     void assertNonEmptyThrowsForEmptyString() {
         assertThrows(AxonConfigurationException.class,
                 () -> BuilderUtils.assertNonEmpty("", "message"));
+    }
+
+    @Test
+    void assertNonEmptyReturnsNoExceptionWhenPopulated() {
+        BuilderUtils.assertNonEmpty("value", "x");
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonEmpty(null, "x"));
     }
 
     @Test
@@ -51,23 +62,17 @@ class BuilderUtilsTest {
     }
 
     @Test
-    void assertPositiveAllowsZeroAndThrowsForNegative() {
-        BuilderUtils.assertPositive(0, "x");
-        BuilderUtils.assertPositive(1L, "x");
-        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertPositive(-1, "x"));
-        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertPositive(-1L, "x"));
-    }
-
-    @Test
     void assertStrictPositiveAllowsPositiveLongAndThrowsForZero() {
         BuilderUtils.assertStrictPositive(1L, "x");
         assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertStrictPositive(0L, "x"));
     }
 
     @Test
-    void assertNonNullReturnsValueAndThrowsWhenNull() {
-        BuilderUtils.assertNonNull("value", "x");
-        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonNull(null, "x"));
+    void assertPositiveAllowsZeroAndThrowsForNegative() {
+        BuilderUtils.assertPositive(0, "x");
+        BuilderUtils.assertPositive(1L, "x");
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertPositive(-1, "x"));
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertPositive(-1L, "x"));
     }
 
     @Test
@@ -78,13 +83,64 @@ class BuilderUtilsTest {
     }
 
     @Test
-    void assertNonEmptyReturnsNoExceptionWhenPopulated() {
-        BuilderUtils.assertNonEmpty("value", "x");
-        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonEmpty(null, "x"));
+    void assertThatWithNegativeValues() {
+        assertThrows(AxonConfigurationException.class,
+                () -> BuilderUtils.assertThat(-5, value -> value > 0, "negative"));
+        assertThrows(AxonConfigurationException.class,
+                () -> BuilderUtils.assertThat(-10, value -> value > 0, "negative"));
     }
 
     @Test
-    void assertNonBlankThrowsForNull() {
-        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonBlank(null, "x"));
+    void assertNonNullReturnsValueAndThrowsWhenNull() {
+        BuilderUtils.assertNonNull("value", "x");
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonNull(null, "x"));
+    }
+
+    @Test
+    void assertNonNullWithDifferentExceptions() {
+        assertThrows(RuntimeException.class, () -> BuilderUtils.assertNonNull(null, "runtime"));
+        assertThrows(IllegalStateException.class, () -> BuilderUtils.assertNonNull(null, "state"));
+    }
+
+    @Test
+    void assertNonEmptyWithVariousMessages() {
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonEmpty("", "msg1"));
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonEmpty(null, "msg2"));
+        BuilderUtils.assertNonEmpty("test", "msg3");
+    }
+
+    @Test
+    void assertNonBlankWithVariousMessages() {
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonBlank("", "msg1"));
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonBlank(null, "msg2"));
+        assertEquals("test", BuilderUtils.assertNonBlank("test", "msg3"));
+    }
+
+    @Test
+    void assertPositiveLongBoundaryValues() {
+        BuilderUtils.assertPositive(0, "x");
+        BuilderUtils.assertPositive(1L, "x");
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertPositive(-1L, "x"));
+    }
+
+    @Test
+    void assertPositiveIntBoundaryValues() {
+        BuilderUtils.assertPositive(0, "x");
+        BuilderUtils.assertPositive(1, "x");
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertPositive(-1, "x"));
+    }
+
+    @Test
+    void assertStrictPositiveLongBoundaryValues() {
+        BuilderUtils.assertStrictPositive(1L, "x");
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertStrictPositive(0L, "x"));
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertStrictPositive(Long.MIN_VALUE, "x"));
+    }
+
+    @Test
+    void assertStrictPositiveIntBoundaryValues() {
+        BuilderUtils.assertStrictPositive(1, "x");
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertStrictPositive(0, "x"));
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertStrictPositive(Integer.MIN_VALUE, "x"));
     }
 }
