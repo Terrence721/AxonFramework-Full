@@ -97,9 +97,9 @@ class BuilderUtilsTest {
     }
 
     @Test
-    void assertNonNullWithDifferentExceptions() {
-        assertThrows(RuntimeException.class, () -> BuilderUtils.assertNonNull(null, "runtime"));
-        assertThrows(IllegalStateException.class, () -> BuilderUtils.assertNonNull(null, "state"));
+    void assertNonNullWithDifferentMessages() {
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonNull(null, "runtime"));
+        assertThrows(AxonConfigurationException.class, () -> BuilderUtils.assertNonNull(null, "state"));
     }
 
     @Test
