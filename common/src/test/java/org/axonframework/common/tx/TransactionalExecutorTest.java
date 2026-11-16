@@ -34,14 +34,20 @@ class TransactionalExecutorTest {
 
     private static class TestTransactionalExecutor implements TransactionalExecutor<String> {
         private final CompletableFuture<Object> returnedFuture;
+        private final boolean shouldThrow;
 
-        TestTransactionalExecutor(CompletableFuture<Object> returnedFuture) {
+        TestTransactionalExecutor(CompletableFuture<Object> returnedFuture, boolean shouldThrow) {
             this.returnedFuture = returnedFuture;
+            this.shouldThrow = shouldThrow;
         }
 
         @Override
         public <R> CompletableFuture<R> apply(ThrowingFunction<String, R, Exception> function) {
             java.util.Objects.requireNonNull(function, "function");
+            if (shouldThrow) {
+                // Return a future that will fail when the function is applied
+                return CompletableFuture.failedFuture(new RuntimeException("Test exception"));
+            }
             @SuppressWarnings("unchecked")
             CompletableFuture<R> cast = (CompletableFuture<R>) returnedFuture;
             return cast;
@@ -50,14 +56,14 @@ class TransactionalExecutorTest {
 
     @Test
     void acceptWithNullConsumerThrowsNullPointerException() {
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null), false);
 
         assertThrows(NullPointerException.class, () -> executor.accept(null));
     }
 
     @Test
     void acceptWithValidConsumerReturnsVoidFuture() {
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null), false);
 
         CompletableFuture<Void> future = executor.accept(resource -> {
             // Consume resource
@@ -71,7 +77,7 @@ class TransactionalExecutorTest {
 
     @Test
     void acceptWithThrowingConsumerPropagatesException() {
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null), true);
 
         CompletableFuture<Void> future = executor.accept(resource -> {
             throw new RuntimeException("Test exception");
@@ -83,14 +89,14 @@ class TransactionalExecutorTest {
 
     @Test
     void applyWithNullFunctionThrowsNullPointerException() {
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null), false);
 
         assertThrows(NullPointerException.class, () -> executor.apply(null));
     }
 
     @Test
     void applyWithValidFunctionReturnsFuture() {
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture("result"));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture("result"), false);
 
         CompletableFuture<String> future = executor.apply(resource -> {
             assertNotNull(resource);
@@ -104,7 +110,7 @@ class TransactionalExecutorTest {
 
     @Test
     void applyWithThrowingFunctionPropagatesException() {
-        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null));
+        TransactionalExecutor<String> executor = new TestTransactionalExecutor(CompletableFuture.completedFuture(null), true);
 
         CompletableFuture<String> future = executor.apply(resource -> {
             throw new RuntimeException("Test exception");
