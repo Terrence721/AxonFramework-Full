@@ -78,10 +78,9 @@ class PriorityRunnableTest {
 
     @Test
     void runnableEqualsSameTask() {
-        Runnable runnable1 = () -> "Test";
-        Runnable runnable2 = () -> "Test";
-        PriorityRunnable priorityTask1 = new PriorityRunnable(runnable1, 15, 8);
-        PriorityRunnable priorityTask2 = new PriorityRunnable(runnable2, 15, 8);
+        Runnable runnable = () -> {};
+        PriorityRunnable priorityTask1 = new PriorityRunnable(runnable, 15, 8);
+        PriorityRunnable priorityTask2 = new PriorityRunnable(runnable, 15, 8);
 
         assertEquals(priorityTask1, priorityTask2);
         assertEquals(priorityTask2.hashCode(), priorityTask1.hashCode());
@@ -89,7 +88,7 @@ class PriorityRunnableTest {
 
     @Test
     void runnableNotEqualsDifferentPriority() {
-        Runnable runnable = () -> "Test";
+        Runnable runnable = () -> {};
         PriorityRunnable priorityTask1 = new PriorityRunnable(runnable, 10, 5);
         PriorityRunnable priorityTask2 = new PriorityRunnable(runnable, 20, 5);
 
@@ -98,7 +97,7 @@ class PriorityRunnableTest {
 
     @Test
     void runnableNotEqualsDifferentSequence() {
-        Runnable runnable = () -> "Test";
+        Runnable runnable = () -> {};
         PriorityRunnable priorityTask1 = new PriorityRunnable(runnable, 10, 5);
         PriorityRunnable priorityTask2 = new PriorityRunnable(runnable, 10, 15);
 
@@ -107,7 +106,7 @@ class PriorityRunnableTest {
 
     @Test
     void runnableToStringContainsAllComponents() {
-        Runnable runnable = () -> "Test";
+        Runnable runnable = () -> {};
         PriorityRunnable priorityTask = new PriorityRunnable(runnable, 25, 12);
 
         String string = priorityTask.toString();

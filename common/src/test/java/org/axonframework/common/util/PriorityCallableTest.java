@@ -67,8 +67,6 @@ class PriorityCallableTest {
         PriorityCallable<String> priorityTask2 = new PriorityCallable<>(callable2, 10, 5);
 
         // Task with higher priority should be considered "less than" in compareTo
-        // PriorityTask.compareTo returns -c for priority, where c = Long.compare(this.priority(), that.priority())
-        // If priority1 > priority2, then c > 0, -c < 0, so priorityTask1 < priorityTask2
         int comparison = priorityTask1.compareTo(priorityTask2);
         assertTrue(comparison < 0);
     }
@@ -82,19 +80,15 @@ class PriorityCallableTest {
 
         // Same priority, different sequences
         int comparison = priorityTask1.compareTo(priorityTask2);
-        // PriorityTask.compareTo returns Long.compare(this.sequence(), that.sequence()) for same priority
-        // With sequence1=20, sequence2=5, Long.compare(20, 5) = 1 (positive)
-        // So priorityTask1 > priorityTask2
-        // In a sorted collection, priorityTask2 would come first (is "less than")
+        // Task with lower sequence should be considered "less than" (earlier)
         assertTrue(comparison > 0);
     }
 
     @Test
     void callableEqualsSameTask() {
-        Callable<String> callable1 = () -> "Test";
-        Callable<String> callable2 = () -> "Test";
-        PriorityCallable<String> priorityTask1 = new PriorityCallable<>(callable1, 15, 8);
-        PriorityCallable<String> priorityTask2 = new PriorityCallable<>(callable2, 15, 8);
+        Callable<String> callable = () -> "Test";
+        PriorityCallable<String> priorityTask1 = new PriorityCallable<>(callable, 15, 8);
+        PriorityCallable<String> priorityTask2 = new PriorityCallable<>(callable, 15, 8);
 
         assertEquals(priorityTask1, priorityTask2);
         assertEquals(priorityTask2.hashCode(), priorityTask1.hashCode());
