@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -69,7 +70,6 @@ class PriorityRunnableTest {
 
         // Same priority, different sequences
         int comparison = priorityTask1.compareTo(priorityTask2);
-        // PriorityRunnable inherits compareTo from PriorityTask.compareTo
         // PriorityTask.compareTo returns Long.compare(this.sequence(), that.sequence()) for same priority
         // With sequence1=20, sequence2=5, Long.compare(20, 5) = 1 (positive)
         // So priorityTask1 > priorityTask2
