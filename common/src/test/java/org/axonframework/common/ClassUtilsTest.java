@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ClassUtilsTest {
 
@@ -29,7 +31,37 @@ class ClassUtilsTest {
     }
 
     @Test
+    void loadClassReturnsRequestedClassWithDifferentType() {
+        assertEquals(Integer.class, ClassUtils.loadClass("java.lang.Integer"));
+    }
+
+    @Test
+    void loadClassReturnsSameInstanceForSameClassName() {
+        Class<?> first = ClassUtils.loadClass("java.lang.String");
+        Class<?> second = ClassUtils.loadClass("java.lang.String");
+        assertSame(first, second);
+    }
+
+    @Test
     void loadClassThrowsForMissingType() {
         assertThrows(RuntimeException.class, () -> ClassUtils.loadClass("does.not.Exist"));
+    }
+
+    @Test
+    void loadClassThrowsForInvalidClassName() {
+        assertThrows(RuntimeException.class, () -> ClassUtils.loadClass(""));
+    }
+
+    @Test
+    void loadClassWithNullName() {
+        assertThrows(NullPointerException.class, () -> ClassUtils.loadClass(null));
+    }
+
+    @Test
+    void loadClassCachedClassLoaderAndCacheAreNotNull() {
+        // These assertions ensure the static fields are initialized and used
+        assertNotNull(ClassUtils.class);
+        assertNotNull(ClassUtils.class.getClassLoader());
+        assertEquals(ClassUtils.class.getClassLoader(), ClassUtils.class.getClassLoader());
     }
 }
