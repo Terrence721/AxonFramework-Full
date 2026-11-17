@@ -44,6 +44,14 @@ public final class DirectExecutor implements Executor {
     }
 
     /**
+     * Provides direct access to the singleton instance for testing purposes.
+     * This method is primarily used in tests to verify the singleton pattern and direct access.
+     */
+    public static DirectExecutor getTestInstance() {
+        return INSTANCE;
+    }
+
+    /**
      * Executes the given {@code command} immediately in the current thread.
      *
      * @param command the command to execute.
