@@ -20,15 +20,25 @@ class QueryUpdateEmitterExtensionsTest {
             override fun emit(queryName: org.axonframework.messaging.core.QualifiedName, filter: java.util.function.Predicate<Any>, updateSupplier: java.util.function.Supplier<Any>) =
                 error("unused")
 
-            override fun emit(queryName: QualifiedName, filter: java.util.function.Predicate<Any>, update: Any?) = error("unused")
+            override fun emit(queryName: QualifiedName, filter: java.util.function.Predicate<Any>, update: Any?) =
+                // Do nothing for testing
+                Unit
 
-            override fun <Q : Any> complete(queryType: Class<Q>, filter: java.util.function.Predicate<in Q>) = error("unused")
+            override fun <Q : Any> complete(queryType: Class<Q>, filter: java.util.function.Predicate<in Q>) =
+                // Do nothing for testing
+                Unit
 
-            override fun complete(queryName: QualifiedName, filter: java.util.function.Predicate<Any>) = error("unused")
+            override fun complete(queryName: QualifiedName, filter: java.util.function.Predicate<Any>) =
+                // Do nothing for testing
+                Unit
 
-            override fun <Q : Any> completeExceptionally(queryType: Class<Q>, filter: java.util.function.Predicate<in Q>, cause: Throwable) = error("unused")
+            override fun <Q : Any> completeExceptionally(queryType: Class<Q>, filter: java.util.function.Predicate<in Q>, cause: Throwable) =
+                // Do nothing for testing
+                Unit
 
-            override fun completeExceptionally(queryName: QualifiedName, filter: java.util.function.Predicate<Any>, cause: Throwable) = error("unused")
+            override fun completeExceptionally(queryName: QualifiedName, filter: java.util.function.Predicate<Any>, cause: Throwable) =
+                // Do nothing for testing
+                Unit
         }
 
         emitter.emit(42) { q: String -> q == "query" }

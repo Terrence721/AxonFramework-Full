@@ -20,13 +20,28 @@ class QueryGatewayExtensionsTest {
                 CompletableFuture.completedFuture(mutableListOf("result" as R))
 
             override fun <R : Any> subscriptionQuery(query: Any, responseType: Class<R>, context: org.axonframework.messaging.core.unitofwork.ProcessingContext?, updateBufferSize: Int): org.reactivestreams.Publisher<R> =
-                error("unused") as org.reactivestreams.Publisher<R>
+                // Simple empty publisher for testing
+                object : org.reactivestreams.Publisher<R> {
+                    override fun subscribe(subscriber: org.reactivestreams.Subscriber<in R>) {
+                        // Do nothing - subscriber will receive no items
+                    }
+                }
 
             override fun <R : Any> streamingQuery(query: Any, responseType: Class<R>, context: org.axonframework.messaging.core.unitofwork.ProcessingContext?): org.reactivestreams.Publisher<R> =
-                error("unused") as org.reactivestreams.Publisher<R>
+                // Simple empty publisher for testing
+                object : org.reactivestreams.Publisher<R> {
+                    override fun subscribe(subscriber: org.reactivestreams.Subscriber<in R>) {
+                        // Do nothing - subscriber will receive no items
+                    }
+                }
 
             override fun <R : Any> subscriptionQuery(query: Any, responseType: Class<R>, mapper: java.util.function.Function<org.axonframework.messaging.queryhandling.QueryResponseMessage, R>, context: org.axonframework.messaging.core.unitofwork.ProcessingContext?, updateBufferSize: Int): org.reactivestreams.Publisher<R> =
-                error("unused") as org.reactivestreams.Publisher<R>
+                // Simple empty publisher for testing
+                object : org.reactivestreams.Publisher<R> {
+                    override fun subscribe(subscriber: org.reactivestreams.Subscriber<in R>) {
+                        // Do nothing - subscriber will receive no items
+                    }
+                }
         }
 
         assertEquals("result", gateway.query<String>("query").get())
