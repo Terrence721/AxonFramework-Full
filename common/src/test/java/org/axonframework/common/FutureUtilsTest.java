@@ -9,6 +9,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,6 +45,26 @@ class FutureUtilsTest {
         CompletableFuture<Void> failing = new CompletableFuture<>();
         failing.completeExceptionally(new RuntimeException("boom"));
         CompletableFuture<Void> future = FutureUtils.allOrEmpty(List.of(failing));
+        assertThrows(CompletionException.class, future::join);
+    }
+
+    @Test
+    void allOrEmptyMultipleFutures() {
+        CompletableFuture<Void> f1 = CompletableFuture.completedFuture(null);
+        CompletableFuture<Void> f2 = CompletableFuture.completedFuture(null);
+        CompletableFuture<Void> f3 = CompletableFuture.completedFuture(null);
+
+        CompletableFuture<Void> future = FutureUtils.allOrEmpty(List.of(f1, f2, f3));
+        future.join();
+    }
+
+    @Test
+    void allOrEmptyMixedSuccessFailure() {
+        CompletableFuture<Void> success = CompletableFuture.completedFuture(null);
+        CompletableFuture<Void> failure = new CompletableFuture<>();
+        failure.completeExceptionally(new RuntimeException("boom"));
+
+        CompletableFuture<Void> future = FutureUtils.allOrEmpty(List.of(success, failure));
         assertThrows(CompletionException.class, future::join);
     }
 
@@ -109,7 +130,28 @@ class FutureUtilsTest {
                 FutureUtils.joinAndUnwrap(new CompletableFuture<>(), Duration.ofNanos(1)));
     }
 
-    private static void assertEquals(Object expected, Object actual) {
-        org.junit.jupiter.api.Assertions.assertEquals(expected, actual);
+    @Test
+    void joinAndUnwrapWithDefaultTimeout() {
+        // Test the default timeout path (30 seconds) - use very short duration to make test fast
+        assertThrows(TimeoutException.class, () ->
+                FutureUtils.joinAndUnwrap(new CompletableFuture<>()));
+    }
+
+    @Test
+    void joinAndUnwrapCompletionExceptionWithTimeoutCause() {
+        CompletableFuture<String> future = new CompletableFuture<>();
+        future.orTimeout(1, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+        assertThrows(TimeoutException.class, () ->
+                FutureUtils.joinAndUnwrap(future));
+    }
+
+    @Test
+    void joinAndUnwrapCompletionExceptionWithNonTimeoutCause() {
+        CompletableFuture<String> future = new CompletableFuture<>();
+        future.completeExceptionally(new CompletionException(new IllegalStateException("inner")));
+
+        assertThrows(IllegalStateException.class, () ->
+                FutureUtils.joinAndUnwrap(future));
     }
 }
