@@ -32,58 +32,6 @@ class IdentifierFactoryTest {
     }
 
     @Test
-    void instanceIsAvailable() {
-        assertNotNull(IdentifierFactory.getInstance());
-    }
-
-    @Test
-    void defaultInstanceGeneratesUuid() {
-        String identifier = IdentifierFactory.getInstance().generateIdentifier();
-
-        assertNotNull(identifier);
-        assertEquals(identifier, UUID.fromString(identifier).toString());
-    }
-
-    @Test
-    void instanceIsStable() {
-        assertSame(IdentifierFactory.getInstance(), IdentifierFactory.getInstance());
-    }
-
-    @Test
-    void getInstanceReturnsCachedInstance() {
-        IdentifierFactory first = IdentifierFactory.getInstance();
-        IdentifierFactory second = IdentifierFactory.getInstance();
-        assertSame(first, second);
-    }
-
-    @Test
-    void serviceLoaderIteratorBehavior() {
-        // Verify that ServiceLoader.iterator() works correctly (used in locateFactories)
-        Iterator<IdentifierFactory> iterator =
-            ServiceLoader.load(IdentifierFactory.class).iterator();
-        // This should not throw even if no implementation is found
-        assertNotNull(iterator);
-    }
-
-    @Test
-    void instanceIsAvailable() {
-        assertNotNull(IdentifierFactory.getInstance());
-    }
-
-    @Test
-    void defaultInstanceGeneratesUuid() {
-        String identifier = IdentifierFactory.getInstance().generateIdentifier();
-
-        assertNotNull(identifier);
-        assertEquals(identifier, UUID.fromString(identifier).toString());
-    }
-
-    @Test
-    void instanceIsStable() {
-        assertSame(IdentifierFactory.getInstance(), IdentifierFactory.getInstance());
-    }
-
-    @Test
     void getInstanceReturnsCachedInstance() {
         IdentifierFactory first = IdentifierFactory.getInstance();
         IdentifierFactory second = IdentifierFactory.getInstance();
@@ -154,3 +102,4 @@ class IdentifierFactoryTest {
         assertNotNull(instance);
         assertTrue(instance instanceof DefaultIdentifierFactory);
     }
+}
