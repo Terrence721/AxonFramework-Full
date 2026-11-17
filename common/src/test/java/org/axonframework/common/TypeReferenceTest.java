@@ -88,6 +88,8 @@ class TypeReferenceTest {
         assertFalse(listInteger.isAssignableFrom(listString));
     }
 
+
+    @SuppressWarnings("rawtypes")
     @Test
     void isAssignableFromMixedTypes() {
         // One parameterized, one raw - should return false (defensive)
@@ -98,6 +100,7 @@ class TypeReferenceTest {
         assertFalse(listRaw.isAssignableFrom(listString));
     }
 
+    @SuppressWarnings("rawtypes")
     @Test
     void isAssignableFromRawTypes() {
         // Both raw types - compatible
