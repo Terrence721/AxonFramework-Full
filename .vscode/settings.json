@@ -3,9 +3,9 @@
     "workingDirectory": "${workspaceFolder}",
     "vmOptions": "-javaagent:${workspaceFolder}/build/mockito-agent/mockito-agent.jar",
     "env": {
-      "JAVA_HOME": "/c/Program Files/Android/openjdk/jdk-21.0.8"
+      "JAVA_HOME": "/c/Program Files/OpenJDK/openjdk-21"
     }
   },
-  "java.home": "/c/Program Files/Android/openjdk/jdk-21.0.8",
+  "java.home": "/c/Program Files/OpenJDK/openjdk-21",
   "java.compile.nullAnalysis.mode": "automatic"
 }
