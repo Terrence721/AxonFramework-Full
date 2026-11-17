@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ObjectUtilsTest {
 
@@ -36,8 +37,63 @@ class ObjectUtilsTest {
     }
 
     @Test
+    void getOrDefaultWithDefaultValueParameterReturnsInstanceWhenPresent() {
+        assertEquals("value", ObjectUtils.getOrDefault("value", "default"));
+    }
+
+    @Test
     void getOrDefaultWithProviderReturnsProvidedValueForNullInstance() {
-        assertEquals("INPUT", ObjectUtils.getOrDefault("input", String::toUpperCase, "default"));
+        assertEquals("INPUT", ObjectUtils.getOrDefault("input", s -> s.toUpperCase(), "default"));
+    }
+
+    @Test
+    void getOrDefaultWithProviderReturnsDefaultForNullInstance() {
+        assertEquals("default", ObjectUtils.getOrDefault((String) null, s -> s.toUpperCase(), "default"));
+    }
+
+    @Test
+    void getNonEmptyOrDefaultReturnsInstanceWhenPresent() {
+        assertEquals("value", ObjectUtils.getNonEmptyOrDefault("value", "default"));
+    }
+
+    @Test
+    void getNonEmptyOrDefaultReturnsDefaultWhenNull() {
+        assertEquals("default", ObjectUtils.getNonEmptyOrDefault(null, "default"));
+    }
+
+    @Test
+    void getNonEmptyOrDefaultReturnsDefaultWhenEmpty() {
+        assertEquals("default", ObjectUtils.getNonEmptyOrDefault("", "default"));
+    }
+
+    @Test
+    void nullSafeTypeOfReturnsClassWhenPresent() {
+        assertEquals(String.class, ObjectUtils.nullSafeTypeOf("value"));
+        assertEquals(Integer.class, ObjectUtils.nullSafeTypeOf(42));
+    }
+
+    @Test
+    void nullSafeTypeOfReturnsVoidClassWhenNull() {
+        assertEquals(Void.class, ObjectUtils.nullSafeTypeOf(null));
+    }
+
+    @Test
+    void getRemainingOfDeadlineReturnsPositiveWhenFuture() {
+        long futureDeadline = System.currentTimeMillis() + 1000;
+        long remaining = ObjectUtils.getRemainingOfDeadline(futureDeadline);
+        assertTrue(remaining > 0 && remaining <= 1000);
+    }
+
+    @Test
+    void getRemainingOfDeadlineReturnsZeroWhenPast() {
+        long pastDeadline = System.currentTimeMillis() - 1000;
+        assertEquals(0, ObjectUtils.getRemainingOfDeadline(pastDeadline));
+    }
+
+    @Test
+    void getRemainingOfDeadlineReturnsZeroWhenNow() {
+        long now = System.currentTimeMillis();
+        assertEquals(0, ObjectUtils.getRemainingOfDeadline(now));
     }
 
     @Test
@@ -51,5 +107,10 @@ class ObjectUtilsTest {
         assertEquals("value", supplier.get());
         assertEquals("value", supplier.get());
         assertEquals(1, invocations.get());
+    }
+
+    @Test
+    void getOrDefaultWithSupplierReturnsDefaultWhenNull() {
+        assertEquals("default", ObjectUtils.getOrDefault(null, () -> "default"));
     }
 }
