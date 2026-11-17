@@ -262,6 +262,7 @@ public class MigrateMessageInterceptorSignatures extends Recipe {
                 // Paths.get() is guaranteed to return a non-null Path here; suppress the
                 // unchecked-conversion warning rather than annotating a local whose source
                 // method carries no nullness metadata.
+                @SuppressWarnings("nullness")
                 java.nio.file.Path stubPath = java.nio.file.Paths.get("_Stub.java");
                 java.nio.file.Path relativeTo = java.nio.file.Paths.get(".");
                 Parser.Input stubInput = Parser.Input.fromString(stubPath, src);
