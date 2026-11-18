@@ -3,9 +3,9 @@
     "workingDirectory": "${workspaceFolder}",
     "vmOptions": "-javaagent:${workspaceFolder}/build/mockito-agent/mockito-agent.jar",
     "env": {
-      "JAVA_HOME": "C:\\Program Files\\Eclipse Adoptium\\jre-21.0.13.9-hotspot"
+      "JAVA_HOME": "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.5.8-hotspot"
     }
   },
-  "java.home": "C:\\Program Files\\Eclipse Adoptium\\jre-21.0.13.9-hotspot",
+  "java.home": "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.5.8-hotspot",
   "java.compile.nullAnalysis.mode": "automatic"
 }
